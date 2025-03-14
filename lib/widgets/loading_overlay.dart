@@ -13,7 +13,7 @@ class LoadingOverlay {
     }
 
     _isShowing = true;
-    
+
     // Tạo overlay mới
     _overlayEntry = OverlayEntry(
       builder: (context) => Stack(
@@ -28,20 +28,10 @@ class LoadingOverlay {
           ),
           // Hiển thị animation loading
           Center(
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Lottie.asset(
-                  'assets/lottie/loading.json',
-                  width: 150,
-                  height: 150,
-                ),
-              ),
+            child: Lottie.asset(
+              'assets/lottie/loading.json',
+              width: 200,
+              height: 200,
             ),
           ),
         ],
@@ -50,7 +40,7 @@ class LoadingOverlay {
 
     // Thêm debug log
     print("LoadingOverlay đang hiển thị");
-    
+
     try {
       if (context.mounted) {
         Overlay.of(context).insert(_overlayEntry!);
@@ -69,7 +59,7 @@ class LoadingOverlay {
       print("LoadingOverlay đã ẩn, bỏ qua lệnh hide()");
       return;
     }
-    
+
     try {
       if (_overlayEntry != null) {
         print("LoadingOverlay đang được ẩn");
