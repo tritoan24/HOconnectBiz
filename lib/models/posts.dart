@@ -1,7 +1,6 @@
 import 'package:clbdoanhnhansg/models/product_model.dart';
 import 'package:clbdoanhnhansg/models/business_model.dart';
 
-import '../screens/search/widget/business/business.dart';
 import 'auth_model.dart';
 import 'is_join_model.dart';
 
@@ -113,4 +112,3 @@ class Posts {
     };
   }
 }
-

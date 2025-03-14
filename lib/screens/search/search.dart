@@ -1,6 +1,5 @@
 import 'package:clbdoanhnhansg/models/posts.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
-import 'package:clbdoanhnhansg/screens/search/widget/business/business.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -134,7 +133,8 @@ class _SearchViewState extends State<SearchView>
                   onTap: _performSearch,
                   child: const Padding(
                     padding: EdgeInsets.only(left: 8.0),
-                    child: Icon(Icons.search_rounded, color: AppColor.primaryBlue),
+                    child:
+                        Icon(Icons.search_rounded, color: AppColor.primaryBlue),
                   ),
                 ),
               ],
@@ -197,7 +197,8 @@ class _SearchViewState extends State<SearchView>
                     },
                   );
                 } else {
-                  return const Business();
+                  return const Center(
+                      child: Text('Không có doanh nghiệp nào được tìm thấy.'));
                 }
               },
             ),
@@ -290,4 +291,3 @@ class _CustomPainter extends BoxPainter {
     canvas.drawRRect(rrect, paint);
   }
 }
-

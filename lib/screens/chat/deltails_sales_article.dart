@@ -82,17 +82,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     });
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-  //     chatProvider.getListDetailChat(context, widget.idMessage).then((_) {
-  //       _scrollToBottom();
-  //     });
-  //   });
-  // }
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -475,4 +464,3 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     );
   }
 }
-

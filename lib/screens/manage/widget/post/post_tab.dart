@@ -1,12 +1,9 @@
-import 'package:clbdoanhnhansg/screens/manage/widget/post/widget/post_manage.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../models/posts.dart';
 import '../../../../providers/post_provider.dart';
-import '../../../../providers/product_provider.dart';
-import 'widget/post_business.dart';
 
 class PostManageTab extends StatefulWidget {
   final bool isMe;
@@ -91,4 +88,3 @@ class _PostManageState extends State<PostManageTab> {
     });
   }
 }
-

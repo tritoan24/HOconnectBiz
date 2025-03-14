@@ -185,7 +185,7 @@ class _InformationState extends State<InformationTab> {
                                 width: 360,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  color: AppColor.secondaryBlue,
+                                  color: AppColor.primaryBlue,
                                 ),
                                 child: const Center(
                                   child: Text(
@@ -213,4 +213,3 @@ class _InformationState extends State<InformationTab> {
     );
   }
 }
-

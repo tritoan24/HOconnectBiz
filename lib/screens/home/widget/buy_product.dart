@@ -41,7 +41,18 @@ class _BuyProductState extends State<BuyProduct> {
           children: [
             // Hiển thị ảnh sản phẩm (nếu có ảnh trong album, dùng ảnh đầu tiên)
             widget.product.album.isNotEmpty
-                ? Image.network(widget.product.album.first)
+                ? Image.network(
+                    widget.product.album.first,
+                    // fit: BoxFit.cover, // Đảm bảo ảnh vừa khung
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      // Căn giữa icon lỗi
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 100,
+                        color: Colors.grey, // Màu cho icon lỗi
+                      ),
+                    ),
+                  )
                 : Container(),
             const SizedBox(height: 10),
             // Hiển thị thông tin sản phẩm
@@ -209,4 +220,3 @@ class _BuyProductState extends State<BuyProduct> {
     );
   }
 }
-

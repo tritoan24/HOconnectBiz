@@ -553,8 +553,17 @@ class _PostItemState extends State<PostItem> {
             width: _kProductImageSize,
             height: _kProductImageSize,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.broken_image,
+                size: _kProductImageSize,
+              ); // Hiển thị icon nếu ảnh lỗi
+            },
           )
-        : const Icon(Icons.broken_image);
+        : const Icon(
+            Icons.broken_image,
+            size: _kProductImageSize,
+          );
   }
 
   Widget _buildProductDetails(BuildContext context, ProductModel sanPham) {
@@ -957,4 +966,3 @@ class _PostItemState extends State<PostItem> {
     );
   }
 }
-
