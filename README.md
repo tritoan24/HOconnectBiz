@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CLB Doanh Nhân SG
 
 Ứng dụng di động cho CLB Doanh Nhân SG được phát triển bằng Flutter.
@@ -161,4 +160,3 @@ Nếu bạn gặp bất kỳ vấn đề nào, vui lòng tạo issue trong repos
 =======
 # app-clbdoanhnhanhsg
 App cho Câu lạc bộ doanh nhân SG
->>>>>>> 61f39203f002bad016efafc183c1e89f7673ab66
