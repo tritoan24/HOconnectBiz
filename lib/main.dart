@@ -70,16 +70,33 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  bool _isInitializing = true;
+
   @override
   void initState() {
     super.initState();
+    // Use post-frame callback to ensure UI is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AuthProvider>(context, listen: false)
-          .checkLoginStatus(context);
-
-      // Request permissions
-      PermissionService.requestPermissions(context);
+      _initializeApp();
     });
+  }
+
+  Future<void> _initializeApp() async {
+    setState(() => _isInitializing = true);
+
+    // Request permissions first
+    await PermissionService.requestPermissions(context);
+
+    // Then check login status
+    if (mounted) {
+      await Provider.of<AuthProvider>(context, listen: false)
+          .checkLoginStatus(context);
+    }
+
+    if (mounted) {
+      setState(() => _isInitializing = false);
+    }
   }
 
   @override
@@ -99,9 +116,22 @@ class _MyAppState extends State<MyApp> {
           ),
           routerConfig: appRouter,
           title: 'GoRouter Flutter Example',
+          builder: (context, child) {
+            return Stack(
+              children: [
+                child!,
+                if (_isInitializing)
+                  const Material(
+                    color: Colors.black54,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );
   }
 }
-

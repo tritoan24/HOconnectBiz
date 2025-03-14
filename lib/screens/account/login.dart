@@ -42,16 +42,8 @@ class _LoginViewState extends State<LoginView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bannerProvider =
           Provider.of<BannerProvider>(context, listen: false);
-      //
       await bannerProvider.getListBanner(context);
-      //
-      //   final rankProvider = Provider.of<RankProvider>(context, listen: false);
-      //
-      //   await rankProvider.fetchRanksRevenue(context);
-      //   await rankProvider.fetchRankBusiness(context);
     });
-    // final postProvider = Provider.of<PostProvider>(context, listen: false);
-    // postProvider.fetchPostsFeatured(context);
   }
 
   @override

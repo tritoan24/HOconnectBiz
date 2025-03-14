@@ -52,17 +52,17 @@ class AuthProvider extends BaseProvider {
     setLoading(true);
     // Hiển thị loading overlay
     LoadingOverlay.show(context);
-    
+
     // Đánh dấu để không ẩn LoadingOverlay nhiều lần
     bool loadingHidden = false;
-    
+
     void hideLoadingOnce() {
       if (!loadingHidden) {
         LoadingOverlay.hide();
         loadingHidden = true;
       }
     }
-    
+
     final token = await _getToken();
 
     try {
@@ -79,7 +79,8 @@ class AuthProvider extends BaseProvider {
         final futures = <Future>[];
 
         // Thêm các tác vụ fetch dữ liệu vào danh sách
-        futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+        futures.add(Provider.of<UserProvider>(context, listen: false)
+            .fetchUser(context));
         futures.add(Provider.of<ProductProvider>(context, listen: false)
             .getListProduct(context));
 
@@ -88,7 +89,7 @@ class AuthProvider extends BaseProvider {
 
         futures.add(rankProvider.fetchRanksRevenue(context));
         futures.add(rankProvider.fetchRankBusiness(context));
-        
+
         futures.add(postProvider.fetchPostsFeatured(context));
         futures.add(postProvider.fetchPostsByUser(context));
 
@@ -122,17 +123,17 @@ class AuthProvider extends BaseProvider {
     try {
       // Hiển thị loading overlay
       LoadingOverlay.show(context);
-      
+
       // Đánh dấu để không ẩn LoadingOverlay nhiều lần
       bool loadingHidden = false;
-      
+
       void hideLoadingOnce() {
         if (!loadingHidden) {
           LoadingOverlay.hide();
           loadingHidden = true;
         }
       }
-      
+
       await executeApiCall(
         apiCall: () => _authRepository.login(username, password, context),
         context: context,
@@ -147,9 +148,10 @@ class AuthProvider extends BaseProvider {
 
             // Tạo danh sách các Future để theo dõi
             final futures = <Future>[];
-            
+
             // Thêm các tác vụ fetch dữ liệu vào danh sách
-            futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+            futures.add(Provider.of<UserProvider>(context, listen: false)
+                .fetchUser(context));
             futures.add(Provider.of<ProductProvider>(context, listen: false)
                 .getListProduct(context));
 
@@ -160,10 +162,10 @@ class AuthProvider extends BaseProvider {
 
             futures.add(rankProvider.fetchRanksRevenue(context));
             futures.add(rankProvider.fetchRankBusiness(context));
-            
+
             futures.add(postProvider.fetchPostsFeatured(context));
             futures.add(postProvider.fetchPostsByUser(context));
-            
+
             // Chờ tất cả các tác vụ hoàn thành
             await Future.wait(futures);
           }
@@ -175,7 +177,7 @@ class AuthProvider extends BaseProvider {
           }
         },
       );
-      
+
       // Nếu có lỗi, đảm bảo ẩn loading
       if (errorMessage != null) {
         hideLoadingOnce();
@@ -359,7 +361,7 @@ class AuthProvider extends BaseProvider {
     try {
       // Hiển thị loading overlay
       LoadingOverlay.show(context);
-      
+
       developer.log('Bắt đầu đăng nhập Google', name: tag);
       developer.log('Kiểm tra CLIENT_IOS:', name: AppConfig.clientIdIos);
 
@@ -404,7 +406,7 @@ class AuthProvider extends BaseProvider {
     try {
       // Hiển thị loading overlay
       LoadingOverlay.show(context);
-      
+
       developer.log('Bắt đầu đăng nhập Facebook', name: tag);
       final LoginResult result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
@@ -534,20 +536,20 @@ class AuthProvider extends BaseProvider {
     try {
       // Hiển thị loading overlay
       LoadingOverlay.show(context);
-      
+
       // Đánh dấu để không ẩn LoadingOverlay nhiều lần
       bool loadingHidden = false;
-      
+
       void hideLoadingOnce() {
         if (!loadingHidden) {
           LoadingOverlay.hide();
           loadingHidden = true;
         }
       }
-          
+
       await executeApiCall(
-        apiCall: () => _authRepository.loginSocial(
-            identity, password, displayName, registerType, avatarImage, context),
+        apiCall: () => _authRepository.loginSocial(identity, password,
+            displayName, registerType, avatarImage, context),
         context: context,
         onSuccess: () async {
           final token = user!.token!;
@@ -564,14 +566,17 @@ class AuthProvider extends BaseProvider {
 
           // Tạo danh sách các Future để theo dõi
           final futures = <Future>[];
-            
+
           // Thêm các tác vụ fetch dữ liệu vào danh sách
-          futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+          futures.add(Provider.of<UserProvider>(context, listen: false)
+              .fetchUser(context));
           futures.add(Provider.of<ProductProvider>(context, listen: false)
               .getListProduct(context));
 
-          final postProvider = Provider.of<PostProvider>(context, listen: false);
-          final rankProvider = Provider.of<RankProvider>(context, listen: false);
+          final postProvider =
+              Provider.of<PostProvider>(context, listen: false);
+          final rankProvider =
+              Provider.of<RankProvider>(context, listen: false);
 
           futures.add(rankProvider.fetchRanksRevenue(context));
           futures.add(rankProvider.fetchRankBusiness(context));
@@ -597,7 +602,7 @@ class AuthProvider extends BaseProvider {
           }
         },
       );
-      
+
       // Nếu có lỗi, đảm bảo ẩn loading
       if (errorMessage != null) {
         hideLoadingOnce();
@@ -638,4 +643,3 @@ String _generateRandomPassword() {
   passwordList.shuffle(random);
   return passwordList.join();
 }
-
