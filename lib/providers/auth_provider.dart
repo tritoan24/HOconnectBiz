@@ -6,6 +6,7 @@ import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import 'package:clbdoanhnhansg/providers/rank_provider.dart';
 import 'package:clbdoanhnhansg/providers/user_provider.dart';
+import 'package:clbdoanhnhansg/widgets/loading_overlay.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -49,6 +50,19 @@ class AuthProvider extends BaseProvider {
 
   Future<void> checkLoginStatus(BuildContext context) async {
     setLoading(true);
+    // Hiển thị loading overlay
+    LoadingOverlay.show(context);
+    
+    // Đánh dấu để không ẩn LoadingOverlay nhiều lần
+    bool loadingHidden = false;
+    
+    void hideLoadingOnce() {
+      if (!loadingHidden) {
+        LoadingOverlay.hide();
+        loadingHidden = true;
+      }
+    }
+    
     final token = await _getToken();
 
     try {
@@ -61,28 +75,42 @@ class AuthProvider extends BaseProvider {
           socketService.connect(userId);
         }
 
-        Provider.of<UserProvider>(context, listen: false).fetchUser(context);
-        Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context);
+        // Tạo danh sách các Future để theo dõi
+        final futures = <Future>[];
+
+        // Thêm các tác vụ fetch dữ liệu vào danh sách
+        futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+        futures.add(Provider.of<ProductProvider>(context, listen: false)
+            .getListProduct(context));
 
         final postProvider = Provider.of<PostProvider>(context, listen: false);
         final rankProvider = Provider.of<RankProvider>(context, listen: false);
 
-        await rankProvider.fetchRanksRevenue(context);
-        await rankProvider.fetchRankBusiness(context);
+        futures.add(rankProvider.fetchRanksRevenue(context));
+        futures.add(rankProvider.fetchRankBusiness(context));
+        
+        futures.add(postProvider.fetchPostsFeatured(context));
+        futures.add(postProvider.fetchPostsByUser(context));
 
-        postProvider.fetchPostsFeatured(context);
-        postProvider.fetchPostsByUser(context);
+        // Chờ tất cả các tác vụ hoàn thành
+        await Future.wait(futures);
 
-        Future.microtask(() {
+        // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
+        if (context.mounted) {
+          // Ẩn loading overlay
+          hideLoadingOnce();
           appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
-        });
+        }
       } else {
+        // Ẩn loading overlay ngay khi phát hiện không có token
+        hideLoadingOnce();
         Future.microtask(() {
           appRouter.go(AppRoutes.login);
         });
       }
     } catch (e) {
+      // Ẩn loading overlay nếu có lỗi
+      hideLoadingOnce();
       setError("Lỗi điều hướng: $e");
     } finally {
       setLoading(false);
@@ -91,39 +119,72 @@ class AuthProvider extends BaseProvider {
 
   Future<void> login(
       BuildContext context, String username, String password) async {
-    await executeApiCall(
-      apiCall: () => _authRepository.login(username, password, context),
-      context: context,
-      onSuccess: () async {
-        final token = user!.token!;
-        final idUser = user!.idUser!;
-        await _saveToken(token);
-        await _saveUserId(idUser);
-        OneSignal.login(username);
-        if (idUser != null) {
-          socketService.connect(idUser);
-
-          Provider.of<UserProvider>(context, listen: false).fetchUser(context);
-          Provider.of<ProductProvider>(context, listen: false)
-              .getListProduct(context);
-
-          final postProvider =
-              Provider.of<PostProvider>(context, listen: false);
-          final rankProvider =
-              Provider.of<RankProvider>(context, listen: false);
-
-          await rankProvider.fetchRanksRevenue(context);
-          await rankProvider.fetchRankBusiness(context);
-
-          postProvider.fetchPostsFeatured(context);
-          postProvider.fetchPostsByUser(context);
+    try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+      
+      // Đánh dấu để không ẩn LoadingOverlay nhiều lần
+      bool loadingHidden = false;
+      
+      void hideLoadingOnce() {
+        if (!loadingHidden) {
+          LoadingOverlay.hide();
+          loadingHidden = true;
         }
+      }
+      
+      await executeApiCall(
+        apiCall: () => _authRepository.login(username, password, context),
+        context: context,
+        onSuccess: () async {
+          final token = user!.token!;
+          final idUser = user!.idUser!;
+          await _saveToken(token);
+          await _saveUserId(idUser);
+          OneSignal.login(username);
+          if (idUser != null) {
+            socketService.connect(idUser);
 
-        if (context.mounted) {
-          context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
-        }
-      },
-    );
+            // Tạo danh sách các Future để theo dõi
+            final futures = <Future>[];
+            
+            // Thêm các tác vụ fetch dữ liệu vào danh sách
+            futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+            futures.add(Provider.of<ProductProvider>(context, listen: false)
+                .getListProduct(context));
+
+            final postProvider =
+                Provider.of<PostProvider>(context, listen: false);
+            final rankProvider =
+                Provider.of<RankProvider>(context, listen: false);
+
+            futures.add(rankProvider.fetchRanksRevenue(context));
+            futures.add(rankProvider.fetchRankBusiness(context));
+            
+            futures.add(postProvider.fetchPostsFeatured(context));
+            futures.add(postProvider.fetchPostsByUser(context));
+            
+            // Chờ tất cả các tác vụ hoàn thành
+            await Future.wait(futures);
+          }
+
+          if (context.mounted) {
+            // Ẩn loading overlay
+            hideLoadingOnce();
+            context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+          }
+        },
+      );
+      
+      // Nếu có lỗi, đảm bảo ẩn loading
+      if (errorMessage != null) {
+        hideLoadingOnce();
+      }
+    } catch (e) {
+      // Đảm bảo ẩn loading trong mọi trường hợp lỗi
+      LoadingOverlay.hide();
+      print("Lỗi đăng nhập: $e");
+    }
   }
 
   Future<void> register(
@@ -296,6 +357,9 @@ class AuthProvider extends BaseProvider {
         'https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg';
 
     try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+      
       developer.log('Bắt đầu đăng nhập Google', name: tag);
       developer.log('Kiểm tra CLIENT_IOS:', name: AppConfig.clientIdIos);
 
@@ -306,6 +370,8 @@ class AuthProvider extends BaseProvider {
 
       if (googleUser == null) {
         developer.log('Người dùng hủy đăng nhập', name: '$tag.CANCELLED');
+        // Ẩn loading overlay nếu người dùng hủy đăng nhập
+        LoadingOverlay.hide();
         return;
       }
       developer.log('Đăng nhập thành công', name: '$tag.SUCCESS');
@@ -320,9 +386,14 @@ class AuthProvider extends BaseProvider {
 
       if (context.mounted) {
         _handleLoginSocialSuccess(context, userData, registerTypeGG);
+      } else {
+        // Ẩn loading overlay nếu context không còn hợp lệ
+        LoadingOverlay.hide();
       }
     } catch (e) {
       developer.log('Lỗi đăng nhập Google: $e', name: '$tag.ERROR', error: e);
+      // Ẩn loading overlay nếu có lỗi
+      LoadingOverlay.hide();
     }
   }
 
@@ -331,6 +402,9 @@ class AuthProvider extends BaseProvider {
     const String registerTypeFB = 'fb';
 
     try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+      
       developer.log('Bắt đầu đăng nhập Facebook', name: tag);
       final LoginResult result = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
@@ -351,6 +425,9 @@ class AuthProvider extends BaseProvider {
               name: '$tag.USER_DATA');
           if (context.mounted) {
             _handleLoginSocialSuccess(context, userData, registerTypeFB);
+          } else {
+            // Ẩn loading overlay nếu context không còn hợp lệ
+            LoadingOverlay.hide();
           }
           break;
 
@@ -360,6 +437,8 @@ class AuthProvider extends BaseProvider {
             message: 'Xử lý hủy đăng nhập',
             tag: '$tag.CANCELLED',
           );
+          // Ẩn loading overlay nếu người dùng hủy đăng nhập
+          LoadingOverlay.hide();
           break;
 
         case LoginStatus.failed:
@@ -369,11 +448,15 @@ class AuthProvider extends BaseProvider {
             message: 'Xử lý thất bại: ${result.message}',
             tag: '$tag.FAILED',
           );
+          // Ẩn loading overlay nếu đăng nhập thất bại
+          LoadingOverlay.hide();
           break;
 
         default:
           developer.log('Trạng thái không xác định: ${result.status}',
               name: '$tag.UNKNOWN');
+          // Ẩn loading overlay trong trường hợp không xác định
+          LoadingOverlay.hide();
       }
     } catch (e) {
       developer.log('Lỗi hệ thống: $e', name: '$tag.ERROR', error: e);
@@ -382,6 +465,8 @@ class AuthProvider extends BaseProvider {
         tag: '$tag.ERROR',
         error: e,
       );
+      // Ẩn loading overlay nếu có lỗi
+      LoadingOverlay.hide();
     }
   }
 
@@ -446,47 +531,82 @@ class AuthProvider extends BaseProvider {
       String displayName,
       String registerType,
       String avatarImage) async {
-    await executeApiCall(
-      apiCall: () => _authRepository.loginSocial(
-          identity, password, displayName, registerType, avatarImage, context),
-      context: context,
-      onSuccess: () async {
-        final token = user!.token!;
-        final idUser = user!.idUser!;
-
-        if (kDebugMode) {
-          print("Token: $token");
-          print("IdUser: $idUser");
-          print("Password: $password");
+    try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+      
+      // Đánh dấu để không ẩn LoadingOverlay nhiều lần
+      bool loadingHidden = false;
+      
+      void hideLoadingOnce() {
+        if (!loadingHidden) {
+          LoadingOverlay.hide();
+          loadingHidden = true;
         }
+      }
+          
+      await executeApiCall(
+        apiCall: () => _authRepository.loginSocial(
+            identity, password, displayName, registerType, avatarImage, context),
+        context: context,
+        onSuccess: () async {
+          final token = user!.token!;
+          final idUser = user!.idUser!;
 
-        await _saveToken(token);
-        await _saveUserId(idUser);
+          if (kDebugMode) {
+            print("Token: $token");
+            print("IdUser: $idUser");
+            print("Password: $password");
+          }
 
-        Provider.of<UserProvider>(context, listen: false).fetchUser(context);
-        Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context);
+          await _saveToken(token);
+          await _saveUserId(idUser);
 
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
-        final rankProvider = Provider.of<RankProvider>(context, listen: false);
+          // Tạo danh sách các Future để theo dõi
+          final futures = <Future>[];
+            
+          // Thêm các tác vụ fetch dữ liệu vào danh sách
+          futures.add(Provider.of<UserProvider>(context, listen: false).fetchUser(context));
+          futures.add(Provider.of<ProductProvider>(context, listen: false)
+              .getListProduct(context));
 
-        await rankProvider.fetchRanksRevenue(context);
-        await rankProvider.fetchRankBusiness(context);
+          final postProvider = Provider.of<PostProvider>(context, listen: false);
+          final rankProvider = Provider.of<RankProvider>(context, listen: false);
 
-        postProvider.fetchPostsFeatured(context);
-        postProvider.fetchPostsByUser(context);
+          futures.add(rankProvider.fetchRanksRevenue(context));
+          futures.add(rankProvider.fetchRankBusiness(context));
 
-        // Connect to socket
-        OneSignal.login(identity);
-        socketService.connect(idUser);
+          futures.add(postProvider.fetchPostsFeatured(context));
+          futures.add(postProvider.fetchPostsByUser(context));
 
-        if (context.mounted) {
-          context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
-        } else {
-          developer.log('Context không còn hợp lệ', name: 'FB_LOGIN.ERROR');
-        }
-      },
-    );
+          // Chờ tất cả các tác vụ hoàn thành
+          await Future.wait(futures);
+
+          // Connect to socket
+          OneSignal.login(identity);
+          socketService.connect(idUser);
+
+          if (context.mounted) {
+            // Ẩn loading overlay
+            hideLoadingOnce();
+            context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+          } else {
+            // Ẩn loading overlay nếu context không còn hợp lệ
+            hideLoadingOnce();
+            developer.log('Context không còn hợp lệ', name: 'FB_LOGIN.ERROR');
+          }
+        },
+      );
+      
+      // Nếu có lỗi, đảm bảo ẩn loading
+      if (errorMessage != null) {
+        hideLoadingOnce();
+      }
+    } catch (e) {
+      // Đảm bảo ẩn loading trong mọi trường hợp lỗi
+      LoadingOverlay.hide();
+      print("Lỗi đăng nhập social: $e");
+    }
   }
 }
 

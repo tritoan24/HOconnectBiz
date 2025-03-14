@@ -256,7 +256,7 @@ class ApiClient {
   Future<Map<String, dynamic>> pacthJsonRequest(
     String endpoint,
     BuildContext context, {
-    Map<String, dynamic>? body,
+    dynamic body,
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';

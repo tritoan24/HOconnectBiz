@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
           .checkLoginStatus(context);
 
       // Request permissions
-      // PermissionService.requestPermissions(context);
+      PermissionService.requestPermissions(context);
     });
   }
 

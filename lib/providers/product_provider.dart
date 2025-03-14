@@ -73,16 +73,30 @@ class ProductProvider extends BaseProvider {
     LoadingOverlay.hide();
   }
 
-  //chỉnh sủa pin
+ //chỉnh sủa pin
   Future<void> editPinProduct(
-      BuildContext context, List<Map<String, dynamic>> products) async {
-    await executeApiCall(
-      apiCall: () => _productRepository.editProductPin(products as ProductModel,
-          context), // Ensure repository also accepts a list
-      context: context,
-      onSuccess: () => getListProduct(context),
-      successMessage: 'Cập nhật sản phẩm ghim thành công!',
-    );
+    List<Map<String, dynamic>> pinData,
+    BuildContext context,
+  ) async {
+    try {
+      notifyListeners();
+
+      final response =
+          await _productRepository.editProductPin(pinData, context);
+
+      if (response.isSuccess) {
+        // Cập nhật state nếu cần
+        print('Cập nhật ghim sản phẩm thành công');
+      } else {
+        print('Lỗi: ${response.message}');
+        // Hiển thị thông báo lỗi nếu cần
+      }
+    } catch (e) {
+      print('Lỗi khi cập nhật ghim sản phẩm: $e');
+      // Xử lý lỗi
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> deleteProduct(BuildContext context, String productId) async {

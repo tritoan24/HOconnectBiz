@@ -251,9 +251,16 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                                 color: Colors
                                                                     .grey),
                                                       ),
-                                                      Expanded(
+                                                     Expanded(
                                                         child: Text(
-                                                          item.companyName,
+                                                          (item.companyName !=
+                                                                  null)
+                                                              ? item.companyName
+                                                                      .isNotEmpty
+                                                                  ? item
+                                                                      .companyName
+                                                                  : "Chưa cập nhật"
+                                                              : "Chưa cập nhật",
                                                           maxLines: 2,
                                                           overflow: TextOverflow
                                                               .ellipsis,

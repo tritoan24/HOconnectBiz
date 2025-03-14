@@ -33,31 +33,23 @@ class _ProductManageState extends State<ProductManage> {
     _products = List.from(widget.products);
   }
 
-  // Hàm gửi dữ liệu lên server
+
+// Hàm gửi dữ liệu lên server
   Future<void> _saveToServer() async {
     final productProvider =
         Provider.of<ProductProvider>(context, listen: false);
 
-    // Convert the product list to a list of JSON objects
-    final List<Map<String, dynamic>> payload =
-        _products.map((product) => product.toJsonEditPin()).toList();
+    // Create a payload that matches the Postman format
+    final List<Map<String, dynamic>> payload = _products
+        .map((product) => {"_id": product.id, "is_pin": product.isPin})
+        .toList();
 
     print("📡 API Request Payload: ${jsonEncode(payload)}");
 
-    // Send the correct list format
-    await productProvider.editPinProduct(context, payload);
+    // Send the payload to your API
+    await productProvider.editPinProduct(payload, context);
   }
 
-  // void _updatePinStatus(String productId, bool isPinned) {
-  //   setState(() {
-  //     final productIndex = _products.indexWhere((p) => p.id == productId);
-  //     if (productIndex != -1) {
-  //       _products[productIndex] =
-  //           _products[productIndex].copyWith(isPin: isPinned);
-  //     }
-  //   });
-  // }
-  // Fix: Phương thức cập nhật trạng thái pin đã được sửa
   void _updatePinStatus(String? productId, bool isPinned) {
     if (productId == null) return;
 

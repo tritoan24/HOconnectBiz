@@ -78,18 +78,25 @@ class ProductRepository {
     return ApiResponse.fromJson(response);
   }
 
-  Future<ApiResponse> editProductPin(
-    ProductModel product,
-    BuildContext context, {
-    List<File>? files,
-  }) async {
-    final response = await _apiClient.patchRequest(
-      ApiEndpoints.productPin,
-      body: product.toJsonEditPin(),
-      context,
-    );
+   Future<ApiResponse> editProductPin(
+    List<Map<String, dynamic>> pinData,
+    BuildContext context,
+  ) async {
+    try {
+      final response = await _apiClient.pacthJsonRequest(
+        '/product/pin',
+        context,
+        body: pinData,
+      );
 
-    return ApiResponse.fromJson(response);
+      return ApiResponse.fromJson(response);
+    } catch (e) {
+      print('Error in editProductPin: $e');
+      return ApiResponse(
+        isSuccess: false,
+        message: 'Không thể cập nhật trạng thái ghim sản phẩm: $e',
+      );
+    }
   }
 
   // Add delete method

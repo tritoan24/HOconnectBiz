@@ -71,7 +71,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
-      backgroundColor: const Color(0xffFFFFFF),
+      backgroundColor: AppColor.backgroundColorApp,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: FormBuilder(
@@ -173,9 +173,7 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 24),
                     ButtonWidget(
-                      label: authProvider.isLoading
-                          ? "Đang đăng nhập..."
-                          : "Đăng nhập",
+                      label: "Đăng nhập",
                       onPressed: authProvider.isLoading
                           ? null
                           : () {

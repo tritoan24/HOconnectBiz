@@ -24,4 +24,6 @@ class UrlImage {
       "https://tse1.mm.bing.net/th?id=OIP.flCldMtHhZ6gsHhQgPyZbgHaHa&pid=Api&P=0&h=220";
   //path local image
   static const imageUserDefault = 'assets/icons/user_default.png';
+  static const imageGroupDefault = 'assets/icons/icon_group.png';
+
 }

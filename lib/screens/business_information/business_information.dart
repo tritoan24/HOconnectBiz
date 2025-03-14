@@ -69,9 +69,12 @@ class _BusinessInformationState extends State<BusinessInformation> {
                     floating: false,
                     pinned: true,
                     backgroundColor: Colors.white,
-                    title: Text(
-                      userProvider.authorByID?.companyName ??
-                          "Chưa có thông tin",
+                     title: Text(
+                      (userProvider.authorByID?.companyName != null)
+                          ? userProvider.authorByID!.companyName.isNotEmpty
+                              ? userProvider.authorByID!.companyName
+                              : "Chưa có thông tin"
+                          : "Chưa có thông tin",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -113,11 +116,15 @@ class _BusinessInformationState extends State<BusinessInformation> {
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 30),
-                              child: Text(
-                                userProvider.authorByID?.companyDescription ??
-                                    "Chưa có thông tin",
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
+                             child: Text(
+                                (userProvider.authorByID?.companyDescription !=
+                                        null)
+                                    ? userProvider.authorByID!
+                                            .companyDescription.isNotEmpty
+                                        ? userProvider
+                                            .authorByID!.companyDescription
+                                        : "Chưa có thông tin"
+                                    : "Chưa có thông tin",
                                 maxLines: 2,
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(

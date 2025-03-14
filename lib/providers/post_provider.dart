@@ -74,7 +74,7 @@ class PostProvider extends BaseProvider {
       },
       context: context,
       onSuccess: () async {
-        // await (context);
+        await fetchPostsByUser(context);
         Navigator.of(context).pop();
       },
       successMessage: 'Tạo bài viết thành công!',

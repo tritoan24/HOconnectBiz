@@ -72,7 +72,11 @@ class _QuanLyViewState extends State<QuanLyView> {
                     pinned: true,
                     backgroundColor: Colors.white,
                     title: Text(
-                      userProvider.author?.companyName ?? "Chưa có thông tin",
+                      (userProvider.author?.companyName != null)
+                          ? userProvider.author!.companyName.isNotEmpty
+                              ? userProvider.author!.companyName
+                              : "Chưa có thông tin"
+                          : "Chưa có thông tin",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -117,13 +121,17 @@ class _QuanLyViewState extends State<QuanLyView> {
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 30),
-                              child: Text(
-                                userProvider.author?.companyDescription ??
-                                    "Chưa có thông tin",
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
+                               child: Text(
+                                (userProvider.author?.companyDescription !=
+                                        null)
+                                    ? userProvider.author!.companyDescription
+                                            .isNotEmpty
+                                        ? userProvider
+                                            .author!.companyDescription
+                                        : "Chưa có thông tin"
+                                    : "Chưa có thông tin",
                                 maxLines: 2,
-                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,

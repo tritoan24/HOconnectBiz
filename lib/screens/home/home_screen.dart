@@ -91,10 +91,14 @@ class _TrangChuViewState extends State<TrangChuView> {
               TabItem(
                 icon: SvgPicture.asset(
                   "assets/icons/vector_noselect.svg",
+                  width: 28,
+                  height: 28,
                   fit: BoxFit.cover,
                 ),
                 activeIcon: SvgPicture.asset(
                   "assets/icons/vector.svg",
+                  width: 28,
+                  height: 28,
                   fit: BoxFit.cover,
                 ),
                 title: 'Dạo chợ',
