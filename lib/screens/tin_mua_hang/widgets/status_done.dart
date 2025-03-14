@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class StatusDone extends StatefulWidget {
   const StatusDone({super.key});
@@ -20,12 +21,12 @@ class _State extends State<StatusDone> {
         children: [
           Icon(
             Icons.check,
-            color: Colors.green,
+            color: AppColor.successGreen,
           ),
           Text(
             'Đơn hàng hoàn tất',
             style: TextStyle(
-              color: Colors.green,
+              color: AppColor.successGreen,
             ),
           ),
         ],

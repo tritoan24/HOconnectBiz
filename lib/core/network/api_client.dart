@@ -36,10 +36,10 @@ class ApiClient {
       if (token != null) 'Authorization': token,
     };
 
-    print("🔹 [API REQUEST] $method: $url");
-    print("🔹 Headers: $headers");
+    debugPrint("🔹 [API REQUEST] $method: $url");
+    debugPrint("🔹 Headers: $headers");
     if (body != null) {
-      print("🔹 Body: $body");
+      debugPrint("🔹 Body: $body");
     }
 
     try {
@@ -99,7 +99,7 @@ class ApiClient {
               var stream = http.ByteStream(file.openRead());
               var length = await file.length();
 
-              print('📤 Uploading file: $fileName with type: $mimeType');
+              debugPrint('📤 Uploading file: $fileName with type: $mimeType');
 
               var multipartFile = http.MultipartFile(
                 fieldName.isEmpty || fieldName == null ? "album" : fieldName,
@@ -147,8 +147,8 @@ class ApiClient {
         }
       }
 
-      print(" [API RESPONSE] Status Code: ${response.statusCode}");
-      print(" Response Body: ${response.body}");
+      debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
+      debugPrint(" Response Body: ${response.body}");
 
       if (response.statusCode >= 200 && response.statusCode < 500) {
         return jsonDecode(response.body);
@@ -156,7 +156,7 @@ class ApiClient {
         throw HttpException(response.body);
       }
     } catch (e) {
-      print(" [API ERROR] Lỗi khi gọi API: $e");
+      debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
       _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
       sendErrorLog(
         level: 1,
@@ -218,12 +218,12 @@ class ApiClient {
       if (token != null) 'Authorization': token,
     };
 
-    print("🔹 [API REQUEST] PUT JSON: $url");
-    print("🔹 Headers: $headers");
+    debugPrint("🔹 [API REQUEST] PUT JSON: $url");
+    debugPrint("🔹 Headers: $headers");
     if (body != null) {
-      print("🔹 Body: $body");
+      debugPrint("🔹 Body: $body");
       String jsonString = jsonEncode(body);
-      print("🔹 JSON String: $jsonString");
+      debugPrint("🔹 JSON String: $jsonString");
     }
 
     try {
@@ -233,8 +233,8 @@ class ApiClient {
         body: body != null ? jsonEncode(body) : null,
       );
 
-      print(" [API RESPONSE] Status Code: ${response.statusCode}");
-      print(" Response Body: ${response.body}");
+      debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
+      debugPrint(" Response Body: ${response.body}");
 
       if (response.statusCode >= 200 && response.statusCode < 500) {
         return jsonDecode(response.body);
@@ -242,7 +242,7 @@ class ApiClient {
         throw HttpException(response.body);
       }
     } catch (e) {
-      print(" [API ERROR] Lỗi khi gọi API: $e");
+      debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
       _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
       sendErrorLog(
         level: 1,
@@ -268,12 +268,12 @@ class ApiClient {
       if (token != null) 'Authorization': token,
     };
 
-    print("🔹 [API REQUEST] PATCH JSON: $url");
-    print("🔹 Headers: $headers");
+    debugPrint("🔹 [API REQUEST] PATCH JSON: $url");
+    debugPrint("🔹 Headers: $headers");
     if (body != null) {
-      print("🔹 Body: $body");
+      debugPrint("🔹 Body: $body");
       String jsonString = jsonEncode(body);
-      print("🔹 JSON String: $jsonString");
+      debugPrint("🔹 JSON String: $jsonString");
     }
 
     try {
@@ -283,8 +283,8 @@ class ApiClient {
         body: body != null ? jsonEncode(body) : null,
       );
 
-      print(" [API RESPONSE] Status Code: ${response.statusCode}");
-      print(" Response Body: ${response.body}");
+      debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
+      debugPrint(" Response Body: ${response.body}");
 
       if (response.statusCode >= 200 && response.statusCode < 500) {
         return jsonDecode(response.body);
@@ -292,7 +292,7 @@ class ApiClient {
         throw HttpException(response.body);
       }
     } catch (e) {
-      print(" [API ERROR] Lỗi khi gọi API: $e");
+      debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
       _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
       sendErrorLog(
         level: 1,

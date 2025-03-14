@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class ButtonAdd extends StatefulWidget {
   final String? label;
@@ -18,7 +19,7 @@ class _ButtonAddState extends State<ButtonAdd> {
         width: MediaQuery.of(context).size.width,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xffD6E9FF),
+            backgroundColor: AppColor.secondaryBlue,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -30,7 +31,7 @@ class _ButtonAddState extends State<ButtonAdd> {
             style: GoogleFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: const Color(0xff006AF5),
+              color: AppColor.primaryBlue,
             ),
           ),
         ),

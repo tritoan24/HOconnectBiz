@@ -10,6 +10,7 @@ import '../../../../widgets/input_text_area.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import 'dart:io';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class AddProduct extends StatefulWidget {
   const AddProduct({super.key});
@@ -112,18 +113,18 @@ class _AddProductState extends State<AddProduct> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Color(0xffB9BDC1),
+                        color: AppColor.borderColor,
                         width: 1.0,
                       ),
                     ),
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xffB9BDC1),
+                      color: AppColor.borderColor,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(
-                        color: Color(0xffB9BDC1),
+                        color: AppColor.borderColor,
                         width: 1.0,
                       ),
                       borderRadius: BorderRadius.circular(10),
@@ -159,18 +160,18 @@ class _AddProductState extends State<AddProduct> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: Color(0xffB9BDC1),
+                            color: AppColor.borderColor,
                             width: 1.0,
                           ),
                         ),
                         hintStyle: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xffB9BDC1),
+                          color: AppColor.borderColor,
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: const BorderSide(
-                            color: Color(0xffB9BDC1),
+                            color: AppColor.borderColor,
                             width: 1.0,
                           ),
                           borderRadius: BorderRadius.circular(10),

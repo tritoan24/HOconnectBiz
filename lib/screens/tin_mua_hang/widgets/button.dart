@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/cart_provider.dart';
 import '../../cart/cart_tab.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class Button extends StatefulWidget {
   final String id;
@@ -38,12 +39,12 @@ class _ButtonState extends State<Button> {
                     children: [
                       Icon(
                         Icons.check,
-                        color: Colors.blue,
+                        color: AppColor.primaryBlue,
                       ),
                       Text(
                         'Đã Xác nhận mua hàng',
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: AppColor.primaryBlue,
                         ),
                       ),
                     ],
@@ -70,9 +71,7 @@ class _ButtonState extends State<Button> {
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xFF006AF5), // Màu nút "Xác nhận"
-
+                  backgroundColor: AppColor.primaryBlue, // Màu nút "Xác nhận"
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -91,8 +90,7 @@ class _ButtonState extends State<Button> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context), // Hành động khi đóng
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD6E9FF), // Màu nút "Đóng"
-
+                  backgroundColor: AppColor.secondaryBlue, // Màu nút "Đóng"
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -103,7 +101,7 @@ class _ButtonState extends State<Button> {
                   style: GoogleFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF006AF5),
+                    color: AppColor.primaryBlue,
                   ),
                 ),
               ),

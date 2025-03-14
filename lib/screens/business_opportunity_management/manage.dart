@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/bo_provider.dart';
+import '../../utils/Color/app_color.dart';
 
 class ManageBO extends StatefulWidget {
   const ManageBO({super.key});
@@ -54,9 +55,9 @@ class _ManageBOState extends State<ManageBO>
           TabBar(
             controller: _tabController,
             isScrollable: false,
-            unselectedLabelColor: const Color(0xffB9BDC1),
-            labelColor: const Color(0xff006AF5),
-            indicatorColor: const Color(0xff006AF5),
+            unselectedLabelColor: AppColor.borderColor,
+            labelColor: AppColor.primaryBlue,
+            indicatorColor: AppColor.primaryBlue,
             labelStyle: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -104,7 +105,7 @@ class _CustomTabIndicatorPainter extends BoxPainter {
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     final Paint paint = Paint()
-      ..color = const Color(0xff006AF5)
+      ..color = AppColor.primaryBlue
       ..style = PaintingStyle.fill;
 
     final double width = configuration.size?.width ?? 0;

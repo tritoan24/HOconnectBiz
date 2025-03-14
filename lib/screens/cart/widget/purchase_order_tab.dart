@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 import '../../../widgets/horizontal_divider.dart';
 import 'button_comfirm.dart';
@@ -255,11 +256,11 @@ class PurchaseOrderTab extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'đang xử lý':
       case 'chờ xác nhận':
-        return Colors.orange;
+        return AppColor.warningYellow;
       case 'đã hủy':
-        return Colors.red;
+        return AppColor.cancelRed;
       case 'thành công':
-        return Colors.green;
+        return AppColor.successGreen;
       default:
         return Colors.grey; // Màu mặc định cho các status khác
     }

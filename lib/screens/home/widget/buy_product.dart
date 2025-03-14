@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../utils/router/router.name.dart';
 import '../../manage/manage.dart';
+import '../../../utils/Color/app_color.dart';
 
 class BuyProduct extends StatefulWidget {
   final ProductModel product;
@@ -68,7 +69,7 @@ class _BuyProductState extends State<BuyProduct> {
                       formatCurrency.format(widget.product.price),
                       style: const TextStyle(
                         fontSize: 20,
-                        color: Color(0xffDC1F18),
+                        color: AppColor.errorRed,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -107,7 +108,7 @@ class _BuyProductState extends State<BuyProduct> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: const Color(0xff006AF5),
+                          color: AppColor.primaryBlue,
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -124,7 +125,7 @@ class _BuyProductState extends State<BuyProduct> {
                               EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                           child: Text(
                             "Xem",
-                            style: TextStyle(color: Color(0xff006AF5)),
+                            style: TextStyle(color: AppColor.primaryBlue),
                           ),
                         ),
                       ),
@@ -166,7 +167,7 @@ class _BuyProductState extends State<BuyProduct> {
           child: Container(
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xff006AF5),
+              color: AppColor.primaryBlue,
               borderRadius: BorderRadius.circular(20),
             ),
             child: GestureDetector(

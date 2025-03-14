@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class StatusProcessing extends StatefulWidget {
   const StatusProcessing({super.key});
@@ -21,12 +22,12 @@ class _State extends State<StatusProcessing> {
           Text(
             'Đang chờ khách hàng xác nhận',
             style: TextStyle(
-              color: Colors.green,
+              color: AppColor.warningYellow,
             ),
           ),
           Icon(
             Icons.arrow_forward_ios_rounded,
-            color: Colors.green,
+            color: AppColor.warningYellow,
           ),
         ],
       ),

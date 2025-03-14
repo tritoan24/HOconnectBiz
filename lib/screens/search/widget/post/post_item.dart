@@ -16,6 +16,7 @@ import '../../../details_image/details_image_screen.dart';
 import '../../../home/widget/buy_product.dart';
 import '../../../business_information/business_information.dart';
 import '../../../comment/comments_screen.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 // Constants
 const double _kPadding = 12.0;
@@ -32,9 +33,9 @@ const kDateTimeStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
 const kPriceStyle =
     TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.red);
 const kDiscountStyle = TextStyle(
-    fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xff767A7F));
+    fontSize: 12, fontWeight: FontWeight.w400, color: AppColor.textGrey);
 const kProductTitleStyle = TextStyle(
-    fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xff141415));
+    fontSize: 14, fontWeight: FontWeight.w400, color: AppColor.textDark);
 
 class PostItem extends StatefulWidget {
   static final formatCurrency =
@@ -508,7 +509,7 @@ class _PostItemState extends State<PostItem> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xffD6E9FF),
+        color: AppColor.secondaryBlue,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -523,7 +524,7 @@ class _PostItemState extends State<PostItem> {
 
     final ProductModel sanPham = widget.product.first;
     return Container(
-      decoration: const BoxDecoration(color: Color(0xffEBF4FF)),
+      decoration: const BoxDecoration(color: AppColor.lightBlue),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: _buildProductContent(context, sanPham),

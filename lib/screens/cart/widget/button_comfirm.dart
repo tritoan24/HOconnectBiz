@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class ConfirmButton extends StatefulWidget {
   const ConfirmButton({super.key});
@@ -21,13 +22,13 @@ class _ConfirmButtonState extends State<ConfirmButton> {
           children: [
             Icon(
               Icons.check,
-              color: Color(0xFF006AF5),
+              color: AppColor.primaryBlue,
             ),
             SizedBox(width: 8),
             Text(
               'Đã nhận hàng',
               style: TextStyle(
-                  color: Color(0xFF006AF5), fontWeight: FontWeight.bold),
+                  color: AppColor.primaryBlue, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -43,7 +44,7 @@ class _ConfirmButtonState extends State<ConfirmButton> {
           });
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF006AF5),
+          backgroundColor: AppColor.primaryBlue,
           minimumSize: const Size(double.infinity, 40),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

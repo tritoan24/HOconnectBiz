@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 import '../../../../providers/business_provider.dart';
 import '../../../../providers/user_provider.dart';
@@ -183,8 +184,8 @@ class _InformationState extends State<InformationTab> {
                                 height: 50,
                                 width: 360,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppColor.secondaryBlue,
                                 ),
                                 child: const Center(
                                   child: Text(

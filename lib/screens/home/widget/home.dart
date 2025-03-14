@@ -58,7 +58,7 @@ class _HomeState extends State<Home> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Image.asset(
-            "assets/images/logo-clb-dnsg-up-website-385x215 1.png",
+            "assets/images/logo.png",
             width: 150,
           ),
         ),

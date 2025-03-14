@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../models/membership_model.dart';
 import '../../../providers/membership_provider.dart';
+import '../../../utils/Color/app_color.dart';
 
 class MemberLevelScreen extends StatefulWidget {
   const MemberLevelScreen({super.key});
@@ -112,7 +113,7 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
               text,
               style: TextStyle(
                 color:
-                    isSelected == true ? const Color(0xFF006AF5) : Colors.grey,
+                    isSelected == true ? AppColor.primaryBlue : Colors.grey,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -121,7 +122,7 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
             Container(
               height: 2,
               width: 80,
-              color: const Color(0xFF006AF5),
+              color: AppColor.primaryBlue,
             ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:clbdoanhnhansg/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
@@ -172,7 +173,7 @@ Widget _buildProductDetailCard({
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.all(8),
     decoration: BoxDecoration(
-      color: const Color(0xFFD6E9FF),
+      color: AppColor.secondaryBlue,
       borderRadius: BorderRadius.circular(12),
     ),
     child: Row(
@@ -228,7 +229,7 @@ Widget _buildProductDetailCard({
                   '${formatCurrency.format(price)}',
                   style: GoogleFonts.roboto(
                     fontSize: 14,
-                    color: const Color(0xFFDC1F18),
+                    color: AppColor.errorRed,
                     fontWeight: FontWeight.normal,
                   ),
                 ),

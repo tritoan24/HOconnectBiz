@@ -14,6 +14,7 @@ import '../../utils/router/router.name.dart';
 import '../../widgets/button_widget.dart';
 import '../../widgets/input_text.dart';
 import '../../widgets/inputpassword.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -104,14 +105,15 @@ class _LoginViewState extends State<LoginView> {
                       //     );
                       //   },
                       // ),
+                      // ),
                       child: Image.asset(
-                        "assets/images/logo-clb-dnsg-up-website-385x215 1.png",
+                        "assets/images/logo.png",
                         width: 144,
                         height: 80,
                         fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 43),
+                    const SizedBox(height: 40),
                     const Text(
                       "Đăng nhập ngay",
                       style:
@@ -161,7 +163,7 @@ class _LoginViewState extends State<LoginView> {
                           child: Text(
                             "Quên mật khẩu?",
                             style: TextStyle(
-                              color: Color(0xff006AF5),
+                              color: AppColor.primaryBlue,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -196,7 +198,7 @@ class _LoginViewState extends State<LoginView> {
                             width: MediaQuery.of(context).size.width * 0.2,
                             child: const DecoratedBox(
                               decoration: BoxDecoration(
-                                color: Color(0xffEDF1F3),
+                                color: AppColor.backgroundGrey,
                               ),
                             ),
                           ),
@@ -206,7 +208,7 @@ class _LoginViewState extends State<LoginView> {
                             width: MediaQuery.of(context).size.width * 0.2,
                             child: const DecoratedBox(
                               decoration: BoxDecoration(
-                                color: Color(0xffEDF1F3),
+                                color: AppColor.backgroundGrey,
                               ),
                             ),
                           ),
@@ -225,7 +227,7 @@ class _LoginViewState extends State<LoginView> {
                             width: MediaQuery.of(context).size.width * 0.4,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xffE9EBED),
+                                color: AppColor.borderGrey,
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -258,7 +260,7 @@ class _LoginViewState extends State<LoginView> {
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: const Color(0xffE9EBED),
+                                    color: AppColor.borderGrey,
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),

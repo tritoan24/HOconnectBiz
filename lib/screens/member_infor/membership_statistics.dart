@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/StatisticalProvider.dart';
 import '../../widgets/text_styles.dart';
+import '../../utils/Color/app_color.dart';
 
 class MemberStatistics extends StatefulWidget {
   const MemberStatistics({Key? key}) : super(key: key);
@@ -19,22 +20,22 @@ class _MemberStatisticsState extends State<MemberStatistics> {
   final BoxDecoration cellDecoration = BoxDecoration(
     color: Colors.white,
     border: Border.all(
-      color: const Color(0xffE9EBED),
+      color: AppColor.borderGrey,
       width: 0.5,
     ),
   );
   final BoxDecoration cellDecoration2 = BoxDecoration(
     color: const Color(0xfffafafa),
     border: Border.all(
-      color: const Color(0xffE9EBED),
+      color: AppColor.borderGrey,
       width: 0.5,
     ),
   );
 
   final BoxDecoration headerCellDecoration = BoxDecoration(
-    color: const Color(0xffD6E9FF),
+    color: AppColor.secondaryBlue,
     border: Border.all(
-      color: const Color(0xffE9EBED),
+      color: AppColor.borderGrey,
       width: 0.5,
     ),
   );
@@ -198,8 +199,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                     color:
                                                         const Color(0xffEBF4FF),
                                                     border: Border.all(
-                                                      color: const Color(
-                                                          0xffE9EBED),
+                                                      color: AppColor.borderGrey,
                                                       width: 0.5,
                                                     ),
                                                   ),

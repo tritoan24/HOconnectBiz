@@ -12,6 +12,7 @@ import 'dart:convert';
 
 import '../../../../models/product_model.dart';
 import '../../../../providers/product_provider.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class ProductManage extends StatefulWidget {
   final List<ProductModel> products;
@@ -87,7 +88,7 @@ class _ProductManageState extends State<ProductManage> {
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff006AF5),
+              backgroundColor: AppColor.primaryBlue,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -102,7 +103,7 @@ class _ProductManageState extends State<ProductManage> {
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xffD6E9FF),
+              backgroundColor: AppColor.secondaryBlue,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

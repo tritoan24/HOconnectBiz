@@ -1,5 +1,6 @@
 import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class CustomConfirmDialog extends StatelessWidget {
   final String? content;
@@ -59,7 +60,7 @@ class CustomConfirmDialog extends StatelessWidget {
                       onConfirm();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff006AF5),
+                      backgroundColor: AppColor.primaryBlue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
 class SalesOrderTab extends StatelessWidget {
   const SalesOrderTab({super.key});
@@ -297,16 +298,16 @@ class SalesOrderTab extends StatelessWidget {
 
     switch (status.toLowerCase()) {
       case 'đang xử lý':
-        backgroundColor = const Color(0xFFFEF9E1);
-        textColor = const Color(0xFFE8BA02);
+        backgroundColor = AppColor.warningYellowBg;
+        textColor = AppColor.warningYellow;
         break;
       case 'thành công':
-        backgroundColor = const Color(0xFFE6FAED);
-        textColor = const Color(0xFF34B764);
+        backgroundColor = AppColor.successGreenBg;
+        textColor = AppColor.successGreen;
         break;
       case 'đã hủy':
-        backgroundColor = const Color(0xFFFFE6E6);
-        textColor = const Color(0xFFE53935);
+        backgroundColor = AppColor.errorRedBg;
+        textColor = AppColor.cancelRed;
         break;
       default:
         backgroundColor = Colors.grey[100]!;

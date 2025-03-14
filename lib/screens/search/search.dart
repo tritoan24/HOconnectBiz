@@ -134,7 +134,7 @@ class _SearchViewState extends State<SearchView>
                   onTap: _performSearch,
                   child: const Padding(
                     padding: EdgeInsets.only(left: 8.0),
-                    child: Icon(Icons.search_rounded, color: Color(0xff006AF5)),
+                    child: Icon(Icons.search_rounded, color: AppColor.primaryBlue),
                   ),
                 ),
               ],
@@ -143,9 +143,9 @@ class _SearchViewState extends State<SearchView>
           bottom: TabBar(
             controller: _tabController,
             isScrollable: false,
-            unselectedLabelColor: const Color(0xffB9BDC1),
-            labelColor: const Color(0xff006AF5),
-            indicatorColor: const Color(0xff006AF5),
+            unselectedLabelColor: AppColor.borderColor,
+            labelColor: AppColor.primaryBlue,
+            indicatorColor: AppColor.primaryBlue,
             labelStyle: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
