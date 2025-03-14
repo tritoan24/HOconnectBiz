@@ -43,3 +43,39 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase related
+# google-services.json
+# GoogleService-Info.plist
+# firebase_app_id_file.json
+# firebase_options.dart
+
+# Environment file
+.env
+.env.production
+.env.development
+.env.staging
+.env.local
+
+# Exceptions
+!.env.example
+
+# FVM related
+.fvm/
+
+# VSCode specific files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Coverage related
+coverage/
+*.lcov
+
+# Fastlane related
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
