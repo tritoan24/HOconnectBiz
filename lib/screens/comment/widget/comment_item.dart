@@ -18,9 +18,50 @@ class BinhLuanItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar người dùng
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage(binhLuan.userId!.avatarImage),
+          ClipOval(
+            child: Image.network(
+              binhLuan.userId!.avatarImage,
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+              // Xử lý khi đang tải ảnh
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEEEEEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              // Xử lý khi ảnh bị lỗi
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEEEEEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(width: 8),
           // Phần nội dung bình luận
@@ -84,6 +125,45 @@ class BinhLuanItem extends StatelessWidget {
                               width: 100,
                               height: 100,
                               fit: BoxFit.cover,
+                              // Xử lý khi đang tải ảnh
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEEEEE),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              // Xử lý khi ảnh bị lỗi
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEEEEE),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      size: 30,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
