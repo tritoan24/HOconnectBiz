@@ -1,5 +1,8 @@
 import 'package:clbdoanhnhansg/models/is_join_model.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '../core/network/api_client.dart';
+import '../core/network/api_endpoints.dart';
 import '../models/auth_model.dart';
 import '../models/rating_model.dart';
 import '../repository/bo_repository.dart';
@@ -8,6 +11,8 @@ import '../models/apiresponse.dart';
 
 class BoProvider with ChangeNotifier {
   final BoRepository _boRepository = BoRepository();
+
+  final ApiClient _apiClient = ApiClient();
 
   List<Bo> _boList = [];
   List<Bo> _boListOut = [];
@@ -36,32 +41,52 @@ class BoProvider with ChangeNotifier {
 
   // Getters
   bool get isLoading => _isLoading;
+
   bool get isLoadingBo => _isLoadingBo;
+
   bool get isLoadingBoOut => _isLoadingBoOut;
+
   bool get isLoadingBoDetail => _isLoadingBoDetail;
+
   bool get isLoadingRating => _isLoadingRating;
+
   bool get isSearching => _isSearching;
 
   List<Bo> get boList => _boList;
+
   List<Bo> get boListOut => _boListOut;
+
   List<Bo> get searchResults => _searchResults;
+
   Bo? get selectedBo => _selectedBo;
+
   List<IsJoin> get members => _members;
+
   List<IsJoin> get lists => _lists;
+
   List<Criteria> get listCriteriaRating => _listCriteriaRating;
 
   AuthorBusiness get author => _author;
+
   String get errorMessageBo => _errorMessageBo;
+
   String get errorMessageBoOut => _errorMessageBoOut;
+
   String get errorMessageBoDetail => _errorMessageBoDetail;
+
   String? get errorMessage => _errorMessage;
+
   String? get errorMessageRating => _errorMessageRating;
+
   String get searchErrorMessage => _searchErrorMessage;
 
   Rating? _userRating;
   List<Map<String, dynamic>> _ratingCriteria = [];
+
   Rating? get userRating => _userRating;
+
   List<Map<String, dynamic>> get ratingCriteria => _ratingCriteria;
+
   // 🟢 Fetch danh sách Bo
   Future<void> fetchBoData(BuildContext context) async {
     _isLoadingBo = true;
@@ -350,7 +375,7 @@ class BoProvider with ChangeNotifier {
     }
   }
 
-  // 🟢 Tìm kiếm doanh nghiệp
+// 🟢 Tìm kiếm doanh nghiệp
   Future<void> searchBusinesses(BuildContext context, String keyword) async {
     if (keyword.trim().isEmpty) {
       _searchResults = [];
@@ -364,24 +389,47 @@ class BoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // API gọi tới endpoint /company với keyword
-      final ApiResponse response = await _boRepository.searchBusinesses(context, keyword);
+      // Try one of these approaches:
 
-      if (response.isSuccess && response.data is List) {
-        _searchResults = (response.data as List)
+      // Option 1: Pass plain string without any regex formatting
+      Map<String, dynamic> body = {
+        'keyword': keyword,
+      };
+
+      // Option 2: If the API expects a MongoDB-style regex object
+      // Map<String, dynamic> body = {
+      //   'keyword': {'$regex': keyword, '$options': 'i'},  // 'i' for case insensitive
+      // };
+
+      // Option 3: If the API needs a properly escaped regex pattern
+      // Map<String, dynamic> body = {
+      //   'keyword': keyword.replaceAll(RegExp(r'[.*+?^${}()|[\]\\]'), r'\$&'),
+      // };
+
+      final response = await _apiClient.getRequest(
+        ApiEndpoints.company,
+        context,
+        body: body,
+      );
+
+      if (response != null && response['data'] is List) {
+        _searchResults = (response['data'] as List)
             .map((json) => Bo.fromJson(json as Map<String, dynamic>))
             .toList();
       } else {
-        _searchErrorMessage = response.message ?? 'Không tìm thấy kết quả';
         _searchResults = [];
+        _searchErrorMessage = 'Không tìm thấy doanh nghiệp phù hợp';
       }
     } catch (e) {
-      _searchErrorMessage = "Lỗi khi tìm kiếm: $e";
       _searchResults = [];
+      _searchErrorMessage = "Lỗi khi tìm kiếm: $e";
+      debugPrint('Error searching businesses: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi khi tìm kiếm: $e')),
+      );
     }
 
     _isSearching = false;
     notifyListeners();
   }
 }
-

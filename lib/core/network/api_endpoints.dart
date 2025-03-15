@@ -4,7 +4,7 @@ import 'package:clbdoanhnhansg/config/app_config.dart';
 /// Tập hợp các endpoint API sử dụng trong ứng dụng
 class ApiEndpoints {
   static final String baseUrl = AppConfig.apiBaseUrl;
-  
+
   // Authentication endpoints
   static const String login = "login";
   static const String loginSocial = "login/social";
@@ -14,7 +14,7 @@ class ApiEndpoints {
   static const String inputOtp = "verifyresetcode";
   static const String newPassForgot = "resetpassword";
   static const String changePassword = "changepassword";
-  
+
   // Product endpoints
   static const String product = "product";
   static const String productPin = "product/pin";
@@ -50,4 +50,5 @@ class ApiEndpoints {
   static const String orderSale = "/order/sell";
   static const String orderBuy = "/order/buy";
   static const String updateStatusCart = "/order";
+  static const String company = "/company";
 }

@@ -184,9 +184,10 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getRequest(
     String endpoint,
-    BuildContext context,
-  ) =>
-      _request('GET', endpoint, context);
+    BuildContext context, {
+    Map<String, dynamic>? body,
+  }) =>
+      _request('GET', endpoint, body: body, context);
 
   Future<Map<String, dynamic>> deleteRequest(
     String endpoint,
@@ -303,4 +304,3 @@ class ApiClient {
     }
   }
 }
-

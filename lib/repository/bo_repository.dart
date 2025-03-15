@@ -127,15 +127,4 @@ class BoRepository {
     final apiResponse = ApiResponse.fromJson(response);
     return apiResponse;
   }
-
-  // Tìm kiếm doanh nghiệp
-  Future<ApiResponse> searchBusinesses(BuildContext context, String keyword) async {
-    final response = await _apiClient.getRequest(
-      '${ApiEndpoints.baseUrl}/company?keyword=$keyword',
-      context,
-    );
-
-    final apiResponse = ApiResponse.fromJson(response);
-    return apiResponse;
-  }
 }
