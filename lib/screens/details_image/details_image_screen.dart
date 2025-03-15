@@ -59,8 +59,9 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
     _pageController = PageController(initialPage: widget.initialIndex);
     likeCount = widget.like;
     isLiked = widget.isLiked; // Sử dụng giá trị isLiked từ constructor
-    debugPrint("🔍 DEBUG ChiTietBaiDang initState: isLiked=${widget.isLiked}, likeCount=$likeCount");
-    
+    debugPrint(
+        "🔍 DEBUG ChiTietBaiDang initState: isLiked=${widget.isLiked}, likeCount=$likeCount");
+
     _loadUserIdAndStatusLikePost();
   }
 
@@ -73,13 +74,15 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
       idUserID = userId ?? "";
       // Kiểm tra xem người dùng hiện tại có trong danh sách likes không
       isLiked = widget.likes.contains(idUserID);
-      debugPrint("🔍 DEBUG ChiTietBaiDang _loadUserIdAndStatusLikePost: userId=$idUserID, isLiked=$isLiked");
+      debugPrint(
+          "🔍 DEBUG ChiTietBaiDang _loadUserIdAndStatusLikePost: userId=$idUserID, isLiked=$isLiked");
     });
   }
 
   void _likePost(BuildContext context) {
     if (widget.postId == null) return;
-    debugPrint("🔍 DEBUG ChiTietBaiDang: _likePost bắt đầu cho postId: ${widget.postId}");
+    debugPrint(
+        "🔍 DEBUG ChiTietBaiDang: _likePost bắt đầu cho postId: ${widget.postId}");
 
     final postProvider = Provider.of<PostProvider>(context, listen: false);
     final oldIsLiked = isLiked;
@@ -90,17 +93,13 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
       isLiked = !isLiked;
       likeCount += isLiked ? 1 : -1;
       _hasChanges = true; // Đánh dấu đã có thay đổi
-      
-      debugPrint("🔍 DEBUG ChiTietBaiDang: Trạng thái like thay đổi từ $oldIsLiked thành $isLiked");
-      debugPrint("🔍 DEBUG ChiTietBaiDang: Số lượng like thay đổi từ $oldLikeCount thành $likeCount");
-      
+
       // Lưu trạng thái thay đổi trong biến _hasChanges
       _hasChanges = true;
     });
 
     // Gọi API để cập nhật trạng thái like trên server
     postProvider.toggleLike(widget.postId!, context);
-    debugPrint("🔍 DEBUG ChiTietBaiDang: Đã gọi postProvider.toggleLike");
   }
 
   Future<void> _navigateToComments(BuildContext context) async {
@@ -146,21 +145,6 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
       return dateTime;
     }
   }
-
-  // // Hàm chia sẻ bài viết
-  // void _sharePost() {
-  //   if (widget.postId == null) return;
-  //
-  //   String shareText = "";
-  //   if (widget.title != null && widget.title!.isNotEmpty) {
-  //     shareText += "${widget.title}\n\n";
-  //   }
-  //   shareText += "${widget.description}\n\n";
-  //   shareText += "Được đăng bởi: ${widget.companyName}\n";
-  //   shareText += "Vào lúc: ${_formatDateTime(widget.dateTime)}";
-  //
-  //   Share.share(shareText);
-  // }
 
   @override
   void dispose() {
@@ -366,34 +350,6 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                         ),
                       ],
                     ),
-                    // Nút chia sẻ
-                    // GestureDetector(
-                    //   onTap: _sharePost,
-                    //   child: Container(
-                    //     padding: const EdgeInsets.all(8),
-                    //     decoration: BoxDecoration(
-                    //       color: Colors.blue,
-                    //       borderRadius: BorderRadius.circular(8),
-                    //     ),
-                    //     child: Row(
-                    //       children: [
-                    //         const Icon(
-                    //           Icons.share,
-                    //           color: Colors.white,
-                    //           size: 20,
-                    //         ),
-                    //         const SizedBox(width: 4),
-                    //         const Text(
-                    //           "Chia sẻ",
-                    //           style: TextStyle(
-                    //             color: Colors.white,
-                    //             fontSize: 14,
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 )
               ],
