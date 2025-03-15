@@ -22,6 +22,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/config/app_config.dart';
+import 'package:lottie/lottie.dart'; // Thêm import package Lottie
 import 'firebase_options.dart';
 
 void main() async {
@@ -121,10 +122,15 @@ class _MyAppState extends State<MyApp> {
               children: [
                 child!,
                 if (_isInitializing)
-                  const Material(
+                  Material(
                     color: Colors.black54,
                     child: Center(
-                      child: CircularProgressIndicator(),
+                      child: Lottie.asset(
+                        'assets/lottie/loading.json',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
               ],

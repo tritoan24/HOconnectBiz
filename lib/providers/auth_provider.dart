@@ -49,20 +49,6 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<void> checkLoginStatus(BuildContext context) async {
-    setLoading(true);
-    // Hiển thị loading overlay
-    LoadingOverlay.show(context);
-
-    // Đánh dấu để không ẩn LoadingOverlay nhiều lần
-    bool loadingHidden = false;
-
-    void hideLoadingOnce() {
-      if (!loadingHidden) {
-        LoadingOverlay.hide();
-        loadingHidden = true;
-      }
-    }
-
     final token = await _getToken();
 
     try {
@@ -98,20 +84,16 @@ class AuthProvider extends BaseProvider {
 
         // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
         if (context.mounted) {
-          // Ẩn loading overlay
-          hideLoadingOnce();
           appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
         }
       } else {
-        // Ẩn loading overlay ngay khi phát hiện không có token
-        hideLoadingOnce();
         Future.microtask(() {
           appRouter.go(AppRoutes.login);
         });
       }
     } catch (e) {
       // Ẩn loading overlay nếu có lỗi
-      hideLoadingOnce();
+      // hideLoadingOnce();
       setError("Lỗi điều hướng: $e");
     } finally {
       setLoading(false);
