@@ -30,11 +30,7 @@ class _CardState extends State<Cart> with SingleTickerProviderStateMixin {
       initialIndex: widget.initialTab.index,
     );
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<CartProvider>(context, listen: false);
-      provider.fetcOrderBuy(context);
-      provider.fetcOrderSale(context);
-    });
+
   }
 
   @override

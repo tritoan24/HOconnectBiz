@@ -1,18 +1,33 @@
 import 'package:clbdoanhnhansg/models/order_model.dart';
 import 'package:clbdoanhnhansg/providers/cart_provider.dart';
-import 'package:clbdoanhnhansg/screens/tin_mua_hang/chi_tiet_don_hang.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
+import 'package:provider/provider.dart';
 
 import '../../../widgets/horizontal_divider.dart';
+import '../../tin_mua_hang/chi_tiet_don_hang.dart';
 import 'button_comfirm.dart';
 
-class PurchaseOrderTab extends StatelessWidget {
+class PurchaseOrderTab extends StatefulWidget {
   const PurchaseOrderTab({super.key});
+
+  @override
+  State<PurchaseOrderTab> createState() => _PurchaseOrderTabState();
+}
+
+class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<CartProvider>(context, listen: false);
+      provider.fetcOrderBuy(context);
+      provider.fetcOrderSale(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +137,7 @@ class PurchaseOrderTab extends StatelessWidget {
 
     // Calculate total product quantity
     int totalQuantity =
-        order.products.fold(0, (sum, product) => sum + product.quantity);
+    order.products.fold(0, (sum, product) => sum + product.quantity);
 
     // Format price
     final priceFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
@@ -132,9 +147,9 @@ class PurchaseOrderTab extends StatelessWidget {
     String status = _getOrderStatusText(order.statusBuy);
 
     return GestureDetector(
-      // onTap: () {
-      //   ChiTietDonHang.show(context, order, status);
-      // },
+      onTap: () {
+        ChiTietDonHang.show(context, order, status);
+      },
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -150,24 +165,24 @@ class PurchaseOrderTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     child: imageUrl.startsWith('http')
                         ? Image.network(
-                            imageUrl,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, error, _) => Container(
-                              width: 64,
-                              height: 64,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.image_not_supported,
-                                  color: Colors.grey),
-                            ),
-                          )
+                      imageUrl,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, error, _) => Container(
+                        width: 64,
+                        height: 64,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported,
+                            color: Colors.grey),
+                      ),
+                    )
                         : Image.network(
-                            UrlImage.errorImage,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
-                          ),
+                      UrlImage.errorImage,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
 
@@ -341,4 +356,3 @@ class PurchaseOrderTab extends StatelessWidget {
     return const SizedBox.shrink();
   }
 }
-
