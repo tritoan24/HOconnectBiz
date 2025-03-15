@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/config/app_config.dart';
 import 'package:clbdoanhnhansg/core/services/socket_service.dart';
 import 'package:clbdoanhnhansg/providers/StatisticalProvider.dart';
 import 'package:clbdoanhnhansg/providers/auth_provider.dart';
@@ -15,12 +16,12 @@ import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import 'package:clbdoanhnhansg/providers/rank_provider.dart';
 import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/utils/router/router.dart';
-import 'package:clbdoanhnhansg/widgets/handling_permissions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+
 import 'package:clbdoanhnhansg/config/app_config.dart';
 import 'package:lottie/lottie.dart'; // Thêm import package Lottie
 import 'firebase_options.dart';
