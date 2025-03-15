@@ -17,6 +17,10 @@ class BoProvider with ChangeNotifier {
   List<Criteria> _listCriteriaRating = [];
   AuthorBusiness _author = AuthorBusiness.defaultAuthor();
 
+  // Danh sách kết quả tìm kiếm doanh nghiệp
+  List<Bo> _searchResults = [];
+  bool _isSearching = false;
+
   bool _isLoading = false;
   bool _isLoadingBo = false;
   bool _isLoadingBoOut = false;
@@ -28,6 +32,7 @@ class BoProvider with ChangeNotifier {
   String _errorMessageBoDetail = '';
   String? _errorMessage;
   String? _errorMessageRating;
+  String _searchErrorMessage = '';
 
   // Getters
   bool get isLoading => _isLoading;
@@ -35,9 +40,11 @@ class BoProvider with ChangeNotifier {
   bool get isLoadingBoOut => _isLoadingBoOut;
   bool get isLoadingBoDetail => _isLoadingBoDetail;
   bool get isLoadingRating => _isLoadingRating;
+  bool get isSearching => _isSearching;
 
   List<Bo> get boList => _boList;
   List<Bo> get boListOut => _boListOut;
+  List<Bo> get searchResults => _searchResults;
   Bo? get selectedBo => _selectedBo;
   List<IsJoin> get members => _members;
   List<IsJoin> get lists => _lists;
@@ -49,6 +56,7 @@ class BoProvider with ChangeNotifier {
   String get errorMessageBoDetail => _errorMessageBoDetail;
   String? get errorMessage => _errorMessage;
   String? get errorMessageRating => _errorMessageRating;
+  String get searchErrorMessage => _searchErrorMessage;
 
   Rating? _userRating;
   List<Map<String, dynamic>> _ratingCriteria = [];
@@ -340,6 +348,40 @@ class BoProvider with ChangeNotifier {
     } catch (e) {
       print("❌ Lỗi hệ thống khi cập nhật: $e");
     }
+  }
+
+  // 🟢 Tìm kiếm doanh nghiệp
+  Future<void> searchBusinesses(BuildContext context, String keyword) async {
+    if (keyword.trim().isEmpty) {
+      _searchResults = [];
+      _isSearching = false;
+      notifyListeners();
+      return;
+    }
+
+    _isSearching = true;
+    _searchErrorMessage = '';
+    notifyListeners();
+
+    try {
+      // API gọi tới endpoint /company với keyword
+      final ApiResponse response = await _boRepository.searchBusinesses(context, keyword);
+
+      if (response.isSuccess && response.data is List) {
+        _searchResults = (response.data as List)
+            .map((json) => Bo.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        _searchErrorMessage = response.message ?? 'Không tìm thấy kết quả';
+        _searchResults = [];
+      }
+    } catch (e) {
+      _searchErrorMessage = "Lỗi khi tìm kiếm: $e";
+      _searchResults = [];
+    }
+
+    _isSearching = false;
+    notifyListeners();
   }
 }
 

@@ -47,12 +47,6 @@ class _MemberStatisticsState extends State<MemberStatistics> {
     _scrollController.addListener(() {
       _headerScrollController.jumpTo(_scrollController.offset);
     });
-
-    // Fetch initial data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<StatisticalProvider>(context, listen: false)
-          .fetchStatistics(context);
-    });
   }
 
   @override
@@ -199,7 +193,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                     color:
                                                         const Color(0xffEBF4FF),
                                                     border: Border.all(
-                                                      color: AppColor.borderGrey,
+                                                      color:
+                                                          AppColor.borderGrey,
                                                       width: 0.5,
                                                     ),
                                                   ),
@@ -251,7 +246,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                                 color: Colors
                                                                     .grey),
                                                       ),
-                                                     Expanded(
+                                                      Expanded(
                                                         child: Text(
                                                           (item.companyName !=
                                                                   null)

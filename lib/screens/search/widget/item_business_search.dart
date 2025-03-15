@@ -1,13 +1,15 @@
+import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/models/bo_model.dart';
 
-class ItemBusinessSearch extends StatefulWidget {
-  const ItemBusinessSearch({super.key});
+class BusinessSearchItem extends StatelessWidget {
+  final Bo business;
 
-  @override
-  State<ItemBusinessSearch> createState() => _ItemBusinessSearchState();
-}
+  const BusinessSearchItem({
+    super.key,
+    required this.business,
+  });
 
-class _ItemBusinessSearchState extends State<ItemBusinessSearch> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -25,11 +27,25 @@ class _ItemBusinessSearchState extends State<ItemBusinessSearch> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                "assets/images/Frame 1000007431.png",
-                width: 40,
-                height: 40,
-              ),
+              // Logo doanh nghiệp
+              business.thumbnail.isNotEmpty
+                  ? Image.network(
+                      business.thumbnail,
+                      width: 40,
+                      height: 40,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          UrlImage.imageUserDefault,
+                          width: 40,
+                          height: 40,
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      UrlImage.imageUserDefault,
+                      width: 40,
+                      height: 40,
+                    ),
               const SizedBox(
                 width: 10,
               ),
@@ -38,9 +54,9 @@ class _ItemBusinessSearchState extends State<ItemBusinessSearch> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Công ty TNHH Fujiwa Việt Nam",
-                      style: TextStyle(
+                    Text(
+                      business.title,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
@@ -48,18 +64,20 @@ class _ItemBusinessSearchState extends State<ItemBusinessSearch> {
                     const SizedBox(
                       height: 10,
                     ),
-                    const Text(
-                      "Sản phẩm tốt nhất cho sức khỏe từ nước I-on kiềm cao cấp FUJIWA.",
-                      style: TextStyle(
+                    Text(
+                      business.content,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Row(
                       children: [
-                        const Text(
-                          "4.8",
-                          style: TextStyle(
+                        Text(
+                          business.avgStar.toStringAsFixed(1),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -70,13 +88,15 @@ class _ItemBusinessSearchState extends State<ItemBusinessSearch> {
                           height: 15,
                         ),
                         const SizedBox(
-                          height: 10,
+                          width: 10,
                         ),
-                        const Text("(12 cơ hội kinh doanh)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ))
+                        Text(
+                          "(${business.totalCompany} cơ hội kinh doanh)",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        )
                       ],
                     )
                   ],

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
+import 'package:clbdoanhnhansg/screens/search/widget/item_business_search.dart';
+import 'package:clbdoanhnhansg/providers/bo_provider.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 
 class SearchView extends StatefulWidget {
@@ -20,7 +22,7 @@ class _SearchViewState extends State<SearchView>
   TextEditingController _searchController = TextEditingController();
 
   // Set default category
-  int _currentCategory = 1; // 1: Doanh nghiệp, 2: Bài viết
+  int _currentCategory = 1;
 
   @override
   void initState() {
@@ -37,7 +39,7 @@ class _SearchViewState extends State<SearchView>
 
   void _fetchInitialData() {
     final postProvider = Provider.of<PostProvider>(context, listen: false);
-    postProvider.fethPostByCategory(context, _currentCategory);
+    postProvider.fetchPosts(context);
   }
 
   @override
@@ -54,22 +56,25 @@ class _SearchViewState extends State<SearchView>
       setState(() {
         _currentCategory = _tabController.index + 1;
       });
-
-      // Fetch data for the new category
-      final postProvider = Provider.of<PostProvider>(context, listen: false);
-      postProvider.fethPostByCategory(context, _currentCategory);
     }
   }
 
   void _performSearch() {
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
     final keyword = _searchController.text.trim();
 
-    if (keyword.isNotEmpty) {
-      postProvider.searchPost(context, _currentCategory, keyword);
+    if (_tabController.index == 0) {
+      // Tab doanh nghiệp - tìm kiếm doanh nghiệp
+      final boProvider = Provider.of<BoProvider>(context, listen: false);
+      boProvider.searchBusinesses(context, keyword);
     } else {
-      // If search is cleared, fetch all posts for the current category
-      postProvider.fethPostByCategory(context, _currentCategory);
+      // Tab bài viết - tìm kiếm bài viết
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      if (keyword.isNotEmpty) {
+        postProvider.searchPostWithResults(context, keyword);
+      } else {
+        // If search is cleared, fetch all posts for the current category
+        postProvider.fetchPosts(context);
+      }
     }
   }
 
@@ -81,6 +86,7 @@ class _SearchViewState extends State<SearchView>
   @override
   Widget build(BuildContext context) {
     final postProvider = Provider.of<PostProvider>(context);
+    final boProvider = Provider.of<BoProvider>(context);
 
     return GestureDetector(
       onTap: () {
@@ -111,8 +117,7 @@ class _SearchViewState extends State<SearchView>
                     ),
                     onFieldSubmitted: (value) {
                       if (value.trim().isNotEmpty) {
-                        postProvider.searchPost(
-                            context, _currentCategory, value);
+                        _performSearch();
                       }
                     },
                   ),
@@ -159,65 +164,68 @@ class _SearchViewState extends State<SearchView>
         body: TabBarView(
           controller: _tabController,
           children: [
-            // First tab: Business (Category 1)
-            Consumer<PostProvider>(
+            // Tab 1: Doanh nghiệp
+            Consumer<BoProvider>(
               builder: (context, provider, child) {
-                if (_currentCategory == 1) {
-                  if (provider.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (provider.posts.isEmpty) {
-                    return const Center(
-                        child:
-                            Text('Không có doanh nghiệp nào được tìm thấy.'));
-                  }
-                  // Display business results using PostItem with category 1
+                // Kiểm tra nếu đang tìm kiếm
+                if (provider.isSearching) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // Nếu có lỗi tìm kiếm
+                if (provider.searchErrorMessage.isNotEmpty) {
+                  return Center(child: Text(provider.searchErrorMessage));
+                }
+
+                // Hiển thị kết quả tìm kiếm nếu có
+                if (provider.searchResults.isNotEmpty) {
                   return ListView.builder(
-                    itemCount: provider.posts.length,
+                    itemCount: provider.searchResults.length,
                     itemBuilder: (context, index) {
-                      final post = provider.posts[index];
-                      return PostItem(
-                        postId: post.id ?? '',
-                        postType: post.category ?? 1,
-                        displayName: post.author?.displayName ?? '',
-                        avatar_image: post.author?.avatarImage ?? '',
-                        dateTime: post.createdAt != null
-                            ? formatDateTime(post.createdAt)
-                            : '',
-                        title: post.title ?? '',
-                        content: post.content ?? '',
-                        images: post.album ?? [],
-                        business: post.business ?? [],
-                        product: post.product ?? [],
-                        likes: post.like ?? [],
-                        comments: post.totalComment ?? 0,
-                        idUser: post.author!.id,
+                      final business = provider.searchResults[index];
+                      return BusinessSearchItem(
+                        business: business,
                       );
                     },
                   );
-                } else {
+                }
+
+                // Hiển thị danh sách doanh nghiệp mặc định từ boListOut
+                if (provider.boListOut.isEmpty) {
                   return const Center(
                       child: Text('Không có doanh nghiệp nào được tìm thấy.'));
                 }
+
+                return ListView.builder(
+                  itemCount: provider.boListOut.length,
+                  itemBuilder: (context, index) {
+                    final business = provider.boListOut[index];
+                    return BusinessSearchItem(
+                      business: business,
+                    );
+                  },
+                );
               },
             ),
 
-            // Second tab: Posts (Category 2)
+            // Tab 2: Bài viết (Category 2)
             Consumer<PostProvider>(
               builder: (context, provider, child) {
-                if (_currentCategory == 2) {
-                  if (provider.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (provider.posts.isEmpty) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // Hiển thị kết quả tìm kiếm nếu có
+                if (_searchController.text.isNotEmpty) {
+                  if (provider.searchResults.isEmpty) {
                     return const Center(
-                        child: Text('Không có bài viết nào được tìm thấy.'));
+                        child: Text('Không có bài viết nào phù hợp.'));
                   }
-                  // Display post results
+
                   return ListView.builder(
-                    itemCount: provider.posts.length,
+                    itemCount: provider.searchResults.length,
                     itemBuilder: (context, index) {
-                      final post = provider.posts[index];
+                      final post = provider.searchResults[index];
                       return PostItem(
                         postId: post.id ?? '',
                         postType: post.category ?? 2,
@@ -237,10 +245,37 @@ class _SearchViewState extends State<SearchView>
                       );
                     },
                   );
-                } else {
+                }
+
+                // Hiển thị danh sách bài viết mặc định
+                if (provider.posts.isEmpty) {
                   return const Center(
                       child: Text('Không có bài viết nào được tìm thấy.'));
                 }
+
+                return ListView.builder(
+                  itemCount: provider.posts.length,
+                  itemBuilder: (context, index) {
+                    final post = provider.posts[index];
+                    return PostItem(
+                      postId: post.id ?? '',
+                      postType: post.category ?? 2,
+                      displayName: post.author?.displayName ?? '',
+                      avatar_image: post.author?.avatarImage ?? '',
+                      dateTime: post.createdAt != null
+                          ? formatDateTime(post.createdAt)
+                          : '',
+                      title: post.title ?? '',
+                      content: post.content ?? '',
+                      images: post.album ?? [],
+                      business: post.business ?? [],
+                      product: post.product ?? [],
+                      likes: post.like ?? [],
+                      comments: post.totalComment ?? 0,
+                      idUser: post.author!.id,
+                    );
+                  },
+                );
               },
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:clbdoanhnhansg/providers/banner_provider.dart';
+import 'package:clbdoanhnhansg/providers/bo_provider.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/chat_list_screen.dart';
 import 'package:clbdoanhnhansg/screens/home/widget/slide_view.dart';
@@ -10,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../../../providers/StatisticalProvider.dart';
 import '../../../providers/rank_provider.dart';
 import 'bang_xep_hang.dart';
 
@@ -21,26 +23,22 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      //   final bannerProvider =
-      //       Provider.of<BannerProvider>(context, listen: false);
-      //
-      //   await bannerProvider.getListBanner(context);
-      //
-      //   // Cập nhật state
-      //   setState(() {
-      //     imageUrl = bannerProvider.allImageUrls.first;
-      //   });
-      //   final rankProvider = Provider.of<RankProvider>(context, listen: false);
-      //
-      //   await rankProvider.fetchRanksRevenue(context);
-      //   await rankProvider.fetchRankBusiness(context);
       Provider.of<PostProvider>(context, listen: false).fetchPosts(context);
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final boProvider = Provider.of<BoProvider>(context, listen: false);
+      final staticsticalProvider =
+          Provider.of<StatisticalProvider>(context, listen: false);
+      boProvider.fetchBoDataOut(context);
+      boProvider.fetchBoData(context);
+
+      staticsticalProvider.fetchStatistics(context);
+
+      postProvider.fetchPosts(context);
     });
-    // final postProvider = Provider.of<PostProvider>(context, listen: false);
-    // postProvider.fetchPostsFeatured(context);
   }
 
   @override
@@ -219,4 +217,3 @@ class _HomeState extends State<Home> {
     );
   }
 }
-

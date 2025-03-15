@@ -27,12 +27,6 @@ class _ManageBOState extends State<ManageBO>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final boProvider = Provider.of<BoProvider>(context, listen: false);
-      boProvider.fetchBoData(context);
-      boProvider.fetchBoDataOut(context);
-    });
   }
 
   @override
@@ -119,4 +113,3 @@ class _CustomTabIndicatorPainter extends BoxPainter {
     );
   }
 }
-
