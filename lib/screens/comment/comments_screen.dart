@@ -6,6 +6,7 @@ import 'package:clbdoanhnhansg/providers/auth_provider.dart';
 import 'package:clbdoanhnhansg/screens/comment/widget/comment_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
+import 'package:clbdoanhnhansg/models/is_join_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -37,6 +38,7 @@ class CommentsScreen extends StatefulWidget {
   final int commentCount;
   final bool isComment;
   final String idUser;
+  final List<IsJoin>? isJoin;
 
   const CommentsScreen({
     super.key,
@@ -54,6 +56,7 @@ class CommentsScreen extends StatefulWidget {
     required this.commentCount,
     required this.idUser,
     this.isComment = false,
+    this.isJoin,
   });
 
   @override
@@ -69,7 +72,8 @@ class _CommentState extends State<CommentsScreen> {
       final commentProvider =
           Provider.of<CommentProvider>(context, listen: false);
       commentProvider.getComments(widget.postId, context);
-      debugPrint("🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
+      debugPrint(
+          "🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
     });
   }
 
@@ -85,7 +89,8 @@ class _CommentState extends State<CommentsScreen> {
     setState(() {
       _hasChanges = true;
     });
-    debugPrint("🔍 DEBUG CommentsScreen: Cập nhật _hasChanges = true do PostItem thay đổi trạng thái like");
+    debugPrint(
+        "🔍 DEBUG CommentsScreen: Cập nhật _hasChanges = true do PostItem thay đổi trạng thái like");
   }
 
   Future<void> _handleCommentSubmit(
@@ -109,7 +114,8 @@ class _CommentState extends State<CommentsScreen> {
         album = imagePaths.map((path) => File(path)).toList();
       }
 
-      debugPrint("🔍 DEBUG CommentsScreen: Bắt đầu tạo comment cho postId: ${widget.postId}");
+      debugPrint(
+          "🔍 DEBUG CommentsScreen: Bắt đầu tạo comment cho postId: ${widget.postId}");
       await commentProvider.createComment(
         context,
         widget.postId,
@@ -145,7 +151,7 @@ class _CommentState extends State<CommentsScreen> {
   Widget build(BuildContext context) {
     final commentProvider = Provider.of<CommentProvider>(context);
     final inputHeight = 80.0;
-    
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -172,7 +178,7 @@ class _CommentState extends State<CommentsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PostItemWrapper(
+                    PostItem(
                       postId: widget.postId,
                       postType: widget.postType,
                       displayName: widget.displayName,
@@ -184,13 +190,10 @@ class _CommentState extends State<CommentsScreen> {
                       business: widget.business,
                       product: widget.product,
                       likes: widget.likes,
-                      comments: commentProvider.comments.length,
-                      isComment: true,
+                      comments: widget.commentCount,
+                      isComment: widget.isComment,
                       idUser: widget.idUser,
-                      onChanged: () {
-                        // Callback khi có thay đổi trong PostItem
-                        _onPostItemLikeChanged();
-                      },
+                      isJoin: widget.isJoin,
                     ),
                     const SizedBox(height: 8),
                     ListView.builder(
@@ -302,10 +305,11 @@ class _PostItemWrapperState extends State<PostItemWrapper> {
   @override
   Widget build(BuildContext context) {
     final postProvider = Provider.of<PostProvider>(context, listen: false);
-    
+
     return NotificationListener<PostItemChangedNotification>(
       onNotification: (notification) {
-        debugPrint("🔍 DEBUG PostItemWrapper: Nhận thông báo thay đổi từ PostItem");
+        debugPrint(
+            "🔍 DEBUG PostItemWrapper: Nhận thông báo thay đổi từ PostItem");
         widget.onChanged();
         return true;
       },
@@ -328,4 +332,3 @@ class _PostItemWrapperState extends State<PostItemWrapper> {
     );
   }
 }
-

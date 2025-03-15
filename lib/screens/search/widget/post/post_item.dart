@@ -1019,6 +1019,7 @@ class _PostItemState extends State<PostItem> {
           commentCount: widget.comments,
           isComment: true,
           idUser: widget.idUser,
+          isJoin: widget.isJoin,
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
+import 'package:clbdoanhnhansg/providers/auth_provider.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/posts.dart';
 import '../../utils/router/router.name.dart';
+import '../../screens/comment/comments_screen.dart';
 
 class Shopping extends StatefulWidget {
   const Shopping({super.key});
@@ -43,6 +45,81 @@ class _ShoppingState extends State<Shopping> {
   String formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '';
     return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
+  }
+
+  // Thêm phương thức để kiểm tra trạng thái isJoind dựa trên isJoin và userId
+  bool checkIsJoind(List<dynamic>? isJoin, String userId) {
+    if (isJoin == null || isJoin.isEmpty) return false;
+    // Giả định rằng isJoin là một danh sách các đối tượng có thuộc tính user.id
+    // Điều này phụ thuộc vào cấu trúc dữ liệu thực tế của bạn
+    return isJoin.any((join) => join.user?.id == userId);
+  }
+
+  // Phương thức điều hướng đến màn hình comment và xử lý kết quả
+  void _navigateToCommentScreen(BuildContext context, Posts post) async {
+    debugPrint(
+        "🔍 DEBUG Shopping: Chuyển đến màn hình comment với postId: ${post.id}");
+
+    // Lấy dữ liệu mới nhất của bài viết trước khi chuyển màn hình
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final latestPost = postProvider.getPostById(post.id ?? '') ?? post;
+
+    // Lấy userId hiện tại
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = await authProvider.getuserID() ?? "";
+
+    // Kiểm tra trạng thái isJoind
+    final isJoind = checkIsJoind(latestPost.isJoin, userId);
+
+    debugPrint(
+        "🔍 DEBUG Shopping: Dữ liệu bài viết trước khi chuyển màn hình - likes: ${latestPost.like?.length}, comments: ${latestPost.totalComment}, isJoind: $isJoind");
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CommentsScreen(
+          postId: latestPost.id ?? '',
+          postType: latestPost.category ?? 1,
+          displayName: latestPost.author?.displayName ?? '',
+          avatar_image: latestPost.author?.avatarImage ?? '',
+          dateTime: latestPost.createdAt != null
+              ? formatDateTime(latestPost.createdAt)
+              : '',
+          title: latestPost.title ?? '',
+          content: latestPost.content ?? '',
+          images: latestPost.album ?? [],
+          business: latestPost.business ?? [],
+          product: latestPost.product ?? [],
+          likes: latestPost.like ?? [],
+          commentCount: latestPost.totalComment ?? 0,
+          isComment: true,
+          idUser: latestPost.author?.id ?? '',
+          isJoin: latestPost.isJoin,
+        ),
+      ),
+    );
+
+    // Nếu có thay đổi từ màn hình comment, cập nhật UI cục bộ
+    if (result == true) {
+      debugPrint("🔍 DEBUG Shopping: Nhận result=true từ màn hình comment");
+
+      // Làm mới toàn bộ dữ liệu từ server
+      await postProvider.fetchPosts(context);
+
+      // Hiển thị thông báo ngắn để xác nhận cập nhật
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Đã cập nhật dữ liệu mới nhất"),
+        duration: Duration(seconds: 1),
+      ));
+
+      debugPrint(
+          "🔍 DEBUG Shopping: Đã cập nhật lại toàn bộ danh sách bài viết");
+
+      // Ép Flutter refresh UI
+      setState(() {});
+    } else {
+      debugPrint("🔍 DEBUG Shopping: Không có thay đổi từ màn hình comment");
+    }
   }
 
   @override
@@ -94,6 +171,8 @@ class _ShoppingState extends State<Shopping> {
                       )
                     : ListView.builder(
                         controller: _scrollController,
+                        key: ValueKey(
+                            "post_list_${DateTime.now().millisecondsSinceEpoch}"),
                         itemCount:
                             posts.length + (postProvider.hasMorePosts ? 1 : 0),
                         itemBuilder: (context, index) {
@@ -110,23 +189,32 @@ class _ShoppingState extends State<Shopping> {
                           }
 
                           final post = posts[index];
-                          return PostItem(
-                            postId: post.id ?? '',
-                            postType: post.category ?? 1,
-                            displayName: post.author?.displayName ?? '',
-                            avatar_image: post.author?.avatarImage ?? '',
-                            dateTime: post.createdAt != null
-                                ? formatDateTime(post.createdAt)
-                                : '',
-                            title: post.title ?? '',
-                            content: post.content ?? '',
-                            images: post.album ?? [],
-                            business: post.business ?? [],
-                            product: post.product ?? [],
-                            likes: post.like ?? [],
-                            comments: post.totalComment ?? 0,
-                            isJoin: post.isJoin ?? [],
-                            idUser: post.author!.id,
+                          // Tạo key duy nhất để đảm bảo widget được tạo mới khi có thay đổi
+                          final uniqueKey = ValueKey(
+                              "post_${post.id}_likes${post.like?.length ?? 0}_comments${post.totalComment ?? 0}");
+
+                          return GestureDetector(
+                            onTap: () =>
+                                _navigateToCommentScreen(context, post),
+                            child: PostItem(
+                              key: uniqueKey,
+                              postId: post.id ?? '',
+                              postType: post.category ?? 1,
+                              displayName: post.author?.displayName ?? '',
+                              avatar_image: post.author?.avatarImage ?? '',
+                              dateTime: post.createdAt != null
+                                  ? formatDateTime(post.createdAt)
+                                  : '',
+                              title: post.title ?? '',
+                              content: post.content ?? '',
+                              images: post.album ?? [],
+                              business: post.business ?? [],
+                              product: post.product ?? [],
+                              likes: post.like ?? [],
+                              comments: post.totalComment ?? 0,
+                              isJoin: post.isJoin ?? [],
+                              idUser: post.author!.id,
+                            ),
                           );
                         },
                       ),
@@ -136,4 +224,3 @@ class _ShoppingState extends State<Shopping> {
     );
   }
 }
-
