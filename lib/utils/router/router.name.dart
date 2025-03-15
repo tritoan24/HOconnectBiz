@@ -25,5 +25,16 @@ class UrlImage {
   //path local image
   static const imageUserDefault = 'assets/icons/user_default.png';
   static const imageGroupDefault = 'assets/icons/icon_group.png';
-
+  
+  // Các URL ảnh mới
+  static const String defaultProductImage =
+      'https://tse3.mm.bing.net/th?id=OIP.LEx5tdgsnlid1erVFT3H7AHaEF&pid=Api&P=0&h=220';
+  static const String defaultBackgroundImage =
+      'https://i.pinimg.com/736x/4d/7f/55/4d7f5567e920f9d1b5ca4f1ebad36072.jpg';
+  static const String defaultAvatarImage =
+      'https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg';
+  static const String defaultContactImage =
+      'https://as2.ftcdn.net/v2/jpg/05/89/93/27/1000_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg';
+  static const String defaultUserAvatar =
+      'https://your-default-image-url.com/default-avatar.png';
 }

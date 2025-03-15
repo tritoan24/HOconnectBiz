@@ -3,6 +3,7 @@ import 'package:clbdoanhnhansg/providers/banner_provider.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/chat_list_screen.dart';
 import 'package:clbdoanhnhansg/screens/home/widget/slide_view.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -110,11 +111,11 @@ class _HomeState extends State<Home> {
               borderRadius: BorderRadius.circular(20),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.search, color: Colors.grey),
-                SizedBox(width: 8),
-                Text(
+                AppIcons.getSearch(color: Colors.grey),
+                const SizedBox(width: 8),
+                const Text(
                   "Tìm kiếm",
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
@@ -136,7 +137,7 @@ class _HomeState extends State<Home> {
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.error),
+                          AppIcons.getError(),
                     )
                   : Lottie.asset(
                       'assets/lottie/loading.json',

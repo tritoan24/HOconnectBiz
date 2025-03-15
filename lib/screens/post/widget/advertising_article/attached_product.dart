@@ -6,6 +6,7 @@ import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import '../../../../models/product_model.dart';
 import '../../../manage/widget/shop/widget/checkbox.dart';
 import '../../../manage/widget/shop/widget/un_checkbox.dart';
+import '../../../../utils/router/router.name.dart';
 
 class ProductSelectionScreen extends StatefulWidget {
   final Function(bool)? choice;
@@ -191,7 +192,7 @@ class _SanPhamDinhKemState extends State<SanPhamDinhKem> {
               child: Image.network(
                 widget.sanPham.album.isNotEmpty
                     ? widget.sanPham.album.first
-                    : 'https://tse3.mm.bing.net/th?id=OIP.LEx5tdgsnlid1erVFT3H7AHaEF&pid=Api&P=0&h=220',
+                    : UrlImage.defaultProductImage,
                 width: 88,
                 height: 88,
                 fit: BoxFit.cover,

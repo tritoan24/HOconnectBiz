@@ -1,3 +1,5 @@
+import '../utils/router/router.name.dart';
+
 class Author {
   final String id;
   final String username;
@@ -140,8 +142,7 @@ class AuthorBusiness {
     return AuthorBusiness(
       id: json['_id'] ?? '',
       displayName: json['displayName'] ?? 'Không có tên',
-      avatarImage: json['avatar_image'] ??
-          'https://your-default-image-url.com/default-avatar.png',
+      avatarImage: json['avatar_image'] ?? UrlImage.defaultUserAvatar,
       companyName: json['company_name'] ?? 'Không có công ty',
       companyDescription: json['company_description'] ?? '',
     );
@@ -163,7 +164,7 @@ class AuthorBusiness {
     return AuthorBusiness(
       id: '',
       displayName: 'Không có tên',
-      avatarImage: 'https://your-default-image-url.com/default-avatar.png',
+      avatarImage: UrlImage.defaultUserAvatar,
       companyName: 'Không có công ty',
       companyDescription: '',
     );

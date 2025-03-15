@@ -12,6 +12,7 @@ import '../post/widget/advertising_article/attached_product.dart';
 import 'deltails_sales_article.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/providers/product_provider.dart';
+import '../../utils/router/router.name.dart';
 
 class CreateOrder extends StatefulWidget {
   final String idRecive;
@@ -483,7 +484,7 @@ class ItemProductCreate extends StatelessWidget {
             child: Image.network(
               sanPham.album.isNotEmpty
                   ? sanPham.album.first
-                  : 'https://tse3.mm.bing.net/th?id=OIP.LEx5tdgsnlid1erVFT3H7AHaEF&pid=Api&P=0&h=220',
+                  : UrlImage.defaultProductImage,
               height: 88,
               width: 88,
               fit: BoxFit.cover,

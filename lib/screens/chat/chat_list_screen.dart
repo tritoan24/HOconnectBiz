@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:clbdoanhnhansg/models/contact.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,7 +55,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       appBar: AppBar(
         title: const Text("Tin nhắn"),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: AppIcons.arrowBackIos,
           onPressed: () {
             Navigator.pop(context);
           },

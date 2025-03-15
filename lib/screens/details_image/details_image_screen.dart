@@ -1,6 +1,7 @@
 // post_detail_screen.dart
 import 'package:clbdoanhnhansg/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 
 class ChiTietBaiDang extends StatefulWidget {
   final List<String> imageList;
@@ -59,8 +60,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
               color: Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.arrow_back_ios_new,
+            child: AppIcons.getArrowBackIos(
               color: Colors.white,
               size: 20,
             ),

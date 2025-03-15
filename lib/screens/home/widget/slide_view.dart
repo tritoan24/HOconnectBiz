@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../utils/router/router.name.dart';
 import '../../../models/product_model.dart';
+import '../../../utils/icons/app_icons.dart';
 
 class SlideView extends StatelessWidget {
   final String postId;
@@ -79,7 +80,7 @@ class SlideView extends StatelessWidget {
                 height: 40,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.error),
+                    AppIcons.getError(),
               ),
             ),
             const SizedBox(width: 10),
@@ -134,7 +135,7 @@ class SlideView extends StatelessWidget {
                 height: 80,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.error),
+                    AppIcons.getError(),
               ),
             ),
           );
@@ -175,7 +176,7 @@ class SlideView extends StatelessWidget {
                   height: 88,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.error),
+                      AppIcons.getError(),
                 ),
               ),
               const SizedBox(width: 10),

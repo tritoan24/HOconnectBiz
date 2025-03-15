@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'AddImage.dart';
+import '../../../utils/router/router.name.dart';
 
 class AddBackgroud extends StatefulWidget {
   final Function(String) onImageSelected;
@@ -77,7 +78,7 @@ class _ImageBackgroud extends State<AddBackgroud> {
                           imagePath: _imagePath!,
                         )
                       : Image.network(
-                          'https://i.pinimg.com/736x/4d/7f/55/4d7f5567e920f9d1b5ca4f1ebad36072.jpg',
+                          UrlImage.defaultBackgroundImage,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: 224,

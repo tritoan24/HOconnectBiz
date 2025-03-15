@@ -1,3 +1,5 @@
+import '../utils/router/router.name.dart';
+
 class Contact {
   final String id;
   final String displayName;
@@ -23,8 +25,7 @@ class Contact {
     if (json['avatar_image'] == null ||
         json['avatar_image'] == '' ||
         json['avatar_image'] == 'Không có ảnh') {
-      avatarImage =
-          'https://as2.ftcdn.net/v2/jpg/05/89/93/27/1000_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg';
+      avatarImage = UrlImage.defaultContactImage;
     } else if (json['avatar_image'] is List) {
       // Keep as list if it's already a list
       avatarImage = json['avatar_image'];

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -102,11 +103,11 @@ class _SearchViewState extends State<SearchView>
                   child: TextFormField(
                     controller: _searchController,
                     textAlign: TextAlign.left,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       hintText: "Tìm kiếm...",
                       border: InputBorder.none,
-                      icon: Icon(Icons.search, color: Colors.grey),
+                      icon: AppIcons.getSearch(color: Colors.grey),
                     ),
                     onFieldSubmitted: (value) {
                       if (value.trim().isNotEmpty) {
@@ -125,16 +126,14 @@ class _SearchViewState extends State<SearchView>
                         _performSearch();
                       });
                     },
-                    child:
-                        const Icon(Icons.clear, color: Colors.grey, size: 20),
+                    child: AppIcons.getClear(color: Colors.grey, size: 20),
                   ),
                 // Add search button
                 GestureDetector(
                   onTap: _performSearch,
                   child: const Padding(
                     padding: EdgeInsets.only(left: 8.0),
-                    child:
-                        Icon(Icons.search_rounded, color: AppColor.primaryBlue),
+                    child: AppIcons.searchRounded,
                   ),
                 ),
               ],

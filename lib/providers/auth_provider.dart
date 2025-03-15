@@ -337,8 +337,7 @@ class AuthProvider extends BaseProvider {
   Future<void> signInWithGoogle(BuildContext context) async {
     const String tag = 'GOOGLE_LOGIN';
     const String registerTypeGG = 'gg';
-    const String defaultImage =
-        'https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg';
+    const String defaultImage = UrlImage.defaultAvatarImage;
 
     try {
       // Hiển thị loading overlay

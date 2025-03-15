@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'AddImage.dart';
+import '../../../utils/router/router.name.dart';
 
 class Addavatar extends StatefulWidget {
   final Function(String) onImageSelected;
@@ -72,7 +73,7 @@ class _ImagePickerWidgetState extends State<Addavatar> {
                         imagePath: _imagePath!,
                       )
                     : Image.network(
-                        'https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg',
+                        UrlImage.defaultAvatarImage,
                         width: 120,
                         height: 120,
                         fit: BoxFit.cover,

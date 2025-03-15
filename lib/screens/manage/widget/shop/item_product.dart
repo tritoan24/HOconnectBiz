@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../models/product_model.dart';
 import '../../../../providers/product_provider.dart';
+import '../../../../utils/router/router.name.dart';
 
 final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
@@ -33,7 +34,7 @@ class ItemProduct extends StatelessWidget {
             child: Image.network(
               sanPham.album.isNotEmpty
                   ? sanPham.album.first
-                  : 'https://tse3.mm.bing.net/th?id=OIP.LEx5tdgsnlid1erVFT3H7AHaEF&pid=Api&P=0&h=220',
+                  : UrlImage.defaultProductImage,
               height: 140,
               width: double.infinity,
               fit: BoxFit.cover,

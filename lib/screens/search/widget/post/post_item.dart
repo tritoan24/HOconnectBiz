@@ -1,6 +1,7 @@
 import 'package:clbdoanhnhansg/models/is_join_model.dart';
 import 'package:clbdoanhnhansg/providers/auth_provider.dart';
 import 'package:clbdoanhnhansg/providers/business_op_provider.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -248,7 +249,7 @@ class _PostItemState extends State<PostItem> {
         height: _kImageSize,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.broken_image),
+            AppIcons.getBrokenImage(size: _kImageSize),
       ),
     );
   }
@@ -301,7 +302,7 @@ class _PostItemState extends State<PostItem> {
                       );
                     },
                     errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image),
+                        AppIcons.getBrokenImage(size: _kProductImageSize),
                   ),
                 ),
               ),
@@ -340,7 +341,7 @@ class _PostItemState extends State<PostItem> {
                                   );
                                 },
                                 errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image),
+                                    AppIcons.getBrokenImage(size: _kProductImageSize),
                               ),
                             ),
 
@@ -460,7 +461,7 @@ class _PostItemState extends State<PostItem> {
                 );
               },
               errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.broken_image),
+                  AppIcons.getBrokenImage(size: _kProductImageSize),
             ),
           ),
         ),
@@ -488,7 +489,7 @@ class _PostItemState extends State<PostItem> {
             );
           },
           errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image),
+              AppIcons.getBrokenImage(size: _kProductImageSize),
         ),
       ),
     );
@@ -554,16 +555,10 @@ class _PostItemState extends State<PostItem> {
             height: _kProductImageSize,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.broken_image,
-                size: _kProductImageSize,
-              ); // Hiển thị icon nếu ảnh lỗi
+              return AppIcons.getBrokenImage(size: _kProductImageSize);
             },
           )
-        : const Icon(
-            Icons.broken_image,
-            size: _kProductImageSize,
-          );
+        : AppIcons.getBrokenImage(size: _kProductImageSize);
   }
 
   Widget _buildProductDetails(BuildContext context, ProductModel sanPham) {
@@ -731,15 +726,15 @@ class _PostItemState extends State<PostItem> {
                     color: Colors.blue[100], // Màu nhạt hơn
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check, color: Colors.blue, size: 18),
-                          SizedBox(width: 5),
-                          Text(
+                          AppIcons.getCheck(color: Colors.blue, size: 18),
+                          const SizedBox(width: 5),
+                          const Text(
                             "Đã đăng ký",
                             style: TextStyle(
                               fontSize: 14,
@@ -880,7 +875,7 @@ class _PostItemState extends State<PostItem> {
         ),
         IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close, size: 24),
+          icon: AppIcons.getClose(size: 24),
         ),
       ],
     );

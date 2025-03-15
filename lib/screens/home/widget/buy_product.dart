@@ -7,6 +7,7 @@ import '../../../providers/chat_provider.dart';
 import '../../../utils/router/router.name.dart';
 import '../../manage/manage.dart';
 import '../../../utils/Color/app_color.dart';
+import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 
 class BuyProduct extends StatefulWidget {
   final ProductModel product;
@@ -44,9 +45,9 @@ class _BuyProductState extends State<BuyProduct> {
                 ? Image.network(
                     widget.product.album.first,
                     // fit: BoxFit.cover, // Đảm bảo ảnh vừa khung
-                    errorBuilder: (context, error, stackTrace) => const Center(
+                    errorBuilder: (context, error, stackTrace) => Center(
                       // Căn giữa icon lỗi
-                      child: Icon(
+                      child: AppIcons.getIcon(
                         Icons.broken_image,
                         size: 100,
                         color: Colors.grey, // Màu cho icon lỗi
@@ -109,7 +110,7 @@ class _BuyProductState extends State<BuyProduct> {
                             height: 45,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image),
+                                AppIcons.getBrokenImage(),
                           ),
                         ),
                         const SizedBox(width: 10),

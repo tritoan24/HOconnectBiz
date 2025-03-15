@@ -13,6 +13,7 @@ import '../../models/business_model.dart';
 import '../../providers/business_provider.dart';
 import '../../utils/router/router.name.dart';
 import '../chat/widget/message_input.dart';
+import '../../utils/icons/app_icons.dart';
 
 class CommentsScreen extends StatefulWidget {
   static final formatCurrency =
@@ -222,7 +223,7 @@ class _CommentState extends State<CommentsScreen> {
         height: 40,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.broken_image),
+            AppIcons.getBrokenImage(size: 40),
       ),
     );
   }
