@@ -1,9 +1,13 @@
 import 'dart:io';
 
 import 'package:clbdoanhnhansg/providers/comment_provider.dart';
+import 'package:clbdoanhnhansg/providers/post_provider.dart';
+import 'package:clbdoanhnhansg/providers/auth_provider.dart';
 import 'package:clbdoanhnhansg/screens/comment/widget/comment_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
+import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -65,6 +69,7 @@ class _CommentState extends State<CommentsScreen> {
       final commentProvider =
           Provider.of<CommentProvider>(context, listen: false);
       commentProvider.getComments(widget.postId, context);
+      debugPrint("🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
     });
   }
 
@@ -74,6 +79,14 @@ class _CommentState extends State<CommentsScreen> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   bool _hasChanges = false;
+
+  // Phương thức gọi khi PostItem thay đổi trạng thái like
+  void _onPostItemLikeChanged() {
+    setState(() {
+      _hasChanges = true;
+    });
+    debugPrint("🔍 DEBUG CommentsScreen: Cập nhật _hasChanges = true do PostItem thay đổi trạng thái like");
+  }
 
   Future<void> _handleCommentSubmit(
       String message, List<String> imagePaths) async {
@@ -96,6 +109,7 @@ class _CommentState extends State<CommentsScreen> {
         album = imagePaths.map((path) => File(path)).toList();
       }
 
+      debugPrint("🔍 DEBUG CommentsScreen: Bắt đầu tạo comment cho postId: ${widget.postId}");
       await commentProvider.createComment(
         context,
         widget.postId,
@@ -109,8 +123,9 @@ class _CommentState extends State<CommentsScreen> {
         selectedImages = [];
         currentMessage = '';
       });
+      debugPrint("🔍 DEBUG CommentsScreen: Đã tạo comment thành công");
     } catch (e) {
-      print('Error submitting comment: $e');
+      debugPrint('⚠️ ERROR CommentsScreen: Lỗi khi tạo comment: $e');
     } finally {
       setState(() {
         isSubmitting = false;
@@ -119,9 +134,18 @@ class _CommentState extends State<CommentsScreen> {
   }
 
   @override
+  void dispose() {
+    if (_hasChanges) {
+      debugPrint("🔍 DEBUG CommentsScreen: dispose() với _hasChanges = true");
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final commentProvider = Provider.of<CommentProvider>(context);
     final inputHeight = 80.0;
+    
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -148,7 +172,7 @@ class _CommentState extends State<CommentsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PostItem(
+                    PostItemWrapper(
                       postId: widget.postId,
                       postType: widget.postType,
                       displayName: widget.displayName,
@@ -161,8 +185,12 @@ class _CommentState extends State<CommentsScreen> {
                       product: widget.product,
                       likes: widget.likes,
                       comments: commentProvider.comments.length,
-                      isComment: widget.isComment,
+                      isComment: true,
                       idUser: widget.idUser,
+                      onChanged: () {
+                        // Callback khi có thay đổi trong PostItem
+                        _onPostItemLikeChanged();
+                      },
                     ),
                     const SizedBox(height: 8),
                     ListView.builder(
@@ -224,6 +252,78 @@ class _CommentState extends State<CommentsScreen> {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
             AppIcons.getBrokenImage(size: 40),
+      ),
+    );
+  }
+}
+
+// Widget bao bọc PostItem để theo dõi thay đổi
+class PostItemWrapper extends StatefulWidget {
+  final String postId;
+  final int postType;
+  final String displayName;
+  final String avatar_image;
+  final String dateTime;
+  final String title;
+  final String content;
+  final List<String> images;
+  final List<BusinessModel> business;
+  final List<ProductModel> product;
+  final List<String> likes;
+  final int comments;
+  final bool isComment;
+  final String idUser;
+  final VoidCallback onChanged;
+
+  const PostItemWrapper({
+    Key? key,
+    required this.postId,
+    required this.postType,
+    required this.displayName,
+    required this.avatar_image,
+    required this.dateTime,
+    required this.title,
+    required this.content,
+    required this.images,
+    required this.business,
+    required this.product,
+    required this.likes,
+    required this.comments,
+    required this.isComment,
+    required this.idUser,
+    required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  State<PostItemWrapper> createState() => _PostItemWrapperState();
+}
+
+class _PostItemWrapperState extends State<PostItemWrapper> {
+  @override
+  Widget build(BuildContext context) {
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    
+    return NotificationListener<PostItemChangedNotification>(
+      onNotification: (notification) {
+        debugPrint("🔍 DEBUG PostItemWrapper: Nhận thông báo thay đổi từ PostItem");
+        widget.onChanged();
+        return true;
+      },
+      child: PostItem(
+        postId: widget.postId,
+        postType: widget.postType,
+        displayName: widget.displayName,
+        avatar_image: widget.avatar_image,
+        dateTime: widget.dateTime,
+        title: widget.title,
+        content: widget.content,
+        images: widget.images,
+        business: widget.business,
+        product: widget.product,
+        likes: widget.likes,
+        comments: widget.comments,
+        isComment: widget.isComment,
+        idUser: widget.idUser,
       ),
     );
   }

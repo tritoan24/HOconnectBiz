@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../core/base/base_provider.dart';
 import '../repository/comment_repository.dart';
 import '../widgets/loading_overlay.dart';
+import '../providers/post_provider.dart';
+import 'package:provider/provider.dart';
 
 class CommentProvider extends BaseProvider {
   List<CommentModel> _comments = [];
@@ -26,9 +28,11 @@ class CommentProvider extends BaseProvider {
           _commentRepository.createComment(comment, context, files: album),
       context: context,
       onSuccess: () async {
-        // addComment(comment);
-        print('Tạo bình luận thành công!' + comment.toString());
         await getComments(postId, context);
+        
+        // Cập nhật số lượng comment trong danh sách bài viết
+        final postProvider = Provider.of<PostProvider>(context, listen: false);
+        postProvider.updatePostCommentCount(postId, _comments.length);
       },
       successMessage: 'Tạo bình luận thành công!',
     );

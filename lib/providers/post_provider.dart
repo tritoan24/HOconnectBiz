@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:clbdoanhnhansg/models/create_post.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:clbdoanhnhansg/repository/post_repository.dart';
 import 'package:flutter/material.dart';
 import '../core/base/base_provider.dart';
@@ -8,6 +9,7 @@ import '../core/network/api_client.dart';
 import '../core/network/api_endpoints.dart';
 import '../models/posts.dart';
 import '../widgets/loading_overlay.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PostProvider extends BaseProvider {
   final PostRepository _postRepository = PostRepository();
@@ -91,7 +93,7 @@ class PostProvider extends BaseProvider {
       await _loadPostsPage(context);
     } catch (e) {
       _errorMessage = 'Không thể tải bài viết: ${e.toString()}';
-      print('Lỗi khi lấy bài đăng: $e');
+      debugPrint('Lỗi khi lấy bài đăng: $e');
     }
 
     _isLoading = false;
@@ -109,7 +111,7 @@ class PostProvider extends BaseProvider {
       await _loadPostsPage(context);
     } catch (e) {
       _errorMessage = 'Không thể tải thêm bài viết: ${e.toString()}';
-      print('Lỗi khi tải thêm bài viết: $e');
+      debugPrint('Lỗi khi tải thêm bài viết: $e');
     }
 
     _isLoadingMore = false;
@@ -171,10 +173,10 @@ class PostProvider extends BaseProvider {
         // Thông báo cho UI cập nhật lại (notifyListeners)
         notifyListeners();
 
-        print('Danh sách bài đăng của user: $_posts');
+        debugPrint('Danh sách bài đăng của user: $_posts');
       }
     } catch (e) {
-      print('Lỗi khi lấy bài đăng: $e');
+      debugPrint('Lỗi khi lấy bài đăng: $e');
     }
     _isLoading = false;
     notifyListeners();
@@ -202,7 +204,7 @@ class PostProvider extends BaseProvider {
       // Thông báo cho UI cập nhật lại (notifyListeners)
       notifyListeners();
     } catch (e) {
-      print('Lỗi khi lấy bài đăng: $e');
+      debugPrint('Lỗi khi lấy bài đăng: $e');
     }
     _isLoading = false;
     notifyListeners();
@@ -250,11 +252,11 @@ class PostProvider extends BaseProvider {
         // Notify UI to update
         notifyListeners();
 
-        print(
+        debugPrint(
             'Search results for "$keyword" (category: $category): ${_posts.length} posts found');
       }
     } catch (e) {
-      print('Error fetching search results: $e');
+      debugPrint('Error fetching search results: $e');
       // Add error handling here, e.g., show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đã xảy ra lỗi khi tìm kiếm: $e')),
@@ -299,7 +301,7 @@ class PostProvider extends BaseProvider {
         notifyListeners();
       }
     } catch (e) {
-      print('Error fetching search results: $e');
+      debugPrint('Error fetching search results: $e');
     }
 
     _isLoading = false;
@@ -308,23 +310,228 @@ class PostProvider extends BaseProvider {
 
   Future<void> toggleLike(String postId, BuildContext context) async {
     setLoading(true);
+    debugPrint("🔍 DEBUG: toggleLike bắt đầu cho postId: $postId");
 
     await executeApiCall(
       apiCall: () => _postRepository.toggleLikePost(postId, context),
       context: context,
-      onSuccess: () {
+      onSuccess: () async {
         // Kiểm tra xem bài viết đã được thả tim chưa
+        bool oldValue = _likedPosts.containsKey(postId) ? _likedPosts[postId]! : false;
+        
         if (_likedPosts.containsKey(postId)) {
           _likedPosts[postId] = !_likedPosts[postId]!;
         } else {
           _likedPosts[postId] = true;
         }
+        
+        debugPrint("🔍 DEBUG: Trạng thái like thay đổi từ $oldValue thành ${_likedPosts[postId]} cho postId: $postId");
+        
+        // Cập nhật bài viết cục bộ
+        await updatePostLikeStatus(postId);
+        
         notifyListeners();
+        debugPrint("🔍 DEBUG: toggleLike đã gọi notifyListeners() cho postId: $postId");
       },
       successMessage: "Cập nhật lượt thích thành công!",
     );
 
     setLoading(false);
+  }
+  
+  // Phương thức cập nhật trạng thái like cho bài viết cục bộ
+  Future<void> updatePostLikeStatus(String postId) async {
+    debugPrint("🔍 DEBUG: updatePostLikeStatus bắt đầu cho postId: $postId");
+    
+    // Lấy ID người dùng hiện tại
+    String? userId = await _getCurrentUserId();
+    
+    if (userId == null || userId.isEmpty) {
+      debugPrint("⚠️ WARNING: Không thể lấy userId hiện tại");
+      return;
+    }
+    
+    debugPrint("🔍 DEBUG: Lấy được userId: $userId");
+    bool shouldLike = _likedPosts.containsKey(postId) ? _likedPosts[postId]! : false;
+    debugPrint("🔍 DEBUG: Trạng thái like hiện tại: $shouldLike");
+    
+    // Cập nhật trong danh sách bài viết chính
+    bool updatedMainList = false;
+    bool updatedFeaturedList = false;
+    bool updatedMyList = false;
+    bool updatedListById = false;
+    
+    // Cập nhật trong danh sách bài viết chính
+    for (int i = 0; i < _posts.length; i++) {
+      if (_posts[i].id == postId) {
+        debugPrint("🔍 DEBUG: Tìm thấy bài viết trong _posts với index $i");
+        _posts[i].like ??= [];
+        
+        if (shouldLike) {
+          // Thêm userId vào danh sách like nếu chưa có
+          if (!_posts[i].like!.contains(userId)) {
+            _posts[i].like!.add(userId);
+            debugPrint("🔍 DEBUG: Đã thêm userId vào danh sách like, count mới: ${_posts[i].like?.length}");
+          }
+        } else {
+          // Xóa userId khỏi danh sách like nếu có
+          if (_posts[i].like!.contains(userId)) {
+            _posts[i].like!.remove(userId);
+            debugPrint("🔍 DEBUG: Đã xóa userId khỏi danh sách like, count mới: ${_posts[i].like?.length}");
+          }
+        }
+        updatedMainList = true;
+        break;
+      }
+    }
+    
+    // Cập nhật trong danh sách bài viết nổi bật
+    for (int i = 0; i < _listPostFeatured.length; i++) {
+      if (_listPostFeatured[i].id == postId) {
+        debugPrint("🔍 DEBUG: Tìm thấy bài viết trong _listPostFeatured với index $i");
+        _listPostFeatured[i].like ??= [];
+        
+        if (shouldLike) {
+          if (!_listPostFeatured[i].like!.contains(userId)) {
+            _listPostFeatured[i].like!.add(userId);
+            debugPrint("🔍 DEBUG: Đã thêm userId vào danh sách like của featured, count mới: ${_listPostFeatured[i].like?.length}");
+          }
+        } else {
+          if (_listPostFeatured[i].like!.contains(userId)) {
+            _listPostFeatured[i].like!.remove(userId);
+            debugPrint("🔍 DEBUG: Đã xóa userId khỏi danh sách like của featured, count mới: ${_listPostFeatured[i].like?.length}");
+          }
+        }
+        updatedFeaturedList = true;
+        break;
+      }
+    }
+    
+    // Cập nhật trong danh sách bài viết của người dùng
+    for (int i = 0; i < _listPostMe.length; i++) {
+      if (_listPostMe[i].id == postId) {
+        debugPrint("🔍 DEBUG: Tìm thấy bài viết trong _listPostMe với index $i");
+        _listPostMe[i].like ??= [];
+        
+        if (shouldLike) {
+          if (!_listPostMe[i].like!.contains(userId)) {
+            _listPostMe[i].like!.add(userId);
+            debugPrint("🔍 DEBUG: Đã thêm userId vào danh sách like của my posts, count mới: ${_listPostMe[i].like?.length}");
+          }
+        } else {
+          if (_listPostMe[i].like!.contains(userId)) {
+            _listPostMe[i].like!.remove(userId);
+            debugPrint("🔍 DEBUG: Đã xóa userId khỏi danh sách like của my posts, count mới: ${_listPostMe[i].like?.length}");
+          }
+        }
+        updatedMyList = true;
+        break;
+      }
+    }
+    
+    // Cập nhật trong danh sách bài viết by ID
+    for (int i = 0; i < _listtByID.length; i++) {
+      if (_listtByID[i].id == postId) {
+        debugPrint("🔍 DEBUG: Tìm thấy bài viết trong _listtByID với index $i");
+        _listtByID[i].like ??= [];
+        
+        if (shouldLike) {
+          if (!_listtByID[i].like!.contains(userId)) {
+            _listtByID[i].like!.add(userId);
+            debugPrint("🔍 DEBUG: Đã thêm userId vào danh sách like by ID, count mới: ${_listtByID[i].like?.length}");
+          }
+        } else {
+          if (_listtByID[i].like!.contains(userId)) {
+            _listtByID[i].like!.remove(userId);
+            debugPrint("🔍 DEBUG: Đã xóa userId khỏi danh sách like by ID, count mới: ${_listtByID[i].like?.length}");
+          }
+        }
+        updatedListById = true;
+        break;
+      }
+    }
+    
+    debugPrint("🔍 DEBUG: Kết quả cập nhật: main list: $updatedMainList, featured list: $updatedFeaturedList, my list: $updatedMyList, list by ID: $updatedListById");
+    debugPrint("🔍 DEBUG: updatePostLikeStatus hoàn tất cho postId: $postId");
+    
+    notifyListeners();
+    debugPrint("🔍 DEBUG: updatePostLikeStatus đã gọi notifyListeners() cho postId: $postId");
+  }
+  
+  // Phương thức cập nhật tổng số comment của bài viết
+  void updatePostCommentCount(String postId, int newCommentCount) {
+    // Cập nhật trong danh sách bài viết chính
+    for (int i = 0; i < _posts.length; i++) {
+      if (_posts[i].id == postId) {
+        _posts[i].totalComment = newCommentCount;
+        break;
+      }
+    }
+    
+    // Cập nhật trong danh sách bài viết nổi bật
+    for (int i = 0; i < _listPostFeatured.length; i++) {
+      if (_listPostFeatured[i].id == postId) {
+        _listPostFeatured[i].totalComment = newCommentCount;
+        break;
+      }
+    }
+    
+    // Cập nhật trong danh sách bài viết của người dùng
+    for (int i = 0; i < _listPostMe.length; i++) {
+      if (_listPostMe[i].id == postId) {
+        _listPostMe[i].totalComment = newCommentCount;
+        break;
+      }
+    }
+    
+    notifyListeners();
+  }
+  
+  // Lấy ID người dùng hiện tại
+  Future<String?> _getCurrentUserId() async {
+    // Sử dụng FlutterSecureStorage để lấy ID người dùng
+    final storage = const FlutterSecureStorage();
+    return await storage.read(key: 'user_id');
+  }
+
+  // Phương thức lấy bài đăng theo ID
+  Posts? getPostById(String postId) {
+    debugPrint("🔍 DEBUG: getPostById đang tìm bài đăng có ID: $postId");
+    
+    // Tìm trong danh sách bài viết chính
+    for (var post in _posts) {
+      if (post.id == postId) {
+        debugPrint("🔍 DEBUG: Đã tìm thấy bài đăng trong _posts với ID: $postId");
+        return post;
+      }
+    }
+    
+    // Tìm trong danh sách bài viết nổi bật
+    for (var post in _listPostFeatured) {
+      if (post.id == postId) {
+        debugPrint("🔍 DEBUG: Đã tìm thấy bài đăng trong _listPostFeatured với ID: $postId");
+        return post;
+      }
+    }
+    
+    // Tìm trong danh sách bài viết của tôi
+    for (var post in _listPostMe) {
+      if (post.id == postId) {
+        debugPrint("🔍 DEBUG: Đã tìm thấy bài đăng trong _listPostMe với ID: $postId");
+        return post;
+      }
+    }
+    
+    // Tìm trong danh sách bài viết theo ID
+    for (var post in _listtByID) {
+      if (post.id == postId) {
+        debugPrint("🔍 DEBUG: Đã tìm thấy bài đăng trong _listtByID với ID: $postId");
+        return post;
+      }
+    }
+    
+    debugPrint("⚠️ WARNING: Không tìm thấy bài đăng nào có ID: $postId");
+    return null;
   }
 
   Future<void> fetchListPostByUser(BuildContext context, String id) async {
@@ -346,13 +553,13 @@ class PostProvider extends BaseProvider {
       } else {
         // If there are no posts, set to empty list
         _listtByID = [];
-        print('No posts found for user $id');
+        debugPrint('No posts found for user $id');
       }
 
       // Thông báo UI cập nhật lại dữ liệu
       notifyListeners();
     } catch (e) {
-      print('Lỗi khi lấy danh sách bài đăng của user: $e');
+      debugPrint('Lỗi khi lấy danh sách bài đăng của user: $e');
       // Set to empty list in case of error
       _listtByID = [];
     }

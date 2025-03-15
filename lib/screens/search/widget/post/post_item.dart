@@ -5,6 +5,7 @@ import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +19,7 @@ import '../../../home/widget/buy_product.dart';
 import '../../../business_information/business_information.dart';
 import '../../../comment/comments_screen.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
+import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 
 // Constants
 const double _kPadding = 12.0;
@@ -100,22 +102,35 @@ class _PostItemState extends State<PostItem> {
   }
 
   Future<void> _loadUserIdandStatusLikePost(AuthProvider authProvider) async {
+    debugPrint(
+        "🔍 DEBUG PostItem: _loadUserIdandStatusLikePost bắt đầu cho postId: ${widget.postId}");
+
     final userId = await authProvider.getuserID();
+    final oldIsLiked = isLiked;
+    final oldLikeCount = likeCount;
+
     setState(() {
       idUserID = userId ?? "";
-      print("🔑 id user: $idUserID");
-      print("🔑 like: ${widget.likes}");
       // Nếu idUserID có tồn tại trong mảng likes thì isLiked = true
       isLiked = widget.likes.contains(idUserID);
+      likeCount = widget.likes.length;
     });
+
+    debugPrint("🔍 DEBUG PostItem: userId: $idUserID");
+    debugPrint("🔍 DEBUG PostItem: widget.likes: ${widget.likes}");
+    debugPrint(
+        "🔍 DEBUG PostItem: isLiked thay đổi từ $oldIsLiked thành $isLiked");
+    debugPrint(
+        "🔍 DEBUG PostItem: likeCount thay đổi từ $oldLikeCount thành $likeCount");
+    debugPrint("🔍 DEBUG PostItem: _loadUserIdandStatusLikePost hoàn tất");
   }
 
   Future<void> _loadUserStatusJoinBusiness(AuthProvider authProvider) async {
     final userId = await authProvider.getuserID();
     setState(() {
       idUserID = userId ?? "";
-      print("🔑 id user: $idUserID");
-      print("🔑 list user Join: ${widget.isJoin}");
+      debugPrint("🔑 id user: $idUserID");
+      debugPrint("🔑 list user Join: ${widget.isJoin}");
       // Nếu idUserID có tồn tại trong mảng likes thì isLiked = true
       isJoind = widget.isJoin!.any((join) => join.user?.id == idUserID);
     });
@@ -123,14 +138,34 @@ class _PostItemState extends State<PostItem> {
 
   // Hàm xử lý like/bỏ like
   void _likePost(BuildContext context) {
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    debugPrint(
+        "🔍 DEBUG PostItem: _likePost bắt đầu cho postId: ${widget.postId}");
 
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final oldIsLiked = isLiked;
+    final oldLikeCount = likeCount;
+
+    // Cập nhật UI ngay lập tức để phản hồi nhanh với người dùng
     setState(() {
       isLiked = !isLiked;
       likeCount += isLiked ? 1 : -1;
     });
 
-    postProvider.toggleLike(widget.postId, context);
+    debugPrint(
+        "🔍 DEBUG PostItem: Trạng thái like thay đổi từ $oldIsLiked thành $isLiked");
+    debugPrint(
+        "🔍 DEBUG PostItem: Số lượng like thay đổi từ $oldLikeCount thành $likeCount");
+
+    // Gọi API để cập nhật trạng thái like trên server và trong PostProvider
+    postProvider.toggleLike(widget.postId, context).then((_) {
+      debugPrint("🔍 DEBUG PostItem: Đã gọi postProvider.toggleLike");
+
+      // Gửi thông báo cho CommentsScreen khi like thay đổi
+      // if (widget.isComment) {
+      //   debugPrint("🔍 DEBUG PostItem: Gửi thông báo thay đổi trạng thái like");
+      //   PostItemChangedNotification(widget.postId, isLiked).dispatch(context);
+      // }
+    });
   }
 
   bool get isBusiness => widget.postType == 1;
@@ -139,13 +174,16 @@ class _PostItemState extends State<PostItem> {
     try {
       return DateFormat("dd/MM/yyyy HH:mm").parse(dateTime);
     } catch (e) {
-      print("Error parsing date: $e");
+      debugPrint("Error parsing date: $e");
       return DateTime.now();
     }
   }
 
   // Hàm chuyển sang màn chi tiết bài đăng
   void _navigateToDetailScreen(int index) {
+    debugPrint("🔍 DEBUG PostItem: _navigateToDetailScreen bắt đầu với index=$index");
+    debugPrint("🔍 DEBUG PostItem: Truyền isLiked=$isLiked sang màn chi tiết");
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -157,14 +195,56 @@ class _PostItemState extends State<PostItem> {
           comment: widget.comments,
           dateTime: widget.dateTime,
           description: widget.content,
+          postId: widget.postId,
+          title: widget.title,
+          isLiked: isLiked,
+          likes: widget.likes,
         ),
       ),
-    );
+    ).then((result) {
+      debugPrint("🔍 DEBUG PostItem: Quay lại từ màn chi tiết với result=$result");
+      
+      // Nếu có sự thay đổi từ màn hình chi tiết (like, comment)
+      if (result == true) {
+        debugPrint("🔍 DEBUG PostItem: Cập nhật UI sau khi quay lại từ màn chi tiết");
+        
+        // Lấy dữ liệu mới nhất từ provider
+        final postProvider = Provider.of<PostProvider>(context, listen: false);
+        final updatedPost = postProvider.getPostById(widget.postId);
+        
+        if (updatedPost != null) {
+          debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
+          debugPrint("🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
+          debugPrint("🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
+          
+          // Cập nhật UI với dữ liệu mới
+          setState(() {
+            // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
+            likeCount = updatedPost.like?.length ?? 0;
+            // Cập nhật trạng thái isLiked nếu có idUserID
+            if (idUserID != null && idUserID!.isNotEmpty) {
+              isLiked = updatedPost.like?.contains(idUserID) ?? false;
+            }
+            debugPrint("🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, isLiked=$isLiked");
+          });
+        } else {
+          debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+          // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          _loadUserIdandStatusLikePost(authProvider);
+        }
+      }
+    });
+    
+    debugPrint("🔍 DEBUG PostItem: _navigateToDetailScreen hoàn tất");
   }
 
   @override
   Widget build(BuildContext context) {
     // Sử dụng giá trị isLiked và likeCount từ state đã được khởi tạo
+    debugPrint(
+        "🔍 DEBUG PostItem build: postId=${widget.postId}, isLiked=$isLiked, likeCount=$likeCount");
+
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: _buildPostCard(context, isLiked),
@@ -341,7 +421,8 @@ class _PostItemState extends State<PostItem> {
                                   );
                                 },
                                 errorBuilder: (context, error, stackTrace) =>
-                                    AppIcons.getBrokenImage(size: _kProductImageSize),
+                                    AppIcons.getBrokenImage(
+                                        size: _kProductImageSize),
                               ),
                             ),
 
@@ -920,6 +1001,9 @@ class _PostItemState extends State<PostItem> {
   }
 
   Future<void> _navigateToComments(BuildContext context) async {
+    debugPrint(
+        "🔍 DEBUG PostItem: _navigateToComments bắt đầu cho postId: ${widget.postId}");
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -941,11 +1025,42 @@ class _PostItemState extends State<PostItem> {
         ),
       ),
     );
+
+    debugPrint(
+        "🔍 DEBUG PostItem: Quay lại từ màn comments với result=$result");
+
     if (result == true) {
-      Provider.of<PostProvider>(context, listen: false).fetchPosts(context);
+      debugPrint(
+          "🔍 DEBUG PostItem: Cập nhật UI sau khi quay lại từ màn comments");
+
+      // Lấy dữ liệu mới nhất từ provider
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final updatedPost = postProvider.getPostById(widget.postId);
+      
+      if (updatedPost != null) {
+        debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
+        debugPrint("🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
+        debugPrint("🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
+        
+        // Cập nhật UI với dữ liệu mới
+        setState(() {
+          // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
+          likeCount = updatedPost.like?.length ?? 0;
+          // Cập nhật trạng thái isLiked nếu có idUserID
+          if (idUserID != null && idUserID!.isNotEmpty) {
+            isLiked = updatedPost.like?.contains(idUserID) ?? false;
+          }
+          debugPrint("🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, isLiked=$isLiked");
+        });
+      } else {
+        debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+        // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        _loadUserIdandStatusLikePost(authProvider);
+      }
     }
-    // Trong _navigateToComments
-    print("Navigating to comments for postId: ${widget.postId}");
+    
+    debugPrint("🔍 DEBUG PostItem: _navigateToComments hoàn tất");
   }
 
   void _navigateToPurchase(BuildContext context, ProductModel selectedProduct) {
