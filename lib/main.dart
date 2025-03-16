@@ -23,8 +23,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 
-import 'package:clbdoanhnhansg/config/app_config.dart';
-import 'package:lottie/lottie.dart'; // Thêm import package Lottie
 import 'firebase_options.dart';
 
 void main() async {
@@ -39,6 +37,18 @@ void main() async {
 
   OneSignal.initialize(AppConfig.oneSignalAppId);
   OneSignal.Notifications.requestPermission(true);
+
+  // Khởi tạo các services
+  final socketService = SocketService();
+  final authProvider = AuthProvider();
+
+  // Lấy userId từ local storage hoặc auth state
+  final userId = await authProvider.getuserID();
+
+  if (userId != null) {
+    socketService.initializeSocket(userId);
+    socketService.connect(userId);
+  }
 
   runApp(
     MultiProvider(
@@ -81,7 +91,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     // Use post-frame callback to ensure UI is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeApp();
+      // _initializeApp();
     });
   }
 
@@ -119,25 +129,25 @@ class _MyAppState extends State<MyApp> {
           ),
           routerConfig: appRouter,
           title: 'GoRouter Flutter Example',
-          builder: (context, child) {
-            return Stack(
-              children: [
-                child!,
-                if (_isInitializing)
-                  Material(
-                    color: Colors.black54,
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/lottie/loading.json',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
+          // builder: (context, child) {
+          //   return Stack(
+          //     children: [
+          //       child!,
+          //       if (_isInitializing)
+          //         Material(
+          //           color: Colors.black54,
+          //           child: Center(
+          //             child: Lottie.asset(
+          //               'assets/lottie/loading.json',
+          //               width: 70,
+          //               height: 70,
+          //               fit: BoxFit.contain,
+          //             ),
+          //           ),
+          //         ),
+          //     ],
+          //   );
+          // },
         );
       },
     );

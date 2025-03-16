@@ -1,13 +1,14 @@
+import 'package:clbdoanhnhansg/notifications/popup_notification.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../../models/notification_model.dart';
+import '../../screens/comment/comments_screen.dart';
 import '../core/base/base_provider.dart';
-import '../repository/notification_repository.dart';
 import '../core/services/socket_service.dart';
-import '../screens/cart/widget/purchase_order_tab.dart';
+import '../repository/notification_repository.dart';
 import 'auth_provider.dart';
-import '../../screens/comment/comments_screen.dart'; // Import CommentsScreen
-import 'package:intl/intl.dart'; // Để định dạng dateTime
 
 class NotificationProvider extends BaseProvider {
   final NotificationRepository _notificationRepository =
@@ -15,53 +16,49 @@ class NotificationProvider extends BaseProvider {
   final AuthProvider _authProvider = AuthProvider();
   List<NotificationModel> _notifications = [];
   late SocketService _socketService;
+  BuildContext? _lastContext;
 
   NotificationProvider() {
-    _socketService = SocketService();
-    _init();
+    _setupNotificationListener();
   }
 
   List<NotificationModel> get notifications => _notifications;
 
-  Future<void> _init() async {
-    final userId = await _authProvider.getuserID();
+  // Phương thức để lưu trữ context cuối cùng
+  void setContext(BuildContext context) {
+    _lastContext = context;
+  }
 
-    if (userId != null) {
-      _socketService.connect(userId);
+  void _setupNotificationListener() {
+    _socketService.on('notification', (data) {
+      try {
+        if (data != null &&
+            data['data'] != null &&
+            data['data']['data'] is List) {
+          final List<dynamic> notificationsList = data['data']['data'];
 
-      _socketService.on('notification', (data) {
-        try {
-          print('ON NOTIFICATION - Received data: $data');
+          for (var item in notificationsList) {
+            if (item is Map<String, dynamic>) {
+              final newNotification = NotificationModel.fromJson(item);
+              _notifications.insert(0, newNotification);
 
-          if (data != null &&
-              data['data'] != null &&
-              data['data']['data'] is List) {
-            final List<dynamic> notificationsList = data['data']['data'];
-            print('Notifications list length: ${notificationsList.length}');
-
-            for (var item in notificationsList) {
-              if (item is Map<String, dynamic>) {
-                final newNotification = NotificationModel.fromJson(item);
-                print(
-                    'Parsed notification: ID=${newNotification.id}, Message=${newNotification.message}, Post Title=${newNotification.post?.title}');
-                _notifications.insert(0, newNotification);
-              } else {
-                print('Invalid notification item: $item');
+              // Hiển thị popup nếu có context
+              if (_lastContext != null && _lastContext!.mounted) {
+                _lastContext!.showNotificationPopup(
+                  notification: newNotification,
+                  onDismiss: () {
+                    debugPrint('Notification dismissed: ${newNotification.id}');
+                  },
+                );
               }
             }
-
-            notifyListeners();
-          } else {
-            print('Invalid socket data structure: $data');
           }
-        } catch (e, stackTrace) {
-          print('Error parsing notification data: $e');
-          print('Stack trace: $stackTrace');
+          notifyListeners();
         }
-      });
-    } else {
-      print('UserId is null, cannot connect to socket');
-    }
+      } catch (e) {
+        debugPrint('Error handling notification: $e');
+      }
+    });
   }
 
   void handleNotificationTap(
@@ -71,7 +68,6 @@ class NotificationProvider extends BaseProvider {
       final post = notification.post;
 
       if (post != null) {
-        // Lấy userId từ AuthProvider (giả định đây là ID người dùng hiện tại)
         final userId = await _authProvider.getuserID() ?? post.author?.id ?? '';
 
         // Chuyển createdAt thành String (nếu có)
@@ -79,7 +75,7 @@ class NotificationProvider extends BaseProvider {
         final dateTime = post.createdAt != null
             ? dateFormat.format(post.createdAt!)
             : DateFormat('dd/MM/yyyy').format(DateTime.now());
-
+        if (!context.mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -105,9 +101,8 @@ class NotificationProvider extends BaseProvider {
         debugPrint('Post data is null for notification: ${notification.id}');
       }
     } else if (notification.deeplink.startsWith('dnsgapp://order/')) {
-      final orderId = notification.deeplink.split('/').last;
+      // final orderId = notification.deeplink.split('/').last;
 
-      // Điều hướng đến màn PurchaseOrderTab với orderId
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -120,8 +115,13 @@ class NotificationProvider extends BaseProvider {
   }
 
   Future<void> fetchNotifications(BuildContext? context) async {
+    if (context != null) {
+      _lastContext = context;
+    }
+
     try {
-      final response = await _notificationRepository.getNotifications(context!);
+      final response =
+          await _notificationRepository.getNotifications(_lastContext!);
       if (response.isSuccess && response.data is List) {
         _notifications = (response.data as List)
             .map((item) => NotificationModel.fromJson(item))
@@ -129,7 +129,7 @@ class NotificationProvider extends BaseProvider {
         notifyListeners();
       }
     } catch (e) {
-      print('Error fetching notifications: $e');
+      debugPrint('Error fetching notifications: $e');
     }
   }
 
@@ -141,8 +141,7 @@ class NotificationProvider extends BaseProvider {
 
   @override
   void dispose() {
-    print('🔴 NotificationProvider dispose() called');
-    _socketService.disconnect();
+    _lastContext = null;
     super.dispose();
   }
 }

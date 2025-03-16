@@ -64,20 +64,24 @@ class AuthProvider extends BaseProvider {
         // Tạo danh sách các Future để theo dõi
         final futures = <Future>[];
 
-        // Thêm các tác vụ fetch dữ liệu vào danh sách
-        futures.add(Provider.of<UserProvider>(context, listen: false)
-            .fetchUser(context));
-        futures.add(Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context));
+        if (context.mounted) {
+          // Thêm các tác vụ fetch dữ liệu vào danh sách
+          futures.add(Provider.of<UserProvider>(context, listen: false)
+              .fetchUser(context));
+          futures.add(Provider.of<ProductProvider>(context, listen: false)
+              .getListProduct(context));
 
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
-        final rankProvider = Provider.of<RankProvider>(context, listen: false);
+          final postProvider =
+              Provider.of<PostProvider>(context, listen: false);
+          final rankProvider =
+              Provider.of<RankProvider>(context, listen: false);
 
-        futures.add(rankProvider.fetchRanksRevenue(context));
-        futures.add(rankProvider.fetchRankBusiness(context));
+          futures.add(rankProvider.fetchRanksRevenue(context));
+          futures.add(rankProvider.fetchRankBusiness(context));
 
-        futures.add(postProvider.fetchPostsFeatured(context));
-        futures.add(postProvider.fetchPostsByUser(context));
+          futures.add(postProvider.fetchPostsFeatured(context));
+          futures.add(postProvider.fetchPostsByUser(context));
+        }
 
         // Chờ tất cả các tác vụ hoàn thành
         await Future.wait(futures);
@@ -125,32 +129,30 @@ class AuthProvider extends BaseProvider {
           await _saveToken(token);
           await _saveUserId(idUser);
           OneSignal.login(username);
-          if (idUser != null) {
-            socketService.connect(idUser);
+          socketService.connect(idUser);
 
-            // Tạo danh sách các Future để theo dõi
-            final futures = <Future>[];
+          // Tạo danh sách các Future để theo dõi
+          final futures = <Future>[];
+          if (!context.mounted) return;
+          // Thêm các tác vụ fetch dữ liệu vào danh sách
+          futures.add(Provider.of<UserProvider>(context, listen: false)
+              .fetchUser(context));
+          futures.add(Provider.of<ProductProvider>(context, listen: false)
+              .getListProduct(context));
 
-            // Thêm các tác vụ fetch dữ liệu vào danh sách
-            futures.add(Provider.of<UserProvider>(context, listen: false)
-                .fetchUser(context));
-            futures.add(Provider.of<ProductProvider>(context, listen: false)
-                .getListProduct(context));
+          final postProvider =
+              Provider.of<PostProvider>(context, listen: false);
+          final rankProvider =
+              Provider.of<RankProvider>(context, listen: false);
 
-            final postProvider =
-                Provider.of<PostProvider>(context, listen: false);
-            final rankProvider =
-                Provider.of<RankProvider>(context, listen: false);
+          futures.add(rankProvider.fetchRanksRevenue(context));
+          futures.add(rankProvider.fetchRankBusiness(context));
 
-            futures.add(rankProvider.fetchRanksRevenue(context));
-            futures.add(rankProvider.fetchRankBusiness(context));
+          futures.add(postProvider.fetchPostsFeatured(context));
+          futures.add(postProvider.fetchPostsByUser(context));
 
-            futures.add(postProvider.fetchPostsFeatured(context));
-            futures.add(postProvider.fetchPostsByUser(context));
-
-            // Chờ tất cả các tác vụ hoàn thành
-            await Future.wait(futures);
-          }
+          // Chờ tất cả các tác vụ hoàn thành
+          await Future.wait(futures);
 
           if (context.mounted) {
             // Ẩn loading overlay
@@ -167,7 +169,7 @@ class AuthProvider extends BaseProvider {
     } catch (e) {
       // Đảm bảo ẩn loading trong mọi trường hợp lỗi
       LoadingOverlay.hide();
-      print("Lỗi đăng nhập: $e");
+      debugPrint("Lỗi đăng nhập: $e");
     }
   }
 
@@ -193,7 +195,7 @@ class AuthProvider extends BaseProvider {
           OneSignal.User.addSms(
               formatPhoneNumber(identity)); // Tự động thêm +84
         } else {
-          print("Identity không hợp lệ: $identity"); // Log lỗi nếu cần
+          debugPrint("Identity không hợp lệ: $identity"); // Log lỗi nếu cần
         }
 
         Future.delayed(const Duration(seconds: 1), () {
@@ -547,7 +549,7 @@ class AuthProvider extends BaseProvider {
 
           // Tạo danh sách các Future để theo dõi
           final futures = <Future>[];
-
+          if (!context.mounted) return;
           // Thêm các tác vụ fetch dữ liệu vào danh sách
           futures.add(Provider.of<UserProvider>(context, listen: false)
               .fetchUser(context));
@@ -591,7 +593,7 @@ class AuthProvider extends BaseProvider {
     } catch (e) {
       // Đảm bảo ẩn loading trong mọi trường hợp lỗi
       LoadingOverlay.hide();
-      print("Lỗi đăng nhập social: $e");
+      debugPrint("Lỗi đăng nhập social: $e");
     }
   }
 }
