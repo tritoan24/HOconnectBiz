@@ -75,11 +75,13 @@ class OrderCardData {
 class OrderCard extends StatelessWidget {
   final OrderCardData data;
   final OrderModel donHang;
+  final String? currentUserId;
 
   const OrderCard({
     Key? key,
     required this.data,
     required this.donHang,
+    this.currentUserId,
   }) : super(key: key);
 
   @override
@@ -250,8 +252,14 @@ class OrderCard extends StatelessWidget {
             ),
             child: InkWell(
               onTap: () {
+                // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
+                OrderModel order = donHang as OrderModel;
+                
+                // Kiểm tra nếu currentUserId trùng với người tạo đơn hàng
+                bool isCreator = currentUserId != null && currentUserId == order.userCreate;
+                
                 ChiTietDonHang.show(
-                    context, donHang as OrderModel, data.status);
+                    context, order, data.status, hideButtons: isCreator);
               },
               child: Container(
                 padding: const EdgeInsets.all(12),

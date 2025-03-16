@@ -9,7 +9,6 @@ class OrderModel {
   final String userCreate;
   final String userReceive;
   final int status;
-  final int statusBuy;
   final int totalPay;
   final String paymentMethod;
   final DateTime createdAt;
@@ -26,7 +25,6 @@ class OrderModel {
     required this.userCreate,
     required this.userReceive,
     required this.status,
-    required this.statusBuy,
     required this.totalPay,
     required this.paymentMethod,
     required this.createdAt,
@@ -47,7 +45,6 @@ class OrderModel {
       userCreate: json['user_create'] ?? '',
       userReceive: json['user_receive'] ?? '',
       status: json['status'] ?? 0, // Giá trị mặc định nếu thiếu
-      statusBuy: json['status_buy'] ?? 0, // Giá trị mặc định nếu thiếu
       totalPay: json['total_pay'] ?? 0,
       paymentMethod: json['paymentMethod'] ?? 'cash',
       createdAt: json['createdAt'] != null
@@ -83,4 +80,3 @@ class OrderProduct {
     );
   }
 }
-

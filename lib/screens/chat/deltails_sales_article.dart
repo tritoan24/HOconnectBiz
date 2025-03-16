@@ -457,6 +457,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
               OrderCard(
                 data: OrderCardData.fromOrderModel(message.data!),
                 donHang: message.data!,
+                currentUserId: widget.currentUserId,
               ),
           ],
         ),

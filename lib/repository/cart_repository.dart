@@ -106,13 +106,13 @@ class CartRepository {
     return apiResponse;
   }
 
-  //cập nhật trạng thái đơn hàng
-  Future<ApiResponse> updateStatusOrder(
+  //cập nhật trạng thái đơn hàng mua
+  Future<ApiResponse> updateStatusOrderBuy(
       String orderId, int status, BuildContext context) async {
     final response = await _apiClient.pacthJsonRequest(
       '${ApiEndpoints.updateStatusCart}/$orderId',
       context,
-      body: {"status": status},
+      body: {"status_buy": status},
     );
     print(response);
 
@@ -121,4 +121,3 @@ class CartRepository {
     return apiResponse;
   }
 }
-

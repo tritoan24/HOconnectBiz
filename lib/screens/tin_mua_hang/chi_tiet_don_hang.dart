@@ -19,14 +19,16 @@ double _calculatePriceAfterDiscount(double tamTinh, double chietKhau) {
 class ChiTietDonHang extends StatelessWidget {
   final OrderModel donHang;
   final String status;
+  final bool hideButtons;
 
   const ChiTietDonHang({
     super.key,
     required this.donHang,
     required this.status,
+    this.hideButtons = false,
   });
 
-  static void show(BuildContext context, OrderModel donHang, String status) {
+  static void show(BuildContext context, OrderModel donHang, String status, {bool hideButtons = false}) {
     print('Status: $status');
     showModalBottomSheet(
       context: context,
@@ -34,7 +36,11 @@ class ChiTietDonHang extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: ChiTietDonHang(donHang: donHang, status: status),
+        child: ChiTietDonHang(
+          donHang: donHang, 
+          status: status,
+          hideButtons: hideButtons,
+        ),
       ),
     );
   }
@@ -132,7 +138,7 @@ class ChiTietDonHang extends StatelessWidget {
           ],
         ),
         // kiểm tra các trạng thái và dựa vào đó để hiển thị ra giao diện
-        _buildStatusWidget(status, donHang.id)
+        _buildStatusWidget(status, donHang.id, hideButtons)
       ]),
     );
   }
@@ -278,7 +284,12 @@ Widget _buildTotalRow(String label, String value,
   );
 }
 
-Widget _buildStatusWidget(String status, String id) {
+Widget _buildStatusWidget(String status, String id, bool hideButtons) {
+  // Nếu hideButtons là true, không hiển thị các nút
+  if (hideButtons) {
+    return const SizedBox(); // Trả về một widget trống
+  }
+  
   String statusLowerCase = status.toLowerCase();
 
   if (statusLowerCase == 'thành công') {
