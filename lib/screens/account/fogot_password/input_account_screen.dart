@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/auth_provider.dart';
+import '../../../utils/Color/app_color.dart';
 import '../../../utils/router/router.name.dart';
 import '../../../widgets/text_styles.dart';
 
@@ -22,99 +23,117 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 60),
-            Image.network(
-              UrlImage.logo,
-              width: 144,
-              height: 80,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  "assets/images/logo.png",
-                  width: 144,
-                  height: 80,
-                  fit: BoxFit.contain,
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-
-            // ✅ Căn trái tiêu đề
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Quên mật khẩu',
-                style: TextStyles.textStyleNormal30W700,
-              ),
-            ),
-
-            // ✅ Căn trái mô tả
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Nhập email hoặc số điện thoại đã đăng ký',
-                style: TextStyles.textStyleNormal12W400Grey,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            InputText(
-              controller: accountController,
-              title: "Tài khoản",
-              hintText: "Nhập email hoặc số điện thoại",
-              name: 'taiKhoan',
-              errorText: auth.errorMessage,
-            ),
-
-            const SizedBox(height: 10),
-
-            // ✅ Căn phải phần "Tôi đã nhớ mật khẩu" + "Đăng nhập"
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize:
-                    MainAxisSize.min, // ✅ Giữ row nhỏ để không bị kéo dãn
-                children: [
-                  Text(
-                    'Tôi đã nhớ mật khẩu',
-                    style: TextStyles.textStyleNormal12W400Grey,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 32, // Trừ đi padding
                   ),
-                  TextButton(
-                    onPressed: () {
-                      context.go(AppRoutes.login);
-                      Provider.of<AuthProvider>(context, listen: false)
-                          .clearState();
-                    },
-                    child: Text(
-                      'Đăng nhập',
-                      style: TextStyles.textStyleNormal12W500,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: size.height * 0.05), // Tương đối theo chiều cao màn hình
+                      Image.network(
+                        UrlImage.logo,
+                        width: size.width * 0.4, // Tương đối theo chiều rộng màn hình
+                        height: size.height * 0.1, // Tương đối theo chiều cao màn hình
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/images/logo.png",
+                            width: size.width * 0.4,
+                            height: size.height * 0.1,
+                            fit: BoxFit.contain,
+                          );
+                        },
+                      ),
+                      SizedBox(height: size.height * 0.03),
+
+                      // ✅ Căn trái tiêu đề
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Quên mật khẩu',
+                          style: TextStyles.textStyleNormal30W700,
+                        ),
+                      ),
+
+                      // ✅ Căn trái mô tả
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Nhập email hoặc số điện thoại đã đăng ký',
+                          style: TextStyles.textStyleNormal12W400Grey,
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.02),
+
+                      InputText(
+                        controller: accountController,
+                        title: "Tài khoản",
+                        hintText: "Nhập email hoặc số điện thoại",
+                        name: 'taiKhoan',
+                        errorText: auth.errorMessage,
+                      ),
+
+                      SizedBox(height: size.height * 0.01),
+
+                      // ✅ Căn phải phần "Bạn đã nhớ mật khẩu" + "Đăng nhập"
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min, // ✅ Giữ row nhỏ để không bị kéo dãn
+                          children: [
+                            Text(
+                              'Bạn đã nhớ mật khẩu?',
+                              style: TextStyles.textStyleNormal12W400Grey,
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                context.go(AppRoutes.login);
+                                Provider.of<AuthProvider>(context, listen: false)
+                                    .clearState();
+                              },
+                              child: const Text('Đăng nhập',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColor.primaryBlue,
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.05),
+
+                      ButtonWidget16(
+                        label: 'Tiếp theo',
+                        onPressed: () {
+                          auth.sendEmailOtp(
+                            context,
+                            accountController.text,
+                          );
+                        },
+                      ),
+                      
+                      // Spacer để đẩy nội dung lên khi màn hình lớn
+                      SizedBox(height: size.height * 0.05),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 46),
-
-            ButtonWidget16(
-              label: 'Tiếp theo',
-              onPressed: () {
-                auth.sendEmailOtp(
-                  context,
-                  accountController.text,
-                );
-              },
-            ),
-          ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: Container(

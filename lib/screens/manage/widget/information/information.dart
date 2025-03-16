@@ -182,7 +182,7 @@ class _InformationState extends State<InformationTab> {
                               },
                               child: Container(
                                 height: 50,
-                                width: 360,
+                                width: double.infinity,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   color: AppColor.primaryBlue,
