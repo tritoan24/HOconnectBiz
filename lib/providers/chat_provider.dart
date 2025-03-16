@@ -9,6 +9,7 @@ import '../models/message_model.dart';
 import '../repository/chat_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
 import 'auth_provider.dart';
+import 'post_provider.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository = ChatRepository();
@@ -18,6 +19,7 @@ class ChatProvider with ChangeNotifier {
   List<Contact> _contacts = [];
   String? _currentUserId;
   String? _currentChatReceiverId;
+  int _cartItemCount = 0;
 
   ChatProvider();
 
@@ -26,6 +28,7 @@ class ChatProvider with ChangeNotifier {
   List<Message> get messages => _messages;
   List<Contact> get contacts => _contacts;
   bool get isSocketConnected => _socketService.isConnected;
+  int get cartItemCount => _cartItemCount;
 
   /// Khởi tạo socket cho màn hình chat
   Future<void> initializeSocket(
@@ -60,6 +63,9 @@ class ChatProvider with ChangeNotifier {
     _socketService.on('new_message', (data) {
       print("📥 Nhận tin nhắn mới từ socket: $data");
       _handleNotificationData(data);
+      
+      // Cập nhật PostProvider khi có tin nhắn mới
+      _updatePostProviderMessageCount();
     });
 
     // Lắng nghe cập nhật danh bạ
@@ -268,7 +274,19 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _contacts = await _chatRepository.getContacts(context);
+      final ApiResponse response = await _chatRepository.getContacts(context);
+
+      if (response.isSuccess) {
+        _contacts = response.data is List
+            ? (response.data as List)
+                .map((item) => Contact.fromJson(item))
+                .toList()
+            : [];
+
+        // Lưu total từ API response
+        _cartItemCount = response.total ?? 0;
+        print("Số lượng sản phẩm trong giỏ hàng: $_cartItemCount");
+      }
 
       if (_currentUserId == null) {
         _socketService.connectToContact(_currentUserId!);
@@ -368,12 +386,19 @@ class ChatProvider with ChangeNotifier {
     if (_currentUserId == null) return;
 
     try {
-      final updatedContacts = await _chatRepository.getContacts(
+      final ApiResponse response = await _chatRepository.getContacts(
         GlobalKey<NavigatorState>().currentContext!,
       );
 
-      if (updatedContacts.isNotEmpty) {
-        _contacts = updatedContacts;
+      if (response.isSuccess) {
+        // Xử lý dữ liệu từ response
+        _contacts = response.data is List
+            ? (response.data as List).map((item) => Contact.fromJson(item)).toList()
+            : [];
+        
+        // Cập nhật số lượng giỏ hàng
+        _cartItemCount = response.total ?? 0;
+        
         notifyListeners();
       }
     } catch (e) {
@@ -407,5 +432,23 @@ class ChatProvider with ChangeNotifier {
   void dispose() {
     _socketService.disconnect();
     super.dispose();
+  }
+
+  /// Cập nhật số lượng tin nhắn mới trong PostProvider
+  void _updatePostProviderMessageCount() {
+    // Cần đảm bảo context có sẵn, nên dùng GlobalKey
+    final context = GlobalKey<NavigatorState>().currentContext;
+    if (context != null) {
+      try {
+        // Tìm PostProvider trong context
+        final postProvider = Provider.of<PostProvider>(context, listen: false);
+        if (postProvider != null) {
+          // Tăng số lượng tin nhắn mới
+          postProvider.updateMessageCount();
+        }
+      } catch (e) {
+        print("❌ Lỗi khi cập nhật số lượng tin nhắn mới: $e");
+      }
+    }
   }
 }

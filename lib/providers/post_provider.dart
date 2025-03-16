@@ -30,6 +30,50 @@ class PostProvider extends BaseProvider {
   bool _isLoadingByID = false;
   bool get isLoadingByID => _isLoadingByID;
 
+  // Thêm biến để lưu số lượng thông báo và tin nhắn mới
+  int _newNotificationsCount = 0;
+  int _newMessagesCount = 0;
+  
+  // Getter để truy cập số lượng thông báo và tin nhắn mới
+  int get newNotificationsCount => _newNotificationsCount;
+  int get newMessagesCount => _newMessagesCount;
+
+  // Cập nhật số lượng tin nhắn mới
+  void updateMessageCount({int? count}) {
+    if (count != null) {
+      _newMessagesCount = count;
+    } else {
+      // Tăng số lượng tin nhắn mới lên 1
+      _newMessagesCount += 1;
+    }
+    notifyListeners();
+    print("Cập nhật số tin nhắn mới: $_newMessagesCount");
+  }
+  
+  // Cập nhật số lượng thông báo mới
+  void updateNotificationCount({int? count}) {
+    if (count != null) {
+      _newNotificationsCount = count;
+    } else {
+      // Tăng số lượng thông báo mới lên 1
+      _newNotificationsCount += 1;
+    }
+    notifyListeners();
+    print("Cập nhật số thông báo mới: $_newNotificationsCount");
+  }
+  
+  // Đặt lại số lượng tin nhắn mới về 0
+  void resetMessageCount() {
+    _newMessagesCount = 0;
+    notifyListeners();
+  }
+  
+  // Đặt lại số lượng thông báo mới về 0
+  void resetNotificationCount() {
+    _newNotificationsCount = 0;
+    notifyListeners();
+  }
+
   //tìm kiếm bài viết
   String _lastSearchKeyword = '';
   int _lastSearchCategory = 1;
@@ -149,6 +193,13 @@ class PostProvider extends BaseProvider {
 
         _currentPage++;
       }
+      
+      // Cập nhật số lượng thông báo mới và tin nhắn mới
+      _newNotificationsCount = response['newNotificationsCount'] ?? 0;
+      _newMessagesCount = response['newMessagesCount'] ?? 0;
+      
+      print("Số thông báo mới: $_newNotificationsCount");
+      print("Số tin nhắn mới: $_newMessagesCount");
     } else {
       _hasMorePosts = false;
     }

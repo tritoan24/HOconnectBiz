@@ -62,39 +62,88 @@ class _HomeState extends State<Home> {
           ),
         ),
         actions: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  context.push(AppRoutes.thongBao);
-                },
-                child: Image.asset(
-                  "assets/icons/img_1.png",
-                  width: 24,
-                ),
-              ),
-              const SizedBox(
-                width: 25,
-              ),
-              //icon nhan tin
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatListScreen(),
-                      ));
-                },
-                child: Image.asset(
-                  "assets/icons/img_2.png",
-                  width: 24,
-                ),
-              ),
-              const SizedBox(
-                width: 24,
-              ),
-            ],
-          )
+          Consumer<PostProvider>(
+            builder: (context, postProvider, child) {
+              final hasNewNotifications =
+                  postProvider.newNotificationsCount > 0;
+              final hasNewMessages = postProvider.newMessagesCount > 0;
+
+              return Row(
+                children: [
+                  // Biểu tượng thông báo
+                  Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.push(AppRoutes.thongBao);
+                        },
+                        child: Image.asset(
+                          hasNewNotifications
+                              ? "assets/icons/bell.png" // Ảnh có dấu chấm đỏ
+                              : "assets/icons/bell.png", // Ảnh thông thường
+                          width: 24,
+                        ),
+                      ),
+                      // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
+                      if (hasNewNotifications)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(
+                    width: 25,
+                  ),
+                  //icon nhan tin
+                  Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatListScreen(),
+                              ));
+                        },
+                        child: Image.asset(
+                          hasNewMessages
+                              ? "assets/icons/icon_chat.png" // Ảnh có dấu chấm đỏ
+                              : "assets/icons/icon_chat.png", // Ảnh thông thường
+                          width: 24,
+                        ),
+                      ),
+                      // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
+                      if (hasNewMessages)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(
+                    width: 24,
+                  ),
+                ],
+              );
+            },
+          ),
         ],
         automaticallyImplyLeading: false,
         title: GestureDetector(

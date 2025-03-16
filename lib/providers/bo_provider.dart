@@ -389,27 +389,14 @@ class BoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Try one of these approaches:
-
-      // Option 1: Pass plain string without any regex formatting
       Map<String, dynamic> body = {
         'keyword': keyword,
       };
 
-      // Option 2: If the API expects a MongoDB-style regex object
-      // Map<String, dynamic> body = {
-      //   'keyword': {'$regex': keyword, '$options': 'i'},  // 'i' for case insensitive
-      // };
-
-      // Option 3: If the API needs a properly escaped regex pattern
-      // Map<String, dynamic> body = {
-      //   'keyword': keyword.replaceAll(RegExp(r'[.*+?^${}()|[\]\\]'), r'\$&'),
-      // };
-
-      final response = await _apiClient.getRequest(
+      final response = await _apiClient.postRequest(
         ApiEndpoints.company,
+        body,
         context,
-        body: body,
       );
 
       if (response != null && response['data'] is List) {

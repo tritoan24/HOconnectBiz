@@ -183,11 +183,8 @@ class ApiClient {
       _request('PUT', endpoint, context, body: body, files: files);
 
   Future<Map<String, dynamic>> getRequest(
-    String endpoint,
-    BuildContext context, {
-    Map<String, dynamic>? body,
-  }) =>
-      _request('GET', endpoint, body: body, context);
+          String endpoint, BuildContext context) =>
+      _request('GET', endpoint, context);
 
   Future<Map<String, dynamic>> deleteRequest(
     String endpoint,

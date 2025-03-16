@@ -54,15 +54,15 @@ class ChatRepository {
   }
 
   //get list chat
-  Future<List<Contact>> getContacts(BuildContext context) async {
+  Future<ApiResponse> getContacts(BuildContext context) async {
     try {
       final response = await _apiClient.getRequest(
         ApiEndpoints.chatList,
         context,
       );
 
-      if (response['status'] == 'success' && response['data'] is List) {
-        return Contact.fromJsonList(response['data']);
+      if (response['status'] == 'success') {
+        return ApiResponse.fromJson(response);
       } else {
         throw Exception('Failed to load contacts');
       }

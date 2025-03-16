@@ -84,6 +84,8 @@ class _HeaderProfileState extends State<HeaderProfile> {
                         (user?.description == "")
                             ? 'Chưa cập nhật'
                             : user!.description,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
                           fontStyle: FontStyle.normal,
@@ -101,4 +103,3 @@ class _HeaderProfileState extends State<HeaderProfile> {
     });
   }
 }
-

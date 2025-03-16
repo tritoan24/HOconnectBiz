@@ -12,6 +12,7 @@ import '../../providers/chat_provider.dart';
 import '../cart/cart_tab.dart';
 import 'deltails_sales_article.dart';
 import 'details_chat.dart';
+import '../../providers/post_provider.dart';
 
 class ChatListScreen extends StatefulWidget {
   @override
@@ -20,7 +21,6 @@ class ChatListScreen extends StatefulWidget {
 
 class _ChatListScreenState extends State<ChatListScreen> {
   late String currentUserId = "";
-  final int badgeCount = 13;
   bool _isInitialized = false;
 
   @override
@@ -31,6 +31,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      
+      // Reset số lượng tin nhắn mới
+      try {
+        final postProvider = Provider.of<PostProvider>(context, listen: false);
+        postProvider.resetMessageCount();
+      } catch (e) {
+        print("Lỗi khi reset số lượng tin nhắn mới: $e");
+      }
 
       // Lấy thông tin người dùng hiện tại
       currentUserId = (await authProvider.getuserID())!;
@@ -61,46 +69,52 @@ class _ChatListScreenState extends State<ChatListScreen> {
           },
         ),
         actions: [
-          Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: SvgPicture.asset(
-                    "assets/icons/card.svg",
-                  ),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Cart()));
-                  },
-                ),
-              ),
-              if (badgeCount > 0)
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 26,
-                      minHeight: 14,
-                    ),
-                    child: Text(
-                      badgeCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+          Consumer<ChatProvider>(
+            builder: (context, chatProvider, child) {
+              final badgeCount = chatProvider.cartItemCount;
+              
+              return Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                      icon: SvgPicture.asset(
+                        "assets/icons/card.svg",
                       ),
-                      textAlign: TextAlign.center,
+                      onPressed: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => const Cart()));
+                      },
                     ),
                   ),
-                ),
-            ],
+                  if (badgeCount > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 26,
+                          minHeight: 14,
+                        ),
+                        child: Text(
+                          badgeCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
