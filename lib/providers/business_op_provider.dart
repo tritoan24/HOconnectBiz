@@ -1,12 +1,28 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/base/base_provider.dart';
 import '../repository/business_op_repository.dart';
+import '../screens/business_opportunity_management/widget/details_post_business.dart';
 import 'bo_provider.dart';
 
 class BusinessOpProvider extends BaseProvider {
   final BusinessOpRepository _businessRepo = BusinessOpRepository();
+
+  // Biến lưu trữ postId cần điều hướng
+  String _pendingNavigationPostId = '';
+  bool _shouldNavigate = false;
+
+  // Getter để kiểm tra có nên điều hướng không
+  bool get shouldNavigate => _shouldNavigate;
+  String get pendingNavigationPostId => _pendingNavigationPostId;
+
+  // Xóa trạng thái điều hướng đã sử dụng
+  void clearNavigation() {
+    _shouldNavigate = false;
+    _pendingNavigationPostId = '';
+  }
 
   Future<void> joinBusiness(String postId, BuildContext context) async {
     setLoading(true);
@@ -26,26 +42,15 @@ class BusinessOpProvider extends BaseProvider {
     setLoading(false);
   }
 
-  // Future<void> deleteBoData(BuildContext context, String id) async {
-  //   try {
-  //     final ApiResponse response =
-  //     await _boRepository.deleteBoData(context, id);
-  //     print("id: " + id);
-  //     print(response.isSuccess ? "Xóa bài viết thành công" : response.message);
-  //     if (response.isSuccess) {
-  //       // Xóa thành viên khỏi danh sách
-  //       _lists.removeWhere((bo) => bo.id == id);
-  //       notifyListeners();
-  //     } else {
-  //       print("Lỗi khi xóa bài viết: ${response.message}");
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-  Future<void> approveBusiness(
-      List<String> postIds, BuildContext context) async {
+  Future<bool> approveBusiness(
+      List<String> postIds, BuildContext context, String targetPostId) async {
     setLoading(true);
+
+    // Lưu tham chiếu đến BoProvider
+    final boProvider = Provider.of<BoProvider>(context, listen: false);
+
+    // Biến để theo dõi liệu cuộc gọi API có thành công hay không
+    bool success = false;
 
     await executeApiCall(
       apiCall: () => _businessRepo.approveBusiness(
@@ -54,12 +59,41 @@ class BusinessOpProvider extends BaseProvider {
       ),
       context: context,
       successMessage: "Duyệt thành công!",
+      onSuccess: () {
+        success = true;
+      },
     );
+    print(
+        "🔍 [approveBusiness] success: $success, targetPostId: $targetPostId");
 
-    // 🔄 Cập nhật lại danh sách sau khi duyệt thành công
-    final boProvider = Provider.of<BoProvider>(context, listen: false);
-    await boProvider.fetchBoDataById(context, boProvider.selectedBo?.id ?? '');
+    // Cập nhật dữ liệu nếu thành công
+    if (success && targetPostId.isNotEmpty) {
+      try {
+        // Cập nhật dữ liệu
+        await boProvider.fetchBoDataById(context, targetPostId);
+
+        // Đặt trạng thái cần điều hướng
+        _pendingNavigationPostId = targetPostId;
+        _shouldNavigate = true;
+        notifyListeners(); // Thông báo cho các widget đang lắng nghe
+      } catch (e) {
+        print("Lỗi khi fetch dữ liệu: $e");
+      }
+    }
+
+    // Cập nhật lại danh sách sau khi duyệt thành công
+    if (boProvider.selectedBo?.id != null &&
+        boProvider.selectedBo!.id.isNotEmpty) {
+      try {
+        await boProvider.fetchBoDataById(context, boProvider.selectedBo!.id);
+      } catch (e) {
+        print("Lỗi khi fetch dữ liệu selectedBo: $e");
+      }
+    }
 
     setLoading(false);
+
+    // Trả về kết quả thành công
+    return success;
   }
 }

@@ -44,6 +44,7 @@ class _InputpasswordState extends State<Inputpassword> {
           controller: widget.controller,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           name: widget.name,
+          maxLines: 1,
           obscureText: _isObscured,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),

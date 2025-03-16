@@ -296,8 +296,8 @@ class BoProvider with ChangeNotifier {
 
         notifyListeners();
 
-        Navigator.pop(
-            context, true); // ✅ Quay về màn hình trước và thông báo cập nhật
+        // Navigator.pop(
+        //     context, true);
       } else {
         print("❌ Lỗi khi gửi đánh giá: ${response.message}");
       }

@@ -169,19 +169,18 @@ class CartProvider extends BaseProvider {
     notifyListeners();
   }
 
-  //update status order
-  Future<void> updateStatusOrder(
+  //update status order mua
+  Future<void> updateStatusOrderBuy(
       String orderId, int status, BuildContext context) async {
     LoadingOverlay.show(context);
     await executeApiCall(
-      apiCall: () => _repository.updateStatusOrder(orderId, status, context),
+      apiCall: () => _repository.updateStatusOrderBuy(orderId, status, context),
       context: context,
       onSuccess: () async {
-        await fetcOrderSale(context);
+        await fetcOrderBuy(context);
       },
       successMessage: "Cập nhật trạng thái đơn hàng thành công!",
     );
     LoadingOverlay.hide();
   }
 }
-

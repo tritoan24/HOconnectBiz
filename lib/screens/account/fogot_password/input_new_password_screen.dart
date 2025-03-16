@@ -46,93 +46,111 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final size = MediaQuery.of(context).size;
+    
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 60),
-            Image.network(
-              UrlImage.logo,
-              width: 144,
-              height: 80,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  "assets/images/logo.png",
-                  width: 144,
-                  height: 80,
-                  fit: BoxFit.contain,
-                );
-              },
-            ),
-            const SizedBox(height: 30),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 40, // Trừ đi padding
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: size.height * 0.05),
+                      Image.network(
+                        UrlImage.logo,
+                        width: size.width * 0.4,
+                        height: size.height * 0.1,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/images/logo.png",
+                            width: size.width * 0.4,
+                            height: size.height * 0.1,
+                            fit: BoxFit.contain,
+                          );
+                        },
+                      ),
+                      SizedBox(height: size.height * 0.03),
 
-            // Tiêu đề
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Tạo mật khẩu mới",
-                style: TextStyles.textStyleNormal30W700,
+                      // Tiêu đề
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Tạo mật khẩu mới",
+                          style: TextStyles.textStyleNormal30W700,
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.01),
+
+                      // Mô tả ngắn
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Tạo mật khẩu mới của bạn",
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.04),
+                      // Ô nhập mật khẩu mới
+                      Inputpassword(
+                        controller: passwordController,
+                        title: "Mật khẩu mới",
+                        hintText: "Nhập mật khẩu mới",
+                        name: 'matKhauMoi',
+                      ),
+
+                      SizedBox(height: size.height * 0.02),
+
+                      // Ô nhập xác nhận mật khẩu
+                      Inputpassword(
+                        controller: confirmPasswordController,
+                        title: "Xác nhận mật khẩu",
+                        hintText: "Nhập lại mật khẩu",
+                        name: 'xacNhanMatKhau',
+                      ),
+
+                      SizedBox(height: size.height * 0.06),
+
+                      // Nút Hoàn thành (Bị vô hiệu hóa nếu chưa nhập đúng)
+                      ElevatedButton(
+                        onPressed: isButtonEnabled
+                            ? () {
+                                auth.resetpassword(
+                                    context,
+                                    widget.email,
+                                    passwordController.text,
+                                    confirmPasswordController.text);
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isButtonEnabled ? Colors.blue : Colors.grey.shade300,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text("Hoàn thành"),
+                      ),
+                      
+                      // Spacer khi màn hình lớn
+                      SizedBox(height: size.height * 0.05),
+                    ],
+                  ),
+                ),
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Mô tả ngắn
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Tạo mật khẩu mới của bạn",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-            ),
-
-            const SizedBox(height: 35),
-            // Ô nhập mật khẩu mới
-            Inputpassword(
-              controller: passwordController,
-              title: "Mật khẩu mới",
-              hintText: "Nhập mật khẩu mới",
-              name: 'matKhauMoi',
-            ),
-
-            const SizedBox(height: 16),
-
-            // Ô nhập xác nhận mật khẩu
-            Inputpassword(
-              controller: confirmPasswordController,
-              title: "Xác nhận mật khẩu",
-              hintText: "Nhập lại mật khẩu",
-              name: 'xacNhanMatKhau',
-            ),
-
-            const SizedBox(height: 60),
-
-            // Nút Hoàn thành (Bị vô hiệu hóa nếu chưa nhập đúng)
-            ElevatedButton(
-              onPressed: isButtonEnabled
-                  ? () {
-                      auth.resetpassword(
-                          context,
-                          widget.email,
-                          passwordController.text,
-                          confirmPasswordController.text);
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    isButtonEnabled ? Colors.blue : Colors.grey.shade300,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text("Hoàn thành"),
-            ),
-          ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: Container(

@@ -19,14 +19,22 @@ class PurchaseOrderTab extends StatefulWidget {
 }
 
 class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
+  // Key cho RefreshIndicator
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<CartProvider>(context, listen: false);
-      provider.fetcOrderBuy(context);
-      provider.fetcOrderSale(context);
+      _loadData();
     });
+  }
+
+  // Hàm để tải dữ liệu
+  Future<void> _loadData() async {
+    final provider = Provider.of<CartProvider>(context, listen: false);
+    await provider.fetcOrderBuy(context);
   }
 
   @override
@@ -42,7 +50,17 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
           final orders = cartProvider.orderBuyList;
 
           if (orders.isEmpty) {
-            return const Center(child: Text("Không có đơn hàng nào"));
+            return RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: _loadData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text("Không có đơn hàng nào"))
+                ],
+              ),
+            );
           }
 
           // Group orders by month
@@ -57,29 +75,36 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
             ordersByMonth[monthKey]!.add(order);
           }
 
-          return ListView.builder(
-            itemCount: ordersByMonth.length,
-            itemBuilder: (context, index) {
-              final monthKey = ordersByMonth.keys.elementAt(index);
-              final monthData = ordersByMonth[monthKey]!;
+          // Bọc ListView.builder bằng RefreshIndicator
+          return RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: _loadData,
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: ordersByMonth.length,
+              itemBuilder: (context, index) {
+                final monthKey = ordersByMonth.keys.elementAt(index);
+                final monthData = ordersByMonth[monthKey]!;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      monthKey,
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        monthKey,
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  ...monthData.map((order) => _buildOrderCard(order, context)),
-                ],
-              );
-            },
+                    ...monthData
+                        .map((order) => _buildOrderCard(order, context)),
+                  ],
+                );
+              },
+            ),
           );
         },
       ),
@@ -137,14 +162,14 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
 
     // Calculate total product quantity
     int totalQuantity =
-    order.products.fold(0, (sum, product) => sum + product.quantity);
+        order.products.fold(0, (sum, product) => sum + product.quantity);
 
     // Format price
     final priceFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     String formattedPrice = priceFormat.format(order.totalPay);
 
     // Determine order status
-    String status = _getOrderStatusText(order.statusBuy);
+    String status = _getOrderStatusText(order.status);
 
     return GestureDetector(
       onTap: () {
@@ -165,24 +190,24 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
                     borderRadius: BorderRadius.circular(8),
                     child: imageUrl.startsWith('http')
                         ? Image.network(
-                      imageUrl,
-                      width: 64,
-                      height: 64,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, error, _) => Container(
-                        width: 64,
-                        height: 64,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported,
-                            color: Colors.grey),
-                      ),
-                    )
+                            imageUrl,
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.cover,
+                            errorBuilder: (ctx, error, _) => Container(
+                              width: 64,
+                              height: 64,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.image_not_supported,
+                                  color: Colors.grey),
+                            ),
+                          )
                         : Image.network(
-                      UrlImage.errorImage,
-                      width: 64,
-                      height: 64,
-                      fit: BoxFit.cover,
-                    ),
+                            UrlImage.errorImage,
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
 
@@ -297,12 +322,13 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
   }
 
   bool _shouldShowButtons(OrderModel order) {
-    final status = _getOrderStatusText(order.statusBuy);
+    final status = _getOrderStatusText(order.status);
     return status == 'Chờ xác nhận' || status == 'Đang xử lý';
   }
 
   Widget _buildActionButtons(OrderModel order) {
-    final status = _getOrderStatusText(order.statusBuy);
+    final status = _getOrderStatusText(order.status);
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     if (status == 'Chờ xác nhận') {
       return Padding(
@@ -311,7 +337,22 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Cập nhật trạng thái sang "Đang xử lý" (status = 1)
+                  _showConfirmDialog(
+                    context: context,
+                    title: 'Xác nhận mua hàng',
+                    content: 'Bạn có chắc chắn muốn xác nhận mua đơn hàng này?',
+                    onConfirm: () {
+                      cartProvider
+                          .updateStatusOrderBuy(order.id, 1, context)
+                          .then((_) {
+                        // Làm mới danh sách đơn hàng sau khi cập nhật
+                        cartProvider.fetcOrderBuy(context);
+                      });
+                    },
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF006AF5),
                     shape: RoundedRectangleBorder(
@@ -328,7 +369,22 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Cập nhật trạng thái sang "Đã hủy" (status = 3)
+                  _showConfirmDialog(
+                    context: context,
+                    title: 'Hủy đơn hàng',
+                    content: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
+                    onConfirm: () {
+                      cartProvider
+                          .updateStatusOrderBuy(order.id, 3, context)
+                          .then((_) {
+                        // Làm mới danh sách đơn hàng sau khi cập nhật
+                        cartProvider.fetcOrderBuy(context);
+                      });
+                    },
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey[200],
                   shape: RoundedRectangleBorder(
@@ -348,11 +404,62 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
         ),
       );
     } else if (status == 'Đang xử lý') {
-      return const Padding(
-        padding: EdgeInsets.only(bottom: 16),
-        child: ConfirmButton(),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: ConfirmButtonWithAction(
+          onConfirm: () {
+            // Cập nhật trạng thái sang "Thành công" (status = 2)
+            _showConfirmDialog(
+              context: context,
+              title: 'Xác nhận hoàn thành',
+              content:
+                  'Bạn xác nhận đã nhận được hàng và hoàn thành đơn hàng này?',
+              onConfirm: () {
+                cartProvider
+                    .updateStatusOrderBuy(order.id, 2, context)
+                    .then((_) {
+                  // Làm mới danh sách đơn hàng sau khi cập nhật
+                  cartProvider.fetcOrderBuy(context);
+                });
+              },
+            );
+          },
+        ),
       );
     }
     return const SizedBox.shrink();
+  }
+
+  void _showConfirmDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required Function onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Xác nhận',
+                  style: TextStyle(color: Color(0xFF006AF5))),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

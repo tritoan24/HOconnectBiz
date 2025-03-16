@@ -59,7 +59,7 @@ class _SignUpState extends State<Signup> {
     final confirmPassword = confirmPasswordController.text;
 
     setState(() {
-      // Chỉ kiểm tra xem tất cả các trường đã được điền đủ chưa, không kiểm tra mật khẩu có khớp không
+      // Chỉ kiểm tra xem tất cả các trường đã được điền đủ chưa
       _isFormValid = identity.isNotEmpty &&
           name.isNotEmpty &&
           password.isNotEmpty &&
@@ -123,7 +123,7 @@ class _SignUpState extends State<Signup> {
                               "Tạo tài khoản mới",
                               style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w400,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColor.textGrey),
                             ),
                             const SizedBox(height: 24),
@@ -135,9 +135,9 @@ class _SignUpState extends State<Signup> {
                               hintText: "Nhập email",
                               name: 'taiKhoan',
                               errorText: (authProvider.errorMessage ==
-                                          "Email hoặc số điện thoại đã tồn tại" ||
+                                          "Tên đăng nhập không được để trống" ||
                                       authProvider.errorMessage ==
-                                          "Tên đăng nhập phải là email hoặc số điện thoại hợp lệ")
+                                          "Tên đăng nhập phải là email hợp lệ")
                                   ? authProvider.errorMessage
                                   : null,
                             ),
@@ -161,7 +161,7 @@ class _SignUpState extends State<Signup> {
                               errorText: (authProvider.errorMessage ==
                                           "Mật khẩu và xác nhận mật khẩu không khớp" ||
                                       authProvider.errorMessage ==
-                                          "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.")
+                                          "Mật khẩu phải có ít nhất 8 ký tự")
                                   ? authProvider.errorMessage
                                   : null,
                             ),

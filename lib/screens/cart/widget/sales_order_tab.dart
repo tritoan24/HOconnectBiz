@@ -10,8 +10,29 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
-class SalesOrderTab extends StatelessWidget {
+class SalesOrderTab extends StatefulWidget {
   const SalesOrderTab({super.key});
+
+  @override
+  State<SalesOrderTab> createState() => _SalesOrderTabState();
+}
+
+class _SalesOrderTabState extends State<SalesOrderTab> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  Future<void> _loadData() async {
+    final provider = Provider.of<CartProvider>(context, listen: false);
+    await provider.fetcOrderSale(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +51,17 @@ class SalesOrderTab extends StatelessWidget {
           final orders = cartProvider.orderSaleList;
 
           if (orders.isEmpty) {
-            return const Center(child: Text("Không có đơn hàng nào"));
+            return RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: _loadData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text("Không có đơn hàng nào"))
+                ],
+              ),
+            );
           }
 
           // Group orders by month
@@ -46,21 +77,34 @@ class SalesOrderTab extends StatelessWidget {
             ordersByMonth[monthName]!.add(order);
           }
 
-          return Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  children: ordersByMonth.entries.map((entry) {
-                    return _buildMonthSection(
-                      entry.key,
-                      entry.value
-                          .map((order) => _buildOrderCard(context, order))
-                          .toList(),
-                    );
-                  }).toList(),
+          // Tạo danh sách các mục để hiển thị
+          final List<Widget> monthSections = [];
+          ordersByMonth.forEach((month, orderList) {
+            monthSections.add(
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  month,
+                  style: GoogleFonts.roboto(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ],
+            );
+
+            for (var order in orderList) {
+              monthSections.add(_buildOrderCard(context, order));
+            }
+          });
+
+          return RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: _loadData,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: monthSections,
+            ),
           );
         },
       ),
@@ -81,25 +125,6 @@ class SalesOrderTab extends StatelessWidget {
     } else {
       return 'Tháng $month, $year';
     }
-  }
-
-  Widget _buildMonthSection(String month, List<Widget> orders) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            month,
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        ...orders,
-      ],
-    );
   }
 
   Widget _buildOrderCard(BuildContext context, OrderModel order) {
@@ -235,48 +260,63 @@ class SalesOrderTab extends StatelessWidget {
                 ],
               ),
             ),
-            if (order.status == 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: const HorizontalDivider(),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Implement order completion functionality
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE9EBED),
-                        minimumSize: const Size(double.infinity, 40),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Hoàn tất đơn hàng',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Đơn hàng sẽ được hoàn tất khi khách hàng xác nhận đã nhận được hàng',
-                      style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        color: const Color(0XFFF1645F),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
+            if (_shouldShowButtons(order)) _buildActionButtons(order),
           ],
         ),
       ),
     );
+  }
+
+  // Kiểm tra trạng thái của đơn hàng để quyết định có hiển thị các nút hành động không
+  bool _shouldShowButtons(OrderModel order) {
+    final status = _getOrderStatusText(order.status);
+    return status == 'Đang xử lý';
+  }
+
+  // Hiển thị các nút hành động dựa trên trạng thái của đơn hàng
+  Widget _buildActionButtons(OrderModel order) {
+    final status = _getOrderStatusText(order.status);
+
+    // Đơn hàng đang xử lý (status = 0) - hiển thị nút hoàn tất màu xám không có hành động
+    if (status == 'Đang xử lý') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: const HorizontalDivider(),
+            ),
+            ElevatedButton(
+              onPressed: null, // Không có hành động khi nhấn nút
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE9EBED),
+                minimumSize: const Size(double.infinity, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Hoàn tất đơn hàng',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Đơn hàng sẽ được hoàn tất khi khách hàng xác nhận đã nhận được hàng',
+              style: GoogleFonts.roboto(
+                fontSize: 12,
+                color: const Color(0XFFF1645F),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   String _getOrderStatusText(int status) {
@@ -329,5 +369,33 @@ class SalesOrderTab extends StatelessWidget {
       ),
     );
   }
-}
 
+  void _showConfirmDialog(BuildContext context, String title, String message,
+      VoidCallback onConfirm) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+              child: const Text('Đồng ý',
+                  style: TextStyle(color: Color(0xFF006AF5))),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

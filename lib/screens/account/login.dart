@@ -62,249 +62,285 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 360;
+    final isPadding = screenSize.width > 600; // Tablet trở lên
+
     return Scaffold(
       backgroundColor: AppColor.backgroundColorApp,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: FormBuilder(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  // Sử dụng MainAxisSize.min để nội dung tự co giãn
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  // Bạn có thể sử dụng các SizedBox để tạo khoảng cách thay cho Spacer
-                  children: [
-                    const SizedBox(height: 70),
-                    Center(
-                      child: Image.network(
-                        UrlImage.logo,
-                        width: 144,
-                        height: 80,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            "assets/images/logo.png",
-                            width: 144,
-                            height: 80,
-                            fit: BoxFit.contain,
-                          );
-                        },
+          child: SafeArea(
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Stack(
+                children: [
+                  // Phần nội dung chính có thể cuộn
+                  SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 50, // Để lại không gian cho footer
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                    const Text(
-                      "Đăng nhập ngay",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w700, fontSize: 30),
-                    ),
-                    const Text(
-                      "Nhập tài khoản và mật khẩu để đăng nhập",
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(height: 20),
-                    InputText(
-                      controller: identityController,
-                      title: "Tài khoản",
-                      hintText: "Nhập email hoặc số điện thoại",
-                      name: 'taiKhoan',
-                      errorText: (authProvider.errorMessage ==
-                                  "Người dùng không tồn tại" ||
-                              authProvider.errorMessage ==
-                                  "Vui lòng nhập tên đăng nhập và mật khẩu")
-                          ? authProvider.errorMessage
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                    Inputpassword(
-                      controller: passwordController,
-                      name: 'password',
-                      title: 'Mật khẩu',
-                      hintText: "Nhập mật khẩu",
-                      errorText: authProvider.errorMessage == "Sai mật khẩu"
-                          ? authProvider.errorMessage
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: InkWell(
-                        onTap: () => {
-                          context.push(AppRoutes.quenMatKhau),
-                          Provider.of<AuthProvider>(context, listen: false)
-                              .clearState()
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 4.0),
-                          child: Text(
-                            "Quên mật khẩu?",
-                            style: TextStyle(
-                              color: AppColor.primaryBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isPadding ? screenSize.width * 0.1 : 20.0,
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-                    ButtonWidget(
-                      label: "Đăng nhập",
-                      onPressed: authProvider.isLoading
-                          ? null
-                          : () {
-                              authProvider.login(
-                                context,
-                                identityController.text,
-                                passwordController.text,
-                              );
-                            },
-                    ),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            height: 1,
-                            width: MediaQuery.of(context).size.width * 0.2,
-                            child: const DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: AppColor.backgroundGrey,
-                              ),
-                            ),
-                          ),
-                          const Text("Hoặc đăng nhập bằng"),
-                          SizedBox(
-                            height: 1,
-                            width: MediaQuery.of(context).size.width * 0.2,
-                            child: const DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: AppColor.backgroundGrey,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            authProvider.signInWithGoogle(context);
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: AppColor.borderGrey,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    "assets/icons/i_google.svg",
-                                    fit: BoxFit.cover,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text("Google"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Row(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            GestureDetector(
-                              onTap: () {
-                                print("clicked Đăng nhập bằng facebook");
-                                authProvider.signInWithFacebook(context);
-                              },
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppColor.borderGrey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/i_facebook.svg",
-                                        fit: BoxFit.cover,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      const Text("Facebook"),
-                                    ],
-                                  ),
-                                ),
+                            SizedBox(height: screenSize.height * 0.05),
+                            Center(
+                              child: Image.network(
+                                UrlImage.logo,
+                                width: isSmallScreen ? 120 : 144,
+                                height: isSmallScreen ? 65 : 80,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    "assets/images/logo.png",
+                                    width: isSmallScreen ? 120 : 144,
+                                    height: isSmallScreen ? 65 : 80,
+                                    fit: BoxFit.contain,
+                                  );
+                                },
                               ),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                    // Thay thế Spacer bằng một SizedBox để tạo khoảng cách ở dưới
-                    const SizedBox(height: 24),
-                    Center(
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const TextSpan(text: "Chưa có tài khoản? "),
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.baseline,
-                              baseline: TextBaseline.alphabetic,
+                            ),
+                            SizedBox(height: screenSize.height * 0.04),
+                            Text(
+                              "Đăng nhập ngay",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: isSmallScreen ? 24 : 30),
+                            ),
+                            Text(
+                              "Nhập tài khoản và mật khẩu để đăng nhập",
+                              style: TextStyle(
+                                  fontSize: isSmallScreen ? 11 : 12,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                            SizedBox(height: screenSize.height * 0.025),
+                            InputText(
+                              controller: identityController,
+                              title: "Tài khoản",
+                              hintText: "Nhập email hoặc số điện thoại",
+                              name: 'taiKhoan',
+                              errorText: (authProvider.errorMessage ==
+                                          "Người dùng không tồn tại" ||
+                                      authProvider.errorMessage ==
+                                          "Vui lòng nhập tên đăng nhập và mật khẩu")
+                                  ? authProvider.errorMessage
+                                  : null,
+                            ),
+                            SizedBox(height: screenSize.height * 0.015),
+                            Inputpassword(
+                              controller: passwordController,
+                              name: 'password',
+                              title: 'Mật khẩu',
+                              hintText: "Nhập mật khẩu",
+                              errorText: authProvider.errorMessage == "Sai mật khẩu"
+                                  ? authProvider.errorMessage
+                                  : null,
+                            ),
+                            SizedBox(height: screenSize.height * 0.01),
+                            Align(
+                              alignment: Alignment.topRight,
                               child: InkWell(
-                                onTap: () {
-                                  context.push(AppRoutes.dangKyTaiKhoan);
+                                onTap: () => {
+                                  context.push(AppRoutes.quenMatKhau),
+                                  Provider.of<AuthProvider>(context, listen: false)
+                                      .clearState()
                                 },
                                 borderRadius: BorderRadius.circular(8),
                                 child: const Padding(
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 8.0, vertical: 4.0),
                                   child: Text(
-                                    "Đăng ký ngay",
+                                    "Quên mật khẩu?",
                                     style: TextStyle(
-                                      color: Color(0xff006AF5),
-                                      fontWeight: FontWeight.bold,
+                                      color: AppColor.primaryBlue,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
+                            SizedBox(height: screenSize.height * 0.025),
+                            ButtonWidget(
+                              label: "Đăng nhập",
+                              onPressed: authProvider.isLoading
+                                  ? null
+                                  : () {
+                                      authProvider.login(
+                                        context,
+                                        identityController.text,
+                                        passwordController.text,
+                                      );
+                                    },
+                            ),
+                            SizedBox(height: screenSize.height * 0.025),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: Container(
+                                      height: 1,
+                                      color: AppColor.backgroundGrey,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text(
+                                      "Hoặc đăng nhập bằng",
+                                      style: TextStyle(
+                                          fontSize: isSmallScreen ? 11 : 12),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Container(
+                                      height: 1,
+                                      color: AppColor.backgroundGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: screenSize.height * 0.025),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildSocialButton(
+                                  context,
+                                  "assets/icons/i_google.svg",
+                                  "Google",
+                                  () => authProvider.signInWithGoogle(context),
+                                  screenSize,
+                                  isSmallScreen,
+                                ),
+                                SizedBox(width: screenSize.width * 0.04),
+                                _buildSocialButton(
+                                  context,
+                                  "assets/icons/i_facebook.svg",
+                                  "Facebook",
+                                  () => authProvider.signInWithFacebook(context),
+                                  screenSize,
+                                  isSmallScreen,
+                                ),
+                              ],
+                            ),
+                            // Thêm padding dưới cùng để đảm bảo không bị footer đè lên
+                            SizedBox(height: 70),
                           ],
                         ),
                       ),
                     ),
+                  ),
+                  
+                  // Phần footer cố định ở dưới cùng
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      color: AppColor.backgroundColorApp,
+                      padding: EdgeInsets.only(
+                        bottom: 15, 
+                        top: 15,
+                        left: isPadding ? screenSize.width * 0.1 : 20.0,
+                        right: isPadding ? screenSize.width * 0.1 : 20.0,
+                      ),
+                      child: Center(
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "Chưa có tài khoản? ",
+                                style: TextStyle(
+                                    fontSize: isSmallScreen ? 11 : 12),
+                              ),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: InkWell(
+                                  onTap: () {
+                                    context.push(AppRoutes.dangKyTaiKhoan);
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 4.0),
+                                    child: Text(
+                                      "Đăng ký ngay",
+                                      style: TextStyle(
+                                          color: const Color(0xff006AF5),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: isSmallScreen ? 11 : 12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
 
-                    const SizedBox(height: 24),
-                  ],
+  Widget _buildSocialButton(
+    BuildContext context,
+    String iconPath,
+    String label,
+    VoidCallback onTap,
+    Size screenSize,
+    bool isSmallScreen,
+  ) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: AppColor.borderGrey,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: EdgeInsets.symmetric(
+            vertical: isSmallScreen ? 10 : 14.0,
+            horizontal: 8,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                iconPath,
+                fit: BoxFit.cover,
+                width: isSmallScreen ? 14 : 18,
+                height: isSmallScreen ? 14 : 18,
+              ),
+              SizedBox(width: screenSize.width * 0.02),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 11 : 14,
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Clbdoanhnhansg</string>
+	<string>CLB DNSG</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>clbdoanhnhansg</string>
+	<string>CLB DNSG</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -81,6 +81,7 @@
     <string>Application needs to access your current location</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>To update client's profile picture and and customer profile photo</string>
+<string>CLB DNSG</string>
 <key>GIDClientID</key>
 <string>1050664475960-8hoi3qm81hd8a5ivjaudji4ms5f2au4s.apps.googleusercontent.com</string>
 
