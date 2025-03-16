@@ -7,6 +7,7 @@ import 'package:clbdoanhnhansg/screens/home/widget/slide_view.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -74,21 +75,17 @@ class _HomeState extends State<Home> {
                   Stack(
                     children: [
                       GestureDetector(
-                        onTap: () {
-                          context.push(AppRoutes.thongBao);
-                        },
-                        child: Image.asset(
-                          hasNewNotifications
-                              ? "assets/icons/bell.png" // Ảnh có dấu chấm đỏ
-                              : "assets/icons/bell.png", // Ảnh thông thường
-                          width: 24,
-                        ),
-                      ),
+                          onTap: () {
+                            context.push(AppRoutes.thongBao);
+                          },
+                          child: SvgPicture.asset(
+                            "assets/icons/noti.svg",
+                          )),
                       // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
-                      if (hasNewNotifications)
+                      if (!hasNewNotifications)
                         Positioned(
-                          right: 0,
-                          top: 0,
+                          right: 10,
+                          top: 10,
                           child: Container(
                             width: 8,
                             height: 8,
@@ -101,28 +98,25 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                   const SizedBox(
-                    width: 25,
+                    width: 10,
                   ),
                   //icon nhan tin
                   Stack(
                     children: [
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatListScreen(),
-                              ));
-                        },
-                        child: Image.asset(
-                          hasNewMessages
-                              ? "assets/icons/icon_chat.png" // Ảnh có dấu chấm đỏ
-                              : "assets/icons/icon_chat.png", // Ảnh thông thường
-                          width: 24,
-                        ),
-                      ),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatListScreen(),
+                                ));
+                          },
+                          child: SvgPicture.asset(
+                            "assets/icons/mess.svg",
+                            width: 24,
+                          )),
                       // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
-                      if (hasNewMessages)
+                      if (!hasNewMessages)
                         Positioned(
                           right: 0,
                           top: 0,

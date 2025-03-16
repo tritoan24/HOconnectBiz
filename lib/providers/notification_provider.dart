@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
 import '../../models/notification_model.dart';
 import '../core/base/base_provider.dart';
@@ -110,7 +111,7 @@ class NotificationProvider extends BaseProvider {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const PurchaseOrderTab(),
+          builder: (context) => const Cart(),
         ),
       );
     } else {

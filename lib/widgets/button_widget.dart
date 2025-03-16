@@ -20,7 +20,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
             backgroundColor: const Color(0xff006AF5),
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           onPressed: widget.onPressed,
