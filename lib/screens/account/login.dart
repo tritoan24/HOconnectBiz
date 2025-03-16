@@ -83,26 +83,19 @@ class _LoginViewState extends State<LoginView> {
                   children: [
                     const SizedBox(height: 70),
                     Center(
-                      // child: Image.network(
-                      //   UrlImage.logo,
-                      //   width: 144,
-                      //   height: 80,
-                      //   fit: BoxFit.contain,
-                      //   errorBuilder: (context, error, stackTrace) {
-                      //     return Image.network(
-                      //       UrlImage.errorImage,
-                      //       width: 144,
-                      //       height: 80,
-                      //       fit: BoxFit.contain,
-                      //     );
-                      //   },
-                      // ),
-                      // ),
-                      child: Image.asset(
-                        "assets/images/logo.png",
+                      child: Image.network(
+                        UrlImage.logo,
                         width: 144,
                         height: 80,
                         fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/images/logo.png",
+                            width: 144,
+                            height: 80,
+                            fit: BoxFit.contain,
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 40),
