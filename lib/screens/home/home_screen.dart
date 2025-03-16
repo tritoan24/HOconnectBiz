@@ -3,6 +3,8 @@ import 'package:clbdoanhnhansg/screens/home/widget/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../utils/router/router.name.dart';
 import '../manage/manage.dart';
 import '../profile/profile_screen.dart';
@@ -30,6 +32,11 @@ class _TrangChuViewState extends State<TrangChuView> {
 
   @override
   Widget build(BuildContext context) {
+    final notificationProvider = Provider.of<NotificationProvider>(context);
+
+    // Cập nhật context cho NotificationProvider
+    notificationProvider.setContext(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -141,4 +148,3 @@ class _TrangChuViewState extends State<TrangChuView> {
     );
   }
 }
-

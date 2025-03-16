@@ -33,13 +33,13 @@ class NotificationPopup extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFE9EBED),
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: Colors.black.withOpacity(0.1),
+            //     blurRadius: 8,
+            //     offset: const Offset(0, 2),
+            //   ),
+            // ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(10), // Giảm từ 12 xuống 8
