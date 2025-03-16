@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     // Use post-frame callback to ensure UI is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeApp();
+      // _initializeApp();
     });
   }
 
@@ -119,25 +119,25 @@ class _MyAppState extends State<MyApp> {
           ),
           routerConfig: appRouter,
           title: 'GoRouter Flutter Example',
-          builder: (context, child) {
-            return Stack(
-              children: [
-                child!,
-                if (_isInitializing)
-                  Material(
-                    color: Colors.black54,
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/lottie/loading.json',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
+          // builder: (context, child) {
+          //   return Stack(
+          //     children: [
+          //       child!,
+          //       if (_isInitializing)
+          //         Material(
+          //           color: Colors.black54,
+          //           child: Center(
+          //             child: Lottie.asset(
+          //               'assets/lottie/loading.json',
+          //               width: 70,
+          //               height: 70,
+          //               fit: BoxFit.contain,
+          //             ),
+          //           ),
+          //         ),
+          //     ],
+          //   );
+          // },
         );
       },
     );

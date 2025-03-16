@@ -1,20 +1,23 @@
+import 'package:clbdoanhnhansg/notifications/popup_notification.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../../models/notification_model.dart';
+import '../../screens/comment/comments_screen.dart';
 import '../core/base/base_provider.dart';
-import '../repository/notification_repository.dart';
 import '../core/services/socket_service.dart';
-import '../screens/cart/widget/purchase_order_tab.dart';
+import '../repository/notification_repository.dart';
 import 'auth_provider.dart';
-import '../../screens/comment/comments_screen.dart'; // Import CommentsScreen
-import 'package:intl/intl.dart'; // Để định dạng dateTime
+
 
 class NotificationProvider extends BaseProvider {
   final NotificationRepository _notificationRepository =
-      NotificationRepository();
+  NotificationRepository();
   final AuthProvider _authProvider = AuthProvider();
   List<NotificationModel> _notifications = [];
   late SocketService _socketService;
+  BuildContext? _lastContext;
 
   NotificationProvider() {
     _socketService = SocketService();
@@ -22,6 +25,11 @@ class NotificationProvider extends BaseProvider {
   }
 
   List<NotificationModel> get notifications => _notifications;
+
+  // Phương thức để lưu trữ context cuối cùng
+  void setContext(BuildContext context) {
+    _lastContext = context;
+  }
 
   Future<void> _init() async {
     final userId = await _authProvider.getuserID();
@@ -44,7 +52,12 @@ class NotificationProvider extends BaseProvider {
                 final newNotification = NotificationModel.fromJson(item);
                 print(
                     'Parsed notification: ID=${newNotification.id}, Message=${newNotification.message}, Post Title=${newNotification.post?.title}');
+
+                // Thêm thông báo vào danh sách
                 _notifications.insert(0, newNotification);
+
+                // Hiển thị popup thông báo
+                _showNotificationPopup(newNotification);
               } else {
                 print('Invalid notification item: $item');
               }
@@ -61,6 +74,21 @@ class NotificationProvider extends BaseProvider {
       });
     } else {
       print('UserId is null, cannot connect to socket');
+    }
+  }
+
+  // Phương thức hiển thị popup thông báo
+  void _showNotificationPopup(NotificationModel notification) {
+    if (_lastContext != null && _lastContext!.mounted) {
+      // Hiển thị popup thông báo
+      _lastContext!.showNotificationPopup(
+        notification: notification,
+        onDismiss: () {
+          debugPrint('Notification popup dismissed: ${notification.id}');
+        },
+      );
+    } else {
+      print('Context is null or not mounted, cannot show notification popup');
     }
   }
 
@@ -120,8 +148,12 @@ class NotificationProvider extends BaseProvider {
   }
 
   Future<void> fetchNotifications(BuildContext? context) async {
+    if (context != null) {
+      _lastContext = context;
+    }
+
     try {
-      final response = await _notificationRepository.getNotifications(context!);
+      final response = await _notificationRepository.getNotifications(_lastContext!);
       if (response.isSuccess && response.data is List) {
         _notifications = (response.data as List)
             .map((item) => NotificationModel.fromJson(item))
@@ -143,6 +175,7 @@ class NotificationProvider extends BaseProvider {
   void dispose() {
     print('🔴 NotificationProvider dispose() called');
     _socketService.disconnect();
+    _lastContext = null;
     super.dispose();
   }
 }
