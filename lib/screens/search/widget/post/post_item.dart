@@ -752,7 +752,11 @@ class _PostItemState extends State<PostItem> {
       child: widget.isMe
           ? GestureDetector(
               onTap: () {
-                CompanyBottomSheet.show(context, isJoin: widget.isJoin ?? []);
+                CompanyBottomSheet.show(
+                  context, 
+                  isJoin: widget.isJoin ?? [],
+                  postId: widget.postId,
+                );
               },
               child: SizedBox(
                 height: 36,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import '../../models/posts.dart';
 import '../../utils/router/router.name.dart';
 import '../../screens/comment/comments_screen.dart';
@@ -27,6 +28,7 @@ class _ShoppingState extends State<Shopping> {
 
   void _setupScrollListener() {
     _scrollController.addListener(() {
+      // Infinite scroll
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         // Load more posts when user scrolls near the bottom
@@ -40,6 +42,25 @@ class _ShoppingState extends State<Shopping> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // Phương thức để làm mới dữ liệu
+  Future<void> _refreshData() async {
+    try {
+      // Fetch new data
+      await Provider.of<PostProvider>(context, listen: false)
+          .fetchPosts(context);
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi làm mới: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String formatDateTime(DateTime? dateTime) {
@@ -158,67 +179,98 @@ class _ShoppingState extends State<Shopping> {
                 ),
               ),
             ),
+            actions: [
+              // Thêm nút làm mới thủ công
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _refreshData,
+              ),
+            ],
           ),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              await postProvider.fetchPosts(context);
-            },
-            child: postProvider.isLoading && posts.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : posts.isEmpty
-                    ? const Center(
-                        child: Text("Không có bài viết nào."),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        key: ValueKey(
-                            "post_list_${DateTime.now().millisecondsSinceEpoch}"),
-                        itemCount:
-                            posts.length + (postProvider.hasMorePosts ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          // Show loading indicator at the bottom
-                          if (index == posts.length) {
-                            return Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Center(
-                                child: postProvider.isLoadingMore
-                                    ? const CircularProgressIndicator()
-                                    : const SizedBox(),
+          body: postProvider.isLoading && posts.isEmpty
+              ? Center(
+                  child: Lottie.asset(
+                    'assets/lottie/loading.json',
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.contain,
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refreshData,
+                  child: posts.isEmpty
+                      ? ListView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            SizedBox(height: 150),
+                            Center(
+                              child: Text(
+                                "Không có bài viết nào.",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            SizedBox(
+                                height:
+                                    300), // Thêm khoảng trống để có thể cuộn
+                          ],
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          key: ValueKey(
+                              "post_list_${DateTime.now().millisecondsSinceEpoch}"),
+                          itemCount: posts.length +
+                              (postProvider.hasMorePosts ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            // Show loading indicator at the bottom
+                            if (index == posts.length) {
+                              return Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Center(
+                                  child: postProvider.isLoadingMore
+                                      ? Lottie.asset(
+                                          'assets/lottie/loading.json',
+                                          width: 70,
+                                          height: 70,
+                                          fit: BoxFit.contain,
+                                        )
+                                      : const SizedBox(),
+                                ),
+                              );
+                            }
+
+                            final post = posts[index];
+                            // Tạo key duy nhất để đảm bảo widget được tạo mới khi có thay đổi
+                            final uniqueKey = ValueKey(
+                                "post_${post.id}_likes${post.like?.length ?? 0}_comments${post.totalComment ?? 0}");
+
+                            return GestureDetector(
+                              onTap: () =>
+                                  _navigateToCommentScreen(context, post),
+                              child: PostItem(
+                                key: uniqueKey,
+                                postId: post.id ?? '',
+                                postType: post.category ?? 1,
+                                displayName: post.author?.displayName ?? '',
+                                avatar_image: post.author?.avatarImage ?? '',
+                                dateTime: post.createdAt != null
+                                    ? formatDateTime(post.createdAt)
+                                    : '',
+                                title: post.title ?? '',
+                                content: post.content ?? '',
+                                images: post.album ?? [],
+                                business: post.business ?? [],
+                                product: post.product ?? [],
+                                likes: post.like ?? [],
+                                comments: post.totalComment ?? 0,
+                                isJoin: post.isJoin ?? [],
+                                idUser: post.author!.id,
                               ),
                             );
-                          }
-
-                          final post = posts[index];
-                          // Tạo key duy nhất để đảm bảo widget được tạo mới khi có thay đổi
-                          final uniqueKey = ValueKey(
-                              "post_${post.id}_likes${post.like?.length ?? 0}_comments${post.totalComment ?? 0}");
-
-                          return GestureDetector(
-                            onTap: () =>
-                                _navigateToCommentScreen(context, post),
-                            child: PostItem(
-                              key: uniqueKey,
-                              postId: post.id ?? '',
-                              postType: post.category ?? 1,
-                              displayName: post.author?.displayName ?? '',
-                              avatar_image: post.author?.avatarImage ?? '',
-                              dateTime: post.createdAt != null
-                                  ? formatDateTime(post.createdAt)
-                                  : '',
-                              title: post.title ?? '',
-                              content: post.content ?? '',
-                              images: post.album ?? [],
-                              business: post.business ?? [],
-                              product: post.product ?? [],
-                              likes: post.like ?? [],
-                              comments: post.totalComment ?? 0,
-                              isJoin: post.isJoin ?? [],
-                              idUser: post.author!.id,
-                            ),
-                          );
-                        },
-                      ),
-          ),
+                          },
+                        ),
+                ),
         );
       },
     );

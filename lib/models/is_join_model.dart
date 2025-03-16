@@ -40,9 +40,9 @@ class IsJoin {
       user: json['user'] != null ? Author.fromJson(json['user']) : null,
       author: json['author'] ?? '',
       isJoin: json['is_join'] ?? false,
-      review: json['review'] != null
-          ? Review.fromJson(json['review'])
-          : null, // Sửa lỗi kiểu dữ liệu
+      review: json['review'] != null && json['review'] is Map
+          ? Review.fromJson(json['review'] as Map<String, dynamic>)
+          : null,
       isAccept: json['is_accept'] ?? false,
       status: json['status'] ?? 0,
       revenue: json['revenue'] ?? 0,

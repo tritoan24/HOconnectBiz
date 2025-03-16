@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:clbdoanhnhansg/models/is_join_model.dart';
 import 'package:clbdoanhnhansg/widgets/button_widget16.dart';
@@ -8,9 +9,11 @@ import '../../../providers/business_op_provider.dart';
 import '../../../widgets/confirmdialog.dart';
 import '../../manage/widget/shop/widget/checkbox.dart';
 import '../../manage/widget/shop/widget/un_checkbox.dart';
+import '../../../screens/business_opportunity_management/widget/details_post_business.dart';
 
 class CompanyBottomSheet {
-  static void show(BuildContext context, {required List<IsJoin> isJoin}) {
+  static void show(BuildContext context,
+      {required List<IsJoin> isJoin, String? postId}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -25,6 +28,7 @@ class CompanyBottomSheet {
         builder: (context, scrollController) => _CompanyList(
           scrollController: scrollController,
           isJoin: isJoin,
+          postId: postId ?? '',
         ),
       ),
     );
@@ -34,11 +38,13 @@ class CompanyBottomSheet {
 class _CompanyList extends StatefulWidget {
   final ScrollController scrollController;
   final List<IsJoin> isJoin;
+  final String postId;
 
   const _CompanyList({
     Key? key,
     required this.scrollController,
     required this.isJoin,
+    required this.postId,
   }) : super(key: key);
 
   @override
@@ -48,6 +54,56 @@ class _CompanyList extends StatefulWidget {
 class _CompanyListState extends State<_CompanyList> {
   // Thay _selectedCompanyIndex bằng Set<int> để lưu nhiều chỉ số
   final Set<int> _selectedCompanyIndices = {};
+  late BusinessOpProvider businessProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    // Khởi tạo businessProvider
+    businessProvider = Provider.of<BusinessOpProvider>(context, listen: false);
+
+    // Lắng nghe sự thay đổi của businessProvider
+    businessProvider.addListener(_checkNavigation);
+  }
+
+  @override
+  void dispose() {
+    // Hủy lắng nghe khi widget bị hủy
+    businessProvider.removeListener(_checkNavigation);
+    super.dispose();
+  }
+
+  // Phương thức kiểm tra và xử lý điều hướng
+  void _checkNavigation() {
+    // Nếu cần điều hướng và context còn hợp lệ
+    if (businessProvider.shouldNavigate && mounted && context.mounted) {
+      final String postId = businessProvider.pendingNavigationPostId;
+
+      // Đóng bottom sheet nếu đang mở
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Điều hướng đến trang chi tiết - Sử dụng push thông thường để giữ nguyên stack điều hướng
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Xóa trạng thái điều hướng sau khi đã đặt lịch điều hướng
+        businessProvider.clearNavigation();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailsPostBusiness(
+              idPost: postId,
+              isInBusiness: true,
+            ),
+          ),
+        );
+
+        Provider.of<PostProvider>(context, listen: false)
+            .fetchPostsByUser(context);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +169,6 @@ class _CompanyListState extends State<_CompanyList> {
                             leading: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: Image.network(
-                                // Sửa từ Image.asset thành Image.network
                                 join.user?.avatarImage ?? '',
                                 width: 40,
                                 height: 40,
@@ -186,23 +241,12 @@ class _CompanyListState extends State<_CompanyList> {
                             .toList();
 
                         if (selectedIds.isNotEmpty) {
-                          final businessProvider =
-                              Provider.of<BusinessOpProvider>(context,
-                                  listen: false);
+                          // Chỉ truyền postId khi nó không rỗng
+                          final String postIdToUse = widget.postId.trim();
+
+                          // Gọi API duyệt doanh nghiệp
                           await businessProvider.approveBusiness(
-                              selectedIds, context);
-
-                          // 🛑 Đóng Dialog & BottomSheet một cách an toàn
-                          if (mounted)
-                            Navigator.pop(context, true); // Đóng Dialog
-                          if (mounted)
-                            Navigator.pop(context, true); // Đóng BottomSheet
-
-                          // 🔄 Gọi API cập nhật danh sách mới nhất
-                          final boProvider =
-                              Provider.of<BoProvider>(context, listen: false);
-                          await boProvider.fetchBoDataById(
-                              context, boProvider.selectedBo?.id ?? '');
+                              selectedIds, context, postIdToUse);
                         }
                       },
                     ),
@@ -221,4 +265,3 @@ class _CompanyListState extends State<_CompanyList> {
     );
   }
 }
-

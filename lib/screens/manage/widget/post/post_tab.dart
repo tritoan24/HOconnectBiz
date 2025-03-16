@@ -37,7 +37,7 @@ class _PostManageState extends State<PostManageTab> {
       return Scaffold(
         body: RefreshIndicator(
           onRefresh: () async {
-            // await postProvider.fetchPostsByUser(context);
+            await postProvider.fetchPostsByUser(context);
           },
           child: (widget.isMe
                   ? postProvider.isLoading
