@@ -82,7 +82,7 @@ class _HomeState extends State<Home> {
                             "assets/icons/noti.svg",
                           )),
                       // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
-                      if (!hasNewNotifications)
+                      if (hasNewNotifications)
                         Positioned(
                           right: 10,
                           top: 10,
@@ -116,7 +116,7 @@ class _HomeState extends State<Home> {
                             width: 24,
                           )),
                       // Hiển thị dấu chấm đỏ nếu không có ảnh riêng
-                      if (!hasNewMessages)
+                      if (hasNewMessages)
                         Positioned(
                           right: 0,
                           top: 0,
