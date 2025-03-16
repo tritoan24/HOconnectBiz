@@ -1,8 +1,10 @@
 import Flutter
 import UIKit
-import FacebookCore // Facebook SDK
-import GoogleSignIn // Google Sign-In SDK
 import Firebase
+import FirebaseMessaging
+import FBSDKCoreKit
+import FBSDKLoginKit // Facebook SDK
+import GoogleSignIn // Google Sign-In SDK
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -10,9 +12,11 @@ import Firebase
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+      
+      application.registerForRemoteNotifications()
     // Khởi tạo plugin Flutter
     GeneratedPluginRegistrant.register(with: self)
-
+      
     // Khởi tạo Facebook SDK
     ApplicationDelegate.shared.application(
       application,
@@ -25,10 +29,29 @@ import Firebase
         print("Restore previous sign-in failed: \(error.localizedDescription)")
       }
     }
-    FirebaseApp.configure()  // Thêm dòng này
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
+    
+    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+
+           Messaging.messaging().apnsToken = deviceToken
+           super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+         }
+    
+    override func application(
+          _ application: UIApplication,
+          didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+          fetchCompletionHandler completionHandler:
+          @escaping (UIBackgroundFetchResult) -> Void
+        ) {
+          guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+            completionHandler(.failed)
+            return
+          }
+          print(aps)
+        }
 
   // Xử lý URL cho iOS 12 trở xuống
   override func application(

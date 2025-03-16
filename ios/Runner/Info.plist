@@ -73,6 +73,8 @@
 <string>0bf85b9fb4cc49120e8f4239583d4d0c</string>
 <key>FacebookDisplayName</key>
 <string>clbdoanhnhansg</string>
+<key>FirebaseAppDelegateProxyEnabled</key>
+<false/>
 <key>GIDClientID</key>
 <string>1050664475960-8hoi3qm81hd8a5ivjaudji4ms5f2au4s.apps.googleusercontent.com</string>
 
