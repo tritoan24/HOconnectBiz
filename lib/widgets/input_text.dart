@@ -42,9 +42,7 @@ class _InputTextState extends State<InputText> {
         const SizedBox(height: 8),
         FormBuilderTextField(
           controller: widget.controller,
-          maxLines: null, // Cho phép xuống dòng tự do
-          keyboardType: TextInputType.multiline, // Hỗ trợ nhập nhiều dòng
-          textInputAction: TextInputAction.newline, // Enter để xuống dòng
+          maxLines: 1, // Không cho phép xuống dòng
           autovalidateMode: AutovalidateMode.always,
           name: widget.name,
           decoration: InputDecoration(
