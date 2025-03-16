@@ -37,15 +37,14 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
               height: 80,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                return Image.network(
-                  UrlImage.errorImage,
+                return Image.asset(
+                  "assets/images/logo.png",
                   width: 144,
                   height: 80,
                   fit: BoxFit.contain,
                 );
               },
             ),
-
             const SizedBox(height: 30),
 
             // ✅ Căn trái tiêu đề
@@ -147,4 +146,3 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
     );
   }
 }
-

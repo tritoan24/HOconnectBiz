@@ -22,7 +22,7 @@ class AppRoutes {
 
 class UrlImage {
   static const String logo =
-      'https://s3-alpha-sig.figma.com/img/e8a6/fcbf/23ca89da4a102ff351b0378ffb13050c?Expires=1740960000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rlRJLbKgckqhHXSBTWt9CDMOzgXwS5JGDJCoUoTL7WfhqXi~r4n9fidJubTvmUAL0J7~abPrJX8rBvIXdtSgHj3OECT-oVt~f~zk7iKOMwEDunCOz0UFVNbX~gRODeBXsOVPahqvwYR0mvf3DyuJmDntLQHZDnGyuqsJz3PIhFALeCfm6APJwZtp3kQwyanIP2nZ-8h2LIcVuefI6WuK9MZ~zEh8EW0kV5bP~-4UUpKLyW~VR9PIkmr8I0oS-7NgWseaorENFBtoB72hFJKvQLdGTao-XHN0ccnBMNh5KmJ4a7OVgDKpsrF94nAk151qXnOHpf2aKD2KMvplcK-Weg__';
+      'https://s3-alpha-sig.figma.com/img/e8a6/fcbf/23ca89da4a102ff351b0378ffb13050c?Expires=1742774400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rA9gCqdTHJIOi1Z5CA0L0PQuUG5x6tJbNxL13Vg73IeZKHVuZCJKwDwj1Dt9A8On3LlCcrJZPG9cP6Wu7wEdj2NnPpF35AUGowIRburbb~ohw7CI7KQmH41LWPDwyCB5K~uOE7MxivGsKslAWYkSwDm2KzLXxZnyC0b3C5r2LR34V3Ek0w~93SFfQnvUKpltDkyEQsHN5rX6EeRrxk5DtC9Tu8x3ypsZ-g42sOg27ZYmrayF1GyRrFcjv-cOZ50UmytqaUipG4Ad2FXWYcJHva~hDRRHO0rTH4Vtu0JiedR4Wr4IK0khoGpuvXA4kxtNcfCbWjLb6XYP6Ot7-RwZcg__';
   static const String errorImage =
       "https://tse1.mm.bing.net/th?id=OIP.flCldMtHhZ6gsHhQgPyZbgHaHa&pid=Api&P=0&h=220";
 

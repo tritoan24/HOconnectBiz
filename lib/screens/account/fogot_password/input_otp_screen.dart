@@ -90,6 +90,14 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                         width: 144,
                         height: 80,
                         fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/images/logo.png",
+                            width: 144,
+                            height: 80,
+                            fit: BoxFit.contain,
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -274,4 +282,3 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
     );
   }
 }
-
