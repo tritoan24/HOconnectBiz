@@ -165,6 +165,10 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int totalMem = 0;
+    if (contact.avatarImage is List) {
+      totalMem = contact.avatarImage.length;
+    }
     return GestureDetector(
       onTap: () {
         if (contact.type == "Group") {
@@ -176,7 +180,8 @@ class MessageTile extends StatelessWidget {
                 idMessage: idMessage,
                 groupId: contact.id,
                 groupName: contact.displayName,
-                quantityMember: 0, // Set appropriate value or make optional
+                quantityMember:
+                    totalMem, // Set appropriate value or make optional
               ),
             ),
           );
