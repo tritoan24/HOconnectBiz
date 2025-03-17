@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/providers/chat_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/widget/message_input.dart';
+import '../../widgets/galleryphotoview.dart';
+import '../../utils/router/router.name.dart';
 
 import '../../core/services/socket_service.dart';
 
@@ -268,14 +270,68 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                 width: 0.5,
                               ),
                             ),
-                            child: Text(
-                              message.content ?? "",
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5,
-                                color: const Color(0xFF141415),
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  message.content ?? "",
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5,
+                                    color: const Color(0xFF141415),
+                                  ),
+                                ),
+                                if (message.album != null && message.album!.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => GalleryPhotoViewWrapper(
+                                              galleryItems: message.album!,
+                                              initialIndex: 0,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Hero(
+                                        tag: message.album!.first,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                              child: Image.network(
+                                                message.album!.first,
+                                                width: double.infinity,
+                                                height: 200,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            if (message.album!.length > 1)
+                                              Container(
+                                                width: double.infinity,
+                                                height: 200,
+                                                color: Colors.black.withOpacity(0.5),
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  "+${message.album!.length - 1}",
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                           Padding(
