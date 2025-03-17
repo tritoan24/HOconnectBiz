@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/providers/chat_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/widget/message_input.dart';
+import '../../models/message_model.dart';
 import '../../widgets/galleryphotoview.dart';
 import '../../utils/router/router.name.dart';
 
@@ -210,165 +211,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    bool isMe = message.sender?.id == widget.currentUserId;
-
-                    return Align(
-                      alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: isMe
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          if (!isMe)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 8, bottom: 4),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                        message.sender?.avatarImage ?? ""),
-                                    radius: 12,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    child: Text(
-                                      message.sender?.displayName ?? "Unknown",
-                                      textAlign: TextAlign.justify,
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.333,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.all(10),
-                            width: 290,
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? const Color(0xFFD6E9FF)
-                                  : const Color(0xFFE9EBED),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isMe
-                                    ? const Color(0xFFD6D9DC)
-                                    : const Color(0xFF006AF5),
-                                width: 0.5,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message.content ?? "",
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.5,
-                                    color: const Color(0xFF141415),
-                                  ),
-                                ),
-                                if (message.album != null && message.album!.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => GalleryPhotoViewWrapper(
-                                              galleryItems: message.album!,
-                                              initialIndex: 0,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      child: Hero(
-                                        tag: message.album!.first,
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              child: Image.network(
-                                                message.album!.first,
-                                                width: double.infinity,
-                                                height: 200,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  // Hiển thị hình ảnh thay thế khi gặp lỗi
-                                                  return Container(
-                                                    width: double.infinity,
-                                                    height: 200,
-                                                    color: Colors.grey[300],
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Icon(Icons.error_outline, size: 50, color: Colors.red),
-                                                        SizedBox(height: 8),
-                                                        Text(
-                                                          "Không thể tải ảnh",
-                                                          style: TextStyle(color: Colors.grey[800]),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                            if (message.album!.length > 1)
-                                              Container(
-                                                width: double.infinity,
-                                                height: 200,
-                                                color: Colors.black.withOpacity(0.5),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  "+${message.album!.length - 1}",
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 8, right: 8, bottom: 8),
-                            child: Text(
-                              message.getFormattedTime(),
-                              style: GoogleFonts.roboto(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5,
-                                color: const Color(0xFF767A7F),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    return _buildMessageBubble(message);
                   },
                 );
               },
@@ -398,5 +241,236 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildMessageBubble(Message message) {
+    bool isMe = message.sender?.id == widget.currentUserId;
+
+    return Dismissible(
+      key: ObjectKey(message.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        _deleteMessage(message.id!);
+      },
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            if (!isMe)
+              Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      backgroundImage:
+                          NetworkImage(message.sender?.avatarImage ?? ""),
+                      radius: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        message.sender?.displayName ?? "Unknown",
+                        textAlign: TextAlign.justify,
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          height: 1.333,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(10),
+              width: 290,
+              decoration: BoxDecoration(
+                color: isMe ? const Color(0xFFD6E9FF) : const Color(0xFFE9EBED),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color:
+                      isMe ? const Color(0xFFD6D9DC) : const Color(0xFF006AF5),
+                  width: 0.5,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message.content.toString(),
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: const Color(0xFF141415),
+                    ),
+                  ),
+                  if (message.album != null && message.album!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GalleryPhotoViewWrapper(
+                                galleryItems: message.album!,
+                                initialIndex: 0,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Hero(
+                          tag: message.album!.first,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  message.album!.first,
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Hiển thị hình ảnh thay thế khi gặp lỗi
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      color: Colors.grey[300],
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.error_outline,
+                                              size: 50, color: Colors.red),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            "Không thể tải ảnh",
+                                            style: TextStyle(
+                                                color: Colors.grey[800]),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              if (message.album!.length > 1)
+                                Container(
+                                  width: double.infinity,
+                                  height: 200,
+                                  color: Colors.black.withOpacity(0.5),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "+${message.album!.length - 1}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (message.status == MessageStatus.sending && isMe)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.grey),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Đang gửi...",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (message.status == MessageStatus.error && isMe)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error_outline,
+                              size: 12, color: Colors.red),
+                          const SizedBox(width: 4),
+                          Text(
+                            message.errorMessage ?? "Không gửi được",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              _retryMessage(message);
+                            },
+                            child: Text(
+                              "Thử lại",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+              child: Text(
+                message.getFormattedTime(),
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: const Color(0xFF767A7F),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _retryMessage(Message message) {
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.updateMessageStatus(message.id!, MessageStatus.sending);
+
+    _sendMessage(message.content ?? "", []);
   }
 }
