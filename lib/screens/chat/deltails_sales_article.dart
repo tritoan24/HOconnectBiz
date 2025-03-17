@@ -96,7 +96,11 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   void _scrollToBottom() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 100, // Thêm padding
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
@@ -143,7 +147,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         selectedImages = [];
       });
 
-      _scrollToBottom();
+      // _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -166,15 +170,22 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                 if (messages.isEmpty) {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
-                // Cuộn xuống khi có tin nhắn mới
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToBottom();
-                });
+
+                // Chỉ cuộn khi có tin nhắn mới được thêm vào
+                if (messages.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToBottom();
+                  });
+                }
 
                 return ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.only(
-                      top: 16, left: 16, right: 16, bottom: 80),
+                    top: 16,
+                    left: 16,
+                    right: 16,
+                    bottom: 100, // Tăng padding bottom
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
@@ -188,13 +199,13 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
       ),
       bottomSheet: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Màu nền
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1), // Màu đổ bóng
-              blurRadius: 6, // Độ mờ
-              spreadRadius: 1, // Độ lan
-              offset: Offset(0, -3), // Hướng bóng (âm nghĩa là lên trên)
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              spreadRadius: 1,
+              offset: const Offset(0, -3),
             ),
           ],
         ),
@@ -435,13 +446,16 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                       height: 200,
                                       color: Colors.grey[300],
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.error_outline, size: 50, color: Colors.red),
+                                          Icon(Icons.error_outline,
+                                              size: 50, color: Colors.red),
                                           SizedBox(height: 8),
                                           Text(
                                             "Không thể tải ảnh",
-                                            style: TextStyle(color: Colors.grey[800]),
+                                            style: TextStyle(
+                                                color: Colors.grey[800]),
                                           ),
                                         ],
                                       ),
@@ -480,7 +494,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             height: 12,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.grey),
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -500,7 +515,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.error_outline, size: 12, color: Colors.red),
+                          Icon(Icons.error_outline,
+                              size: 12, color: Colors.red),
                           const SizedBox(width: 4),
                           Text(
                             message.errorMessage ?? "Không gửi được",
@@ -512,13 +528,17 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () {
-                              final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+                              final chatProvider = Provider.of<ChatProvider>(
+                                  context,
+                                  listen: false);
                               chatProvider.sendMessage(
                                 message.content ?? "",
                                 message.receiver?.id ?? "",
                                 message.id.toString(),
                                 context,
-                                files: message.album?.map((url) => File(url)).toList(),
+                                files: message.album
+                                    ?.map((url) => File(url))
+                                    .toList(),
                               );
                             },
                             child: Text(

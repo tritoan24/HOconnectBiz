@@ -63,6 +63,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.addListener(() {
+      if (chatProvider.messages.isNotEmpty) {
+        _scrollToBottom();
+      }
+    });
+  }
+
   void _connectToSpecificChatRoom() {
     // Kết nối tới phòng chat giữa 2 người dùng
     // _socketService.connect(widget.currentUserId);
@@ -85,21 +96,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.dispose();
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     Provider.of<ChatProvider>(context, listen: false)
-  //         .getListDetailChat(context, widget.idMessage);
-  //     _scrollToBottom();
-  //   });
-  // }
-
   void _scrollToBottom() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 50,
+          _scrollController.position.maxScrollExtent + 100,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -148,7 +149,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         selectedImages = [];
       });
 
-      _scrollToBottom();
+      // _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -207,7 +208,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 }
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(
+                    top: 16,
+                    left: 16,
+                    right: 16,
+                    bottom: 100,
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
