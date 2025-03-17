@@ -46,6 +46,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Sử dụng ChatProvider để xử lý socket
@@ -62,9 +63,19 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     // Ghi chú: không ngắt kết nối toàn bộ socket mà chỉ thoát phòng
     // ChatProvider sẽ quản lý việc này
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels <= 0) {
+      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
+        chatProvider.loadMoreMessages(context);
+      }
+    }
   }
 
   void _connectToSpecificChatRoom() {
@@ -87,8 +98,9 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     super.didChangeDependencies();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
     chatProvider.addListener(() {
-      if (chatProvider.messages.isNotEmpty) {
-        _scrollToBottom();
+      // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
+      if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
+        // _scrollToBottom();
       }
     });
   }
@@ -147,7 +159,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         selectedImages = [];
       });
 
-      // _scrollToBottom();
+      _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -178,19 +190,36 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                   });
                 }
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.only(
-                    top: 16,
-                    left: 16,
-                    right: 16,
-                    bottom: 100, // Tăng padding bottom
-                  ),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return _buildMessageBubble(message);
-                  },
+                return Stack(
+                  children: [
+                    ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 16,
+                        right: 16,
+                        bottom: 100,
+                      ),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        return _buildMessageBubble(message);
+                      },
+                    ),
+                    if (chatProvider.isLoadingMore)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          color: Colors.white.withOpacity(0.8),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),

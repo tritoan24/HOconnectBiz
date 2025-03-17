@@ -42,6 +42,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void initState() {
     super.initState();
     _socketService = SocketService();
+    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Khởi tạo socket và kết nối tới phòng chat
@@ -68,8 +69,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.didChangeDependencies();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
     chatProvider.addListener(() {
-      if (chatProvider.messages.isNotEmpty) {
-        _scrollToBottom();
+      // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
+      if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
+        print('isLoadingMore: ${chatProvider.isLoadingMore}');
+        // _scrollToBottom();
       }
     });
   }
@@ -91,6 +94,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     // Không ngắt kết nối socket khi thoát màn hình
     // vì chúng ta muốn tiếp tục nhận thông báo
     super.dispose();
@@ -106,6 +110,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         );
       }
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels <= 0) {
+      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
+        chatProvider.loadMoreMessages(context);
+      }
+    }
   }
 
   void _deleteMessage(String messageId) async {
@@ -149,7 +162,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         selectedImages = [];
       });
 
-      // _scrollToBottom();
+      _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -206,19 +219,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 if (messages.isEmpty) {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.only(
-                    top: 16,
-                    left: 16,
-                    right: 16,
-                    bottom: 100,
-                  ),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return _buildMessageBubble(message);
-                  },
+
+                return Stack(
+                  children: [
+                    ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 16,
+                        right: 16,
+                        bottom: 100,
+                      ),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        return _buildMessageBubble(message);
+                      },
+                    ),
+                    if (chatProvider.isLoadingMore)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          color: Colors.white.withOpacity(0.8),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),

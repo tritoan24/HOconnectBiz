@@ -35,11 +35,11 @@ class ChatRepository {
   }
 
   //get list detail chat
-  Future<ApiResponse> getListDetailChat(
-      BuildContext context, String idMessage) async {
+  Future<ApiResponse> getListDetailChat(BuildContext context, String idMessage,
+      {int page = 1, int limit = 15}) async {
     try {
       final response = await _apiClient.getRequest(
-        '${ApiEndpoints.chatConversation}/$idMessage',
+        '${ApiEndpoints.chatConversation}/$idMessage?page=$page&limit=$limit',
         context,
       );
 
@@ -125,4 +125,3 @@ class ChatRepository {
     }
   }
 }
-
