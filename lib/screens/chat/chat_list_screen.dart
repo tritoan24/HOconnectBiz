@@ -31,7 +31,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-      
+
       // Reset số lượng tin nhắn mới
       try {
         final postProvider = Provider.of<PostProvider>(context, listen: false);
@@ -72,7 +72,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           Consumer<ChatProvider>(
             builder: (context, chatProvider, child) {
               final badgeCount = chatProvider.cartItemCount;
-              
+
               return Stack(
                 children: [
                   Padding(
@@ -82,8 +82,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         "assets/icons/card.svg",
                       ),
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => const Cart()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Cart()));
                       },
                     ),
                   ),
@@ -163,6 +165,10 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int totalMem = 0;
+    if (contact.avatarImage is List) {
+      totalMem = contact.avatarImage.length;
+    }
     return GestureDetector(
       onTap: () {
         if (contact.type == "Group") {
@@ -174,7 +180,8 @@ class MessageTile extends StatelessWidget {
                 idMessage: idMessage,
                 groupId: contact.id,
                 groupName: contact.displayName,
-                quantityMember: 0, // Set appropriate value or make optional
+                quantityMember:
+                    totalMem, // Set appropriate value or make optional
               ),
             ),
           );
@@ -203,18 +210,26 @@ class MessageTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 8),
           child: ListTile(
-            leading: _buildAvatar(),
+            leading: Align(
+              alignment: Alignment.center, // This centers the avatar vertically
+              widthFactor: 1, // Important to prevent horizontal stretching
+              child: _buildAvatar(),
+            ),
             title: Text(
               contact.displayName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: Text(
-              contact.lastMessage.content,
-              style: const TextStyle(color: Colors.grey),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            subtitle: Padding(
+              padding: const EdgeInsets.only(
+                  top: 4), // Adds 4px spacing above the subtitle
+              child: Text(
+                contact.lastMessage.content,
+                style: const TextStyle(color: Colors.grey),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -224,24 +239,6 @@ class MessageTile extends StatelessWidget {
                   contact.getFormattedTime(),
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-                if (contact.type == "Group") const SizedBox(height: 4),
-                // if (contact.type == "Group")
-                //   Container(
-                //     padding:
-                //         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                //     decoration: BoxDecoration(
-                //       color: Colors.blue.shade100,
-                //       borderRadius: BorderRadius.circular(10),
-                //     ),
-                //     child: const Text(
-                //       "Nhóm",
-                //       style: TextStyle(
-                //         color: Colors.blue,
-                //         fontSize: 10,
-                //         fontWeight: FontWeight.bold,
-                //       ),
-                //     ),
-                //   ),
               ],
             ),
           ),
@@ -281,8 +278,8 @@ class MessageTile extends StatelessWidget {
         );
       }
 
-    // If we have only 1 avatar, show default group image
-      if (avatarUrls.length == 1) {
+      // If we have only 1 avatar, show default group image
+      if (avatarUrls.length <= 3) {
         return Container(
           width: 40, // Keep original container size
           height: 40, // Keep original container size
@@ -311,34 +308,91 @@ class MessageTile extends StatelessWidget {
         width: 40,
         height: 40,
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            // Show the first 3 avatars
-            for (int i = 0; i < min(3, avatarUrls.length); i++)
-              Positioned(
-                left: i * 10.0,
+            // First avatar (top left)
+            Positioned(
+              left: -8,
+              top: -6,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2,
+                  ),
+                ),
                 child: CircleAvatar(
-                  backgroundImage: NetworkImage(avatarUrls[i]),
+                  backgroundImage: NetworkImage(avatarUrls[0]),
                   radius: 12,
                 ),
               ),
+            ),
 
-            // If there are more than 3 avatars, show the count
+            // Second avatar (top right)
+            if (avatarUrls.length > 1)
+              Positioned(
+                right: 0,
+                top: -6,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(avatarUrls[1]),
+                    radius: 12,
+                  ),
+                ),
+              ),
+
+            // Third avatar (bottom)
+            if (avatarUrls.length > 2)
+              Positioned(
+                left: -8,
+                bottom: -6,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(avatarUrls[2]),
+                    radius: 12,
+                  ),
+                ),
+              ),
+
+            // Counter for additional avatars
             if (avatarUrls.length > 3)
               Positioned(
                 right: 0,
-                bottom: 0,
+                bottom: -6,
                 child: Container(
-                  padding: EdgeInsets.all(2),
+                  width: 27, // Fixed width 24px
+                  height: 27, // Fixed height 24px
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Color(0xffE9EBED),
                     shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '+${avatarUrls.length - 3}',
-                    style: TextStyle(
+                    border: Border.all(
                       color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '+${avatarUrls.length - 3}',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -361,4 +415,3 @@ class MessageTile extends StatelessWidget {
     }
   }
 }
-
