@@ -81,7 +81,7 @@
     <string>Application needs to access your current location</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>To update client's profile picture and and customer profile photo</string>
-<string>CLB DNSG</string>
+
 <key>GIDClientID</key>
 <string>1050664475960-8hoi3qm81hd8a5ivjaudji4ms5f2au4s.apps.googleusercontent.com</string>
 
