@@ -61,14 +61,15 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CommentProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => BusinessOpProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => RankProvider()),
         ChangeNotifierProvider(create: (_) => BoProvider()),
         ChangeNotifierProvider(create: (_) => MemberShipProvider()),
         ChangeNotifierProvider(create: (_) => StatisticalProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => SocketService()),
+        ChangeNotifierProvider(create: (_) => socketService),
+        ChangeNotifierProvider(
+            create: (_) => NotificationProvider(socketService: socketService))
       ],
       child: const MyApp(),
     ),
