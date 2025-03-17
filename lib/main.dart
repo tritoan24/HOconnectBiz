@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/app.dart';
 import 'package:clbdoanhnhansg/config/app_config.dart';
 import 'package:clbdoanhnhansg/core/services/socket_service.dart';
 import 'package:clbdoanhnhansg/providers/StatisticalProvider.dart';
@@ -15,12 +16,9 @@ import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import 'package:clbdoanhnhansg/providers/rank_provider.dart';
 import 'package:clbdoanhnhansg/providers/user_provider.dart';
-import 'package:clbdoanhnhansg/utils/router/router.dart';
-import 'package:clbdoanhnhansg/widgets/handling_permissions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -75,83 +73,4 @@ void main() async {
       child: const MyApp(),
     ),
   );
-}
-
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  bool _isInitializing = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use post-frame callback to ensure UI is ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeApp();
-    });
-  }
-
-  Future<void> _initializeApp() async {
-    setState(() => _isInitializing = true);
-
-    // Request permissions first
-    await PermissionService.requestPermissions(context);
-
-    // Then check login status
-    if (mounted) {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .checkLoginStatus(context);
-    }
-
-    if (mounted) {
-      setState(() => _isInitializing = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              elevation: 5,
-              surfaceTintColor: Colors.transparent,
-              shadowColor: Colors.white,
-              backgroundColor: Colors.white,
-            ),
-          ),
-          routerConfig: appRouter,
-          title: 'GoRouter Flutter Example',
-          builder: (context, child) {
-            return Stack(
-              children: [
-                child!,
-                if (_isInitializing)
-                  Material(
-                    color: Colors.black54,
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/lottie/loading.json',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
 }

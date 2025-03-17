@@ -1,5 +1,7 @@
 import 'package:clbdoanhnhansg/providers/notification_provider.dart';
+import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'conten_thong_bao.dart';
@@ -40,7 +42,7 @@ class _NotificationState extends State<NotificationScreen> {
         title: Row(
           children: [
             GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () =>  GoRouter.of(context).go(AppRoutes.trangChu),
               child: const Icon(Icons.arrow_back_ios),
             ),
             const SizedBox(width: 8),
