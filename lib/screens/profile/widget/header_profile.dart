@@ -14,13 +14,25 @@ class HeaderProfile extends StatefulWidget {
 class _HeaderProfileState extends State<HeaderProfile> {
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+    
+    // Tính toán các kích thước tương đối
+    final headerHeight = height * 0.2;
+    final avatarSize = width * 0.18;
+    final containerPadding = width * 0.03;
+    final containerMargin = width * 0.03;
+    final borderRadius = width * 0.02;
+
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
       final user = userProvider.author;
       return Stack(
         children: [
+          // Background container
           Container(
-            height: 182,
-            width: MediaQuery.of(context).size.width,
+            height: headerHeight,
+            width: width,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/images/backgroudprofile.png"),
@@ -28,21 +40,21 @@ class _HeaderProfileState extends State<HeaderProfile> {
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.center,
+          // Content container
+          Positioned(
+            left: containerMargin,
+            right: containerMargin,
+            bottom: -headerHeight * 0.33, // Đặt container ở 2/3 phía dưới
             child: Container(
-              padding: const EdgeInsets.all(12.0),
-              //margin trái và phải của container
-              margin: const EdgeInsets.only(left: 12, right: 12, top: 70),
-              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(containerPadding),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: const [
                   BoxShadow(
                     color: Color.fromRGBO(20, 20, 21, 0.14),
-                    blurRadius: 6, // Độ mờ của bóng
-                    offset: Offset(0, 2), // Vị trí bóng
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
@@ -53,47 +65,50 @@ class _HeaderProfileState extends State<HeaderProfile> {
                       (user?.avatarImage.isEmpty ?? true)
                           ? "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg"
                           : user!.avatarImage,
-                      width: 68,
-                      height: 68,
+                      width: avatarSize,
+                      height: avatarSize,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Image.network(
                           UrlImage.errorImage,
-                          width: 88,
-                          height: 88,
+                          width: avatarSize,
+                          height: avatarSize,
                           fit: BoxFit.cover,
                         );
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: width * 0.04),
                   Expanded(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.displayName ?? 'Không có tên',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontStyle: FontStyle.normal,
-                          fontWeight: FontWeight.w700,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min, // Cho phép co dãn theo nội dung
+                      children: [
+                        Text(
+                          user?.displayName ?? 'Không có tên',
+                          style: TextStyle(
+                            fontSize: width * 0.042,
+                            fontStyle: FontStyle.normal,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          textAlign: TextAlign.left,
                         ),
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(
-                        (user?.description == "")
-                            ? 'Chưa cập nhật'
-                            : user!.description,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontStyle: FontStyle.normal,
-                          fontWeight: FontWeight.w400,
+                        SizedBox(height: height * 0.005), // Khoảng cách giữa tên và mô tả
+                        Text(
+                          (user?.description == "")
+                              ? 'Chưa cập nhật'
+                              : user!.description,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: width * 0.032,
+                            fontStyle: FontStyle.normal,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
-                  ))
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
