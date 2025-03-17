@@ -180,8 +180,7 @@ class MessageTile extends StatelessWidget {
                 idMessage: idMessage,
                 groupId: contact.id,
                 groupName: contact.displayName,
-                quantityMember:
-                    totalMem, // Set appropriate value or make optional
+                quantityMember: totalMem,
               ),
             ),
           );
