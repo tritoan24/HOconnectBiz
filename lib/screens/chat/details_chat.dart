@@ -309,6 +309,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                                 width: double.infinity,
                                                 height: 200,
                                                 fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  // Hiển thị hình ảnh thay thế khi gặp lỗi
+                                                  return Container(
+                                                    width: double.infinity,
+                                                    height: 200,
+                                                    color: Colors.grey[300],
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Icon(Icons.error_outline, size: 50, color: Colors.red),
+                                                        SizedBox(height: 8),
+                                                        Text(
+                                                          "Không thể tải ảnh",
+                                                          style: TextStyle(color: Colors.grey[800]),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                             ),
                                             if (message.album!.length > 1)
