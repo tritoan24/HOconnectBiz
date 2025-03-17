@@ -104,7 +104,7 @@ class _PostItemState extends State<PostItem> {
   @override
   void didUpdateWidget(PostItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Nếu danh sách likes thay đổi, cập nhật lại likeCount và isLiked
     if (oldWidget.likes.length != widget.likes.length) {
       setState(() {
@@ -114,7 +114,8 @@ class _PostItemState extends State<PostItem> {
           isLiked = widget.likes.contains(idUserID);
         }
       });
-      debugPrint("🔍 DEBUG PostItem: Cập nhật từ didUpdateWidget - likeCount=$likeCount, isLiked=$isLiked");
+      debugPrint(
+          "🔍 DEBUG PostItem: Cập nhật từ didUpdateWidget - likeCount=$likeCount, isLiked=$isLiked");
     }
   }
 
@@ -162,19 +163,17 @@ class _PostItemState extends State<PostItem> {
     debugPrint(
         "🔍 DEBUG PostItem: Số lượng like thay đổi từ $oldLikeCount thành $likeCount");
 
-    // Gọi API để cập nhật trạng thái like trên server và trong PostProvider
-    postProvider.toggleLike(widget.postId, context).then((_) {
-      debugPrint("🔍 DEBUG PostItem: Đã gọi postProvider.toggleLike");
-      
-      // Không cần setState ở đây nữa vì trạng thái đã được cập nhật phía trên
-      // và postProvider sẽ cập nhật lại dữ liệu thông qua notifyListeners
+    // Gọi API để cập nhật trạng thái like trên server nhưng đánh dấu là không cập nhật UI
+    postProvider.toggleLikeWithoutNotify(widget.postId, context).then((_) {
+      debugPrint(
+          "🔍 DEBUG PostItem: Đã gọi postProvider.toggleLikeWithoutNotify");
     }).catchError((error) {
       // Nếu có lỗi, khôi phục lại trạng thái gốc
       debugPrint("🔍 DEBUG PostItem: Lỗi khi gọi toggleLike: $error");
-      setState(() {
-        isLiked = oldIsLiked;
-        likeCount = oldLikeCount;
-      });
+      // setState(() {
+      //   isLiked = oldIsLiked;
+      //   likeCount = oldLikeCount;
+      // });
     });
   }
 
@@ -774,7 +773,7 @@ class _PostItemState extends State<PostItem> {
           ? GestureDetector(
               onTap: () {
                 CompanyBottomSheet.show(
-                  context, 
+                  context,
                   isJoin: widget.isJoin ?? [],
                   postId: widget.postId,
                 );

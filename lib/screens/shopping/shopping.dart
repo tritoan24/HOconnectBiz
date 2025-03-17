@@ -127,14 +127,15 @@ class _ShoppingState extends State<Shopping> {
       // THAY ĐỔI Ở ĐÂY: Không gọi fetchPosts, thay vào đó chỉ cập nhật bài viết cụ thể
       final updatedPost = postProvider.getPostById(post.id ?? '');
       if (updatedPost != null) {
-        debugPrint("🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
-        
+        debugPrint(
+            "🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
+
         // Hiển thị thông báo ngắn để xác nhận cập nhật
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Đã cập nhật dữ liệu mới nhất"),
           duration: Duration(seconds: 1),
         ));
-      
+
         // Ép Flutter refresh UI
         setState(() {});
       }
@@ -179,13 +180,6 @@ class _ShoppingState extends State<Shopping> {
                 ),
               ),
             ),
-            actions: [
-              // Thêm nút làm mới thủ công
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _refreshData,
-              ),
-            ],
           ),
           body: postProvider.isLoading && posts.isEmpty
               ? Center(

@@ -184,15 +184,28 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
               },
             ),
           ),
-          MessageInputScreen(
-            onMessageChanged: (message, images) {
-              setState(() {
-                selectedImages = images;
-              });
-            },
-            onSubmit: _sendMessage,
-          ),
         ],
+      ),
+      bottomSheet: Container(
+        decoration: BoxDecoration(
+          color: Colors.white, // Màu nền
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1), // Màu đổ bóng
+              blurRadius: 6, // Độ mờ
+              spreadRadius: 1, // Độ lan
+              offset: Offset(0, -3), // Hướng bóng (âm nghĩa là lên trên)
+            ),
+          ],
+        ),
+        child: MessageInputScreen(
+          onMessageChanged: (message, images) {
+            setState(() {
+              selectedImages = images;
+            });
+          },
+          onSubmit: _sendMessage,
+        ),
       ),
     );
   }
