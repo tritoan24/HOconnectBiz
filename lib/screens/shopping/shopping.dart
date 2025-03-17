@@ -124,20 +124,20 @@ class _ShoppingState extends State<Shopping> {
     if (result == true) {
       debugPrint("🔍 DEBUG Shopping: Nhận result=true từ màn hình comment");
 
-      // Làm mới toàn bộ dữ liệu từ server
-      await postProvider.fetchPosts(context);
-
-      // Hiển thị thông báo ngắn để xác nhận cập nhật
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Đã cập nhật dữ liệu mới nhất"),
-        duration: Duration(seconds: 1),
-      ));
-
-      debugPrint(
-          "🔍 DEBUG Shopping: Đã cập nhật lại toàn bộ danh sách bài viết");
-
-      // Ép Flutter refresh UI
-      setState(() {});
+      // THAY ĐỔI Ở ĐÂY: Không gọi fetchPosts, thay vào đó chỉ cập nhật bài viết cụ thể
+      final updatedPost = postProvider.getPostById(post.id ?? '');
+      if (updatedPost != null) {
+        debugPrint("🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
+        
+        // Hiển thị thông báo ngắn để xác nhận cập nhật
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Đã cập nhật dữ liệu mới nhất"),
+          duration: Duration(seconds: 1),
+        ));
+      
+        // Ép Flutter refresh UI
+        setState(() {});
+      }
     } else {
       debugPrint("🔍 DEBUG Shopping: Không có thay đổi từ màn hình comment");
     }
@@ -218,8 +218,6 @@ class _ShoppingState extends State<Shopping> {
                       : ListView.builder(
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(),
-                          key: ValueKey(
-                              "post_list_${DateTime.now().millisecondsSinceEpoch}"),
                           itemCount: posts.length +
                               (postProvider.hasMorePosts ? 1 : 0),
                           itemBuilder: (context, index) {

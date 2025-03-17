@@ -101,6 +101,23 @@ class _PostItemState extends State<PostItem> {
     _loadUserStatusJoinBusiness(authProvider);
   }
 
+  @override
+  void didUpdateWidget(PostItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Nếu danh sách likes thay đổi, cập nhật lại likeCount và isLiked
+    if (oldWidget.likes.length != widget.likes.length) {
+      setState(() {
+        likeCount = widget.likes.length;
+        // Chỉ cập nhật isLiked nếu đã có idUserID
+        if (idUserID != null && idUserID!.isNotEmpty) {
+          isLiked = widget.likes.contains(idUserID);
+        }
+      });
+      debugPrint("🔍 DEBUG PostItem: Cập nhật từ didUpdateWidget - likeCount=$likeCount, isLiked=$isLiked");
+    }
+  }
+
   Future<void> _loadUserIdandStatusLikePost(AuthProvider authProvider) async {
     final userId = await authProvider.getuserID();
     final oldIsLiked = isLiked;
@@ -148,12 +165,16 @@ class _PostItemState extends State<PostItem> {
     // Gọi API để cập nhật trạng thái like trên server và trong PostProvider
     postProvider.toggleLike(widget.postId, context).then((_) {
       debugPrint("🔍 DEBUG PostItem: Đã gọi postProvider.toggleLike");
-
-      // Gửi thông báo cho CommentsScreen khi like thay đổi
-      // if (widget.isComment) {
-      //   debugPrint("🔍 DEBUG PostItem: Gửi thông báo thay đổi trạng thái like");
-      //   PostItemChangedNotification(widget.postId, isLiked).dispatch(context);
-      // }
+      
+      // Không cần setState ở đây nữa vì trạng thái đã được cập nhật phía trên
+      // và postProvider sẽ cập nhật lại dữ liệu thông qua notifyListeners
+    }).catchError((error) {
+      // Nếu có lỗi, khôi phục lại trạng thái gốc
+      debugPrint("🔍 DEBUG PostItem: Lỗi khi gọi toggleLike: $error");
+      setState(() {
+        isLiked = oldIsLiked;
+        likeCount = oldLikeCount;
+      });
     });
   }
 
@@ -200,7 +221,7 @@ class _PostItemState extends State<PostItem> {
         debugPrint(
             "🔍 DEBUG PostItem: Cập nhật UI sau khi quay lại từ màn chi tiết");
 
-        // Lấy dữ liệu mới nhất từ provider
+        // Lấy dữ liệu mới nhất từ provider mà không tải lại toàn bộ danh sách
         final postProvider = Provider.of<PostProvider>(context, listen: false);
         final updatedPost = postProvider.getPostById(widget.postId);
 
@@ -1035,7 +1056,7 @@ class _PostItemState extends State<PostItem> {
       debugPrint(
           "🔍 DEBUG PostItem: Cập nhật UI sau khi quay lại từ màn comments");
 
-      // Lấy dữ liệu mới nhất từ provider
+      // Lấy dữ liệu mới nhất từ provider mà không tải lại toàn bộ danh sách
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final updatedPost = postProvider.getPostById(widget.postId);
 
