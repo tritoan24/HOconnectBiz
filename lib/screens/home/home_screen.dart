@@ -32,10 +32,12 @@ class _TrangChuViewState extends State<TrangChuView> {
 
   @override
   Widget build(BuildContext context) {
-    final notificationProvider = Provider.of<NotificationProvider>(context);
+    // final notificationProvider = Provider.of<NotificationProvider>(context);
+    //
+    // // Cập nhật context cho NotificationProvider
+    // notificationProvider.setContext(context);
 
-    // Cập nhật context cho NotificationProvider
-    notificationProvider.setContext(context);
+    final size = MediaQuery.of(context).size;
 
     return GestureDetector(
       onTap: () {
@@ -50,12 +52,13 @@ class _TrangChuViewState extends State<TrangChuView> {
           body: _pages[selectedIndex],
           bottomNavigationBar: ConvexAppBar(
             curveSize: 90,
-            top: -30,
+            top: -27,
             height: 70,
             backgroundColor: Colors.white,
             color: Colors.grey,
             style: TabStyle.fixedCircle,
             activeColor: Colors.blue,
+            cornerRadius: 32,
             items: [
               TabItem(
                 icon: SvgPicture.asset(

@@ -40,6 +40,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy kích thước màn hình
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
     return Scaffold(
       backgroundColor: const Color(0x00f4f5f6),
       body: Consumer<UserProvider>(builder: (context, userProvider, child) {
@@ -54,31 +59,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return const Center(
               child: Text('Không thể tải thông tin người dùng'));
         }
-        return const Column(
-          children: [
-            HeaderProfile(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20),
-                    Center(
-                      child: Column(
-                        children: [
-                          Member(),
-                          ListProfile(),
-                        ],
-                      ),
+
+        // Tính toán padding dựa trên kích thước màn hình
+        final verticalPadding = height * 0.02;
+
+        return SafeArea(
+          child: Column(
+            children: [
+              // Header luôn chiếm 20% chiều cao màn hình
+              SizedBox(
+                height: height * 0.2,
+                child: const HeaderProfile(),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: verticalPadding,
                     ),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: height * 0.02),
+                        // Giới hạn chiều rộng tối đa cho nội dung
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: width > 600 ? 600 : width,
+                            ),
+                            child: const Column(
+                              children: [
+                                Member(),
+                                SizedBox(height: 16),
+                                ListProfile(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
     );
   }
 }
-

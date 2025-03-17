@@ -20,6 +20,7 @@ import 'package:clbdoanhnhansg/widgets/handling_permissions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -61,14 +62,15 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CommentProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => BusinessOpProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => RankProvider()),
         ChangeNotifierProvider(create: (_) => BoProvider()),
         ChangeNotifierProvider(create: (_) => MemberShipProvider()),
         ChangeNotifierProvider(create: (_) => StatisticalProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => SocketService()),
+        ChangeNotifierProvider(create: (_) => socketService),
+        ChangeNotifierProvider(
+            create: (_) => NotificationProvider(socketService: socketService))
       ],
       child: const MyApp(),
     ),
@@ -91,7 +93,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     // Use post-frame callback to ensure UI is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // _initializeApp();
+      _initializeApp();
     });
   }
 
@@ -129,25 +131,25 @@ class _MyAppState extends State<MyApp> {
           ),
           routerConfig: appRouter,
           title: 'GoRouter Flutter Example',
-          // builder: (context, child) {
-          //   return Stack(
-          //     children: [
-          //       child!,
-          //       if (_isInitializing)
-          //         Material(
-          //           color: Colors.black54,
-          //           child: Center(
-          //             child: Lottie.asset(
-          //               'assets/lottie/loading.json',
-          //               width: 70,
-          //               height: 70,
-          //               fit: BoxFit.contain,
-          //             ),
-          //           ),
-          //         ),
-          //     ],
-          //   );
-          // },
+          builder: (context, child) {
+            return Stack(
+              children: [
+                child!,
+                if (_isInitializing)
+                  Material(
+                    color: Colors.black54,
+                    child: Center(
+                      child: Lottie.asset(
+                        'assets/lottie/loading.json',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );

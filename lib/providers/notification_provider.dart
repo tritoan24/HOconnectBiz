@@ -15,10 +15,10 @@ class NotificationProvider extends BaseProvider {
       NotificationRepository();
   final AuthProvider _authProvider = AuthProvider();
   List<NotificationModel> _notifications = [];
-  late SocketService _socketService;
+  final SocketService _socketService;
   BuildContext? _lastContext;
 
-  NotificationProvider() {
+  NotificationProvider({required SocketService socketService}):_socketService=socketService {
     _setupNotificationListener();
   }
 

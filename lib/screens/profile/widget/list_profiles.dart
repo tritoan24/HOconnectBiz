@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -23,84 +24,102 @@ class _ListProfileState extends State<ListProfile> {
       final user = userProvider.author;
       return Stack(
         children: [
-          // Card chứa menu
-          Container(
-            // padding: const EdgeInsets.all(16), // Khoảng cách bên trong
-            decoration: BoxDecoration(
-              color: Colors.white, // Màu nền
-              borderRadius: BorderRadius.circular(8), // Bo góc
-              border: Border.all(
-                color: const Color(0xFFE6E6E6), // Màu viền
-                width: 1, // Độ dày viền
+          Column(
+            children: [
+              // Card chứa menu
+              Container(
+                // padding: const EdgeInsets.all(16), // Khoảng cách bên trong
+                decoration: BoxDecoration(
+                  color: Colors.white, // Màu nền
+                  borderRadius: BorderRadius.circular(8), // Bo góc
+                  border: Border.all(
+                    color: const Color(0xFFE6E6E6), // Màu viền
+                    width: 1, // Độ dày viền
+                  ),
+                ),
+                margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 4),
+                    _buildMenuItem(
+                      icon: "assets/icons/tag-user.svg",
+                      title: "Chỉnh sửa thông tin",
+                      onTap: () {
+                        // Xử lý khi nhấn chuyển sang màn hình chỉnh sửa thông tin
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EditProfile(user: user)));
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    _buildDivider(),
+                    _buildMenuItem(
+                      icon: "assets/icons/status-up.svg",
+                      title: "Quản lý cơ hội kinh doanh",
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ManageBO()));
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    _buildDivider(),
+                    _buildMenuItem(
+                      icon: "assets/icons/lock.svg",
+                      title: "Đổi mật khẩu",
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ChangePasswordScreen()));
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    _buildDivider(),
+                    _buildMenuItem(
+                      icon: "assets/icons/document.svg",
+                      title: "Thống kê thành viên CLB",
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const MemberStatistics()));
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                ),
               ),
-            ),
-            margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
-            child: Column(
-              children: [
-                const SizedBox(height: 4),
-                _buildMenuItem(
-                  icon: "assets/icons/tag-user.svg",
-                  title: "Chỉnh sửa thông tin",
-                  onTap: () {
-                    // Xử lý khi nhấn chuyển sang màn hình chỉnh sửa thông tin
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EditProfile(user: user)));
-                  },
-                ),
-                const SizedBox(height: 4),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: "assets/icons/status-up.svg",
-                  title: "Quản lý cơ hội kinh doanh",
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ManageBO()));
-                  },
-                ),
-                const SizedBox(height: 4),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: "assets/icons/lock.svg",
-                  title: "Đổi mật khẩu",
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const ChangePasswordScreen()));
-                  },
-                ),
-                const SizedBox(height: 4),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: "assets/icons/document.svg",
-                  title: "Thống kê thành viên CLB",
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MemberStatistics()));
-                  },
-                ),
-                const SizedBox(height: 4),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: "assets/icons/logout.svg",
-                  title: "Đăng xuất",
-                  onTap: () async {
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                child: ElevatedButton(
+                  onPressed: () {
                     final authProvider =
                         Provider.of<AuthProvider>(context, listen: false);
                     authProvider.logout(context);
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.borderLightGrey, // Màu nền
+
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Đăng xuất',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
                 ),
-                const SizedBox(height: 4),
-              ],
-            ),
-          ),
+              ),
+
+              const SizedBox(height: 4),
+            ],
+          )
         ],
       );
     });
