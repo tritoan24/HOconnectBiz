@@ -17,7 +17,7 @@ class _HeaderProfileState extends State<HeaderProfile> {
     final size = MediaQuery.of(context).size;
     final width = size.width;
     final height = size.height;
-    
+
     // Tính toán các kích thước tương đối
     final headerHeight = height * 0.2;
     final avatarSize = width * 0.18;
@@ -44,7 +44,7 @@ class _HeaderProfileState extends State<HeaderProfile> {
           Positioned(
             left: containerMargin,
             right: containerMargin,
-            bottom: -headerHeight * 0.33, // Đặt container ở 2/3 phía dưới
+            bottom: -headerHeight * -0.10,
             child: Container(
               padding: EdgeInsets.all(containerPadding),
               decoration: BoxDecoration(
@@ -82,7 +82,8 @@ class _HeaderProfileState extends State<HeaderProfile> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min, // Cho phép co dãn theo nội dung
+                      mainAxisSize:
+                          MainAxisSize.min, // Cho phép co dãn theo nội dung
                       children: [
                         Text(
                           user?.displayName ?? 'Không có tên',
@@ -93,7 +94,9 @@ class _HeaderProfileState extends State<HeaderProfile> {
                           ),
                           textAlign: TextAlign.left,
                         ),
-                        SizedBox(height: height * 0.005), // Khoảng cách giữa tên và mô tả
+                        SizedBox(
+                            height: height *
+                                0.005), // Khoảng cách giữa tên và mô tả
                         Text(
                           (user?.description == "")
                               ? 'Chưa cập nhật'

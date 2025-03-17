@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:provider/provider.dart';
@@ -16,9 +17,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
 
   // Khởi tạo các controller riêng cho từng trường
-  final TextEditingController currentPasswordController = TextEditingController();
+  final TextEditingController currentPasswordController =
+      TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   void _handleSubmit(BuildContext context) async {
     if (_formKey.currentState!.saveAndValidate()) {
@@ -46,6 +49,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      backgroundColor: AppColor.backgroundColorApp,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -68,7 +72,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       name: 'current_password',
                       title: 'Mật khẩu hiện tại',
                       hintText: "Nhập mật khẩu hiện tại",
-                      errorText: authProvider.errorMessage == "Mật khẩu hiện tại không đúng"
+                      errorText: authProvider.errorMessage ==
+                              "Mật khẩu hiện tại không đúng"
                           ? authProvider.errorMessage
                           : null,
                     ),
@@ -80,7 +85,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         },
                         child: const Text(
                           'Quên mật khẩu',
-                          style: TextStyle(color: Color(0xFF0066FF), fontSize: 14),
+                          style:
+                              TextStyle(color: Color(0xFF0066FF), fontSize: 14),
                         ),
                       ),
                     ),
@@ -89,7 +95,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       name: 'new_password',
                       title: 'Mật khẩu mới',
                       hintText: "Nhập mật khẩu mới",
-                      errorText: authProvider.errorMessage == "Mật khẩu mới không hợp lệ"
+                      errorText: authProvider.errorMessage ==
+                              "Mật khẩu mới không hợp lệ"
                           ? authProvider.errorMessage
                           : null,
                     ),
@@ -99,7 +106,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       name: 'confirm_password',
                       title: 'Nhập lại mật khẩu mới',
                       hintText: "Nhập lại mật khẩu mới",
-                      errorText: authProvider.errorMessage == "Mật khẩu xác nhận không khớp"
+                      errorText: authProvider.errorMessage ==
+                              "Mật khẩu xác nhận không khớp"
                           ? authProvider.errorMessage
                           : null,
                     ),
@@ -111,7 +119,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               padding: const EdgeInsets.all(16),
               child: ButtonWidget(
                 label: authProvider.isLoading ? "Đang lưu..." : "Lưu thông tin",
-                onPressed: authProvider.isLoading ? null : () => _handleSubmit(context),
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () => _handleSubmit(context),
               ),
             ),
           ],

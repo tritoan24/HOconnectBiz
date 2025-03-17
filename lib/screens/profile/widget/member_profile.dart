@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import '../../../providers/user_provider.dart';
 import '../member_level.dart';
@@ -15,6 +16,17 @@ class Member extends StatefulWidget {
 }
 
 class _MemberState extends State<Member> {
+  // Hàm định dạng tiền VND
+  String formatCurrency(double? amount) {
+    if (amount == null) return '0 đ';
+    final formatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
+    );
+    return formatter.format(amount);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
@@ -81,7 +93,7 @@ class _MemberState extends State<Member> {
                           ),
                         ),
                         Text(
-                          "Đã đạt doanh thu ${user?.membershipPoints}",
+                          "Đã đạt doanh thu ${formatCurrency(user?.membershipPoints?.toDouble())}",
                           style: const TextStyle(
                             fontSize: 14,
                             fontStyle: FontStyle.normal,
@@ -90,7 +102,7 @@ class _MemberState extends State<Member> {
                         )
                       ],
                     ),
-                    const SizedBox(width: 12),
+                    const Spacer(),
                     widget.isProfile
                         ? GestureDetector(
                             onTap: () {
@@ -159,7 +171,7 @@ class _MemberState extends State<Member> {
 
                 const SizedBox(height: 12), // Changed from width to height
                 Text(
-                  "Cần thêm ta ${user?.membershipPointsNeed} để trở thành Hội viên cấp 2",
+                  "Cần thêm ${formatCurrency(user?.membershipPointsNeed?.toDouble())} để trở thành Hội viên cấp 2",
                   style: const TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.normal,
