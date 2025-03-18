@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../../models/notification_model.dart';
 import '../../../providers/notification_provider.dart';
-import '../../../widgets/text_styles.dart';
 
 class NotificationPopup extends StatefulWidget {
   final NotificationModel notification;
@@ -36,8 +35,8 @@ class _NotificationPopupState extends State<NotificationPopup>
     );
 
     _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.08), // Bắt đầu từ phía trên màn hình
-      end: const Offset(0.0, 0.15), // Kết thúc ở vị trí bình thường
+      begin: const Offset(0.0, 0.19), // Bắt đầu từ phía trên màn hình
+      end: const Offset(0.0, 0.2), // Kết thúc ở vị trí bình thường
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOut, // Hiệu ứng mượt mà
@@ -65,7 +64,7 @@ class _NotificationPopupState extends State<NotificationPopup>
   @override
   Widget build(BuildContext context) {
     final notificationProvider =
-        Provider.of<NotificationProvider>(context, listen: false);
+    Provider.of<NotificationProvider>(context, listen: false);
 
     return Material(
       color: Colors.transparent,
@@ -111,12 +110,12 @@ class _NotificationPopupState extends State<NotificationPopup>
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
-                            width: 32,
-                            height: 32,
-                            color: Colors.transparent,
-                            child: const Icon(Icons.business,
-                                color: Colors.blue, size: 20),
-                          ),
+                                width: 32,
+                                height: 32,
+                                color: Colors.transparent,
+                                child: const Icon(Icons.business,
+                                    color: Colors.blue, size: 20),
+                              ),
                         ),
                       ),
                     ),
@@ -131,9 +130,10 @@ class _NotificationPopupState extends State<NotificationPopup>
                               Text(
                                 DateFormat('HH:mm, dd/MM/yyyy')
                                     .format(widget.notification.timestamp),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[600],
+                                  color: Color(0xFF757575), // Grey 600 equivalent
+                                  fontFamily: 'Roboto', // Font chữ mặc định của Flutter
                                 ),
                               ),
                             ],
@@ -141,17 +141,18 @@ class _NotificationPopupState extends State<NotificationPopup>
                           const SizedBox(height: 4),
                           RichText(
                             text: TextSpan(
-                              style:
-                                  DefaultTextStyle.of(context).style.copyWith(
-                                        decoration: TextDecoration.none,
-                                      ),
+                              style: const TextStyle(
+                                fontFamily: 'Roboto', // Font chữ mặc định
+                                decoration: TextDecoration.none,
+                                color: Colors.black,
+                              ),
                               children: [
                                 TextSpan(
-                                  text: "${widget.notification.userCreate} ",
-                                  style:
-                                      TextStyles.textStyleNormal14W700.copyWith(
-                                    color: Colors.black,
+                                  text: "${widget.notification.uId.displayName.isNotEmpty ? widget.notification.uId.displayName : widget.notification.userCreate} ",
+                                  style: const TextStyle(
                                     fontSize: 14,
+                                    fontWeight: FontWeight.bold, // Thay vì w700
+                                    color: Colors.black,
                                     decoration: TextDecoration.none,
                                   ),
                                 ),
@@ -159,7 +160,7 @@ class _NotificationPopupState extends State<NotificationPopup>
                                   text: widget.notification.message,
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.normal, // Thay vì w400
                                     color: Colors.black,
                                     decoration: TextDecoration.none,
                                   ),
@@ -174,7 +175,10 @@ class _NotificationPopupState extends State<NotificationPopup>
                               children: [
                                 const Text(
                                   'Mã đơn hàng: ',
-                                  style: TextStyle(fontSize: 14),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'Roboto', // Font chữ mặc định
+                                  ),
                                 ),
                                 Text(
                                   widget.notification.orderCode!,
@@ -182,6 +186,7 @@ class _NotificationPopupState extends State<NotificationPopup>
                                     fontSize: 14,
                                     color: Colors.blue,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily: 'Roboto', // Font chữ mặc định
                                   ),
                                 ),
                               ],
