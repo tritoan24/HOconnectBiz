@@ -5,6 +5,7 @@ class AppRoutes {
   static const String trangChu = '/trang-chu';
   static const String timKiem = '/tim-kiem';
   static const String dangTin = '/dang-tin';
+  static const String shopping = '/dao-cho';
   static const String chinhSuaThongTin = '/chinh-sua-thong-tin';
   static const String thongTinDoanhNghiep =
       '/thong-tin-doanh-nghiep/:isLeading';

@@ -20,15 +20,28 @@ class TrangChuView extends StatefulWidget {
   State<TrangChuView> createState() => _TrangChuViewState();
 }
 
-class _TrangChuViewState extends State<TrangChuView> {
+class _TrangChuViewState extends State<TrangChuView> with TickerProviderStateMixin {
   int selectedIndex = 0;
-  final List<Widget> _pages = [
-    const Home(),
-    const QuanLyView(isLeading: false),
-    const Center(child: Text('Assessment')),
-    const Shopping(),
-    const ProfileScreen(),
-  ];
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 5, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void handleTabChange(int index) {
+    setState(() {
+      selectedIndex = index;
+      _tabController.animateTo(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +51,14 @@ class _TrangChuViewState extends State<TrangChuView> {
     notificationProvider.setContext(context);
 
     final size = MediaQuery.of(context).size;
+
+    final List<Widget> _pages = [
+      Home(onNavigateToTab: handleTabChange),
+      const QuanLyView(isLeading: false),
+      const Center(child: Text('Assessment')),
+      const Shopping(),
+      const ProfileScreen(),
+    ];
 
     return GestureDetector(
       onTap: () {
@@ -51,6 +72,7 @@ class _TrangChuViewState extends State<TrangChuView> {
           backgroundColor: const Color(0xffF4F5F6),
           body: _pages[selectedIndex],
           bottomNavigationBar: ConvexAppBar(
+            controller: _tabController,
             curveSize: 90,
             top: -27,
             height: 70,
