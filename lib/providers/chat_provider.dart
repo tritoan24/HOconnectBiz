@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import '../core/services/socket_service.dart';
 import '../models/apiresponse.dart';
 import '../models/contact.dart';
 import '../models/message_model.dart';
+import '../models/auth_model.dart';
 import '../repository/chat_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
 import 'auth_provider.dart';
@@ -15,16 +17,21 @@ class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository = ChatRepository();
   final SocketService _socketService = SocketService();
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   List<Message> _messages = [];
   List<Contact> _contacts = [];
   String? _currentUserId;
   String? _currentChatReceiverId;
   int _cartItemCount = 0;
+  int _currentPage = 1;
+  bool _hasMoreMessages = true;
+  static const int _limit = 5;
 
   ChatProvider();
 
   bool get isLoading => _isLoading;
-
+  bool get isLoadingMore => _isLoadingMore;
+  bool get hasMoreMessages => _hasMoreMessages;
   List<Message> get messages => _messages;
   List<Contact> get contacts => _contacts;
   bool get isSocketConnected => _socketService.isConnected;
@@ -63,7 +70,7 @@ class ChatProvider with ChangeNotifier {
     _socketService.on('new_message', (data) {
       print("📥 Nhận tin nhắn mới từ socket: $data");
       _handleNotificationData(data);
-      
+
       // Cập nhật PostProvider khi có tin nhắn mới
       _updatePostProviderMessageCount();
     });
@@ -145,7 +152,11 @@ class ChatProvider with ChangeNotifier {
           }
 
           // Sắp xếp tin nhắn theo thời gian
-          _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          _messages.sort((a, b) {
+            final timeCompare = a.timestamp.compareTo(b.timestamp);
+            if (timeCompare != 0) return timeCompare;
+            return (a.id ?? "").compareTo(b.id ?? "");
+          });
           notifyListeners();
         }
       }
@@ -170,9 +181,8 @@ class ChatProvider with ChangeNotifier {
                 receiverId == _currentUserId)) {
           // Thêm vào danh sách nếu chưa có
           if (!_messages.any((m) => m.id == message.id)) {
+            // Thêm tin nhắn mới vào cuối danh sách
             _messages.add(message);
-            // Sắp xếp tin nhắn theo thời gian
-            _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
             notifyListeners();
           }
         }
@@ -245,20 +255,75 @@ class ChatProvider with ChangeNotifier {
   }
 
   /// Lấy danh sách tin nhắn trong một phòng chat
-  Future<void> getListDetailChat(BuildContext context, String idUser) async {
+  Future<void> getListDetailChat(BuildContext context, String idUser, {bool loadMore = false}) async {
+    if (!loadMore) {
+      _currentPage = 1;
+      _hasMoreMessages = true;
+      _messages = [];
+    }
+
+    if (!_hasMoreMessages || _isLoadingMore) return;
+
     try {
-      final response = await _chatRepository.getListDetailChat(context, idUser);
+      _isLoadingMore = true;
+      notifyListeners();
+
+      final response = await _chatRepository.getListDetailChat(
+        context, 
+        idUser,
+        page: _currentPage,
+        limit: _limit,
+      );
 
       if (response.isSuccess && response.data is List) {
-        _messages = (response.data as List)
+        final newMessages = (response.data as List)
             .map((item) => Message.fromJson(item))
             .toList();
-        _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+        // Kiểm tra xem có còn tin nhắn để load không
+        _hasMoreMessages = newMessages.length >= _limit;
+
+        if (loadMore) {
+          // Thêm tin nhắn cũ vào đầu danh sách
+          _messages.insertAll(0, newMessages);
+        } else {
+          // Thêm tin nhắn vào danh sách
+          _messages.addAll(newMessages);
+          
+          // Sắp xếp tin nhắn theo thời gian (từ cũ đến mới)
+          _messages.sort((a, b) {
+            // So sánh timestamp
+            final timeCompare = a.timestamp.compareTo(b.timestamp);
+            if (timeCompare != 0) return timeCompare;
+            
+            // Nếu timestamp bằng nhau, so sánh ID để đảm bảo thứ tự nhất quán
+            return (a.id ?? "").compareTo(b.id ?? "");
+          });
+        }
+
+        _currentPage++;
         notifyListeners();
       }
     } catch (e) {
       print("Error fetching chat list: $e");
+    } finally {
+      _isLoadingMore = false;
+      notifyListeners();
     }
+  }
+
+  /// Load thêm tin nhắn cũ
+  Future<void> loadMoreMessages(BuildContext context) async {
+    if (_currentChatReceiverId != null) {
+      await getListDetailChat(context, _currentChatReceiverId!, loadMore: true);
+    }
+  }
+
+  /// Reset trạng thái phân trang
+  void resetPagination() {
+    _currentPage = 1;
+    _hasMoreMessages = true;
+    _messages = [];
   }
 
   /// **Xóa danh sách tin nhắn khi cần reset**
@@ -308,31 +373,95 @@ class ChatProvider with ChangeNotifier {
     print("👤 Người nhận ID: $idReceiver");
     print("🖼 Số lượng ảnh đính kèm: ${files?.length ?? 0}");
 
-    final Message message = Message(
+    // Tạo ID tạm thời cho tin nhắn
+    final localId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+
+    // Tạo tin nhắn tạm thời với trạng thái "đang gửi"
+    final tempMessage = Message(
+      id: localId,
       content: content.isNotEmpty ? content : "[Hình ảnh]",
+      timestamp: DateTime.now(),
+      sender: Author(
+          id: _currentUserId ?? "",
+          username: "",
+          displayName: "",
+          level: 0,
+          registerType: "",
+          avatarImage: "",
+          coverImage: "",
+          description: "",
+          business: [],
+          companyName: "",
+          address: "",
+          companyDescription: "",
+          email: "",
+          gender: "",
+          status: "",
+          phone: "",
+          roleCode: 0,
+          type: "",
+          userId: ""),
+      receiver: Author(
+          id: idReceiver,
+          username: "",
+          displayName: "",
+          level: 0,
+          registerType: "",
+          avatarImage: "",
+          coverImage: "",
+          description: "",
+          business: [],
+          companyName: "",
+          address: "",
+          companyDescription: "",
+          email: "",
+          gender: "",
+          status: "",
+          phone: "",
+          roleCode: 0,
+          type: "",
+          userId: ""),
+      album: [],
     );
 
-    final Map<String, List<File>> fileFields = {
-      'album': files ?? [],
-    };
+    // Đặt trạng thái tin nhắn là đang gửi
+    tempMessage.status = MessageStatus.sending;
 
-    _isLoading = true;
-    notifyListeners();
-    print("⏳ Đang gửi tin nhắn...");
+    // Hiển thị tin nhắn trên UI ngay lập tức
+    addOptimisticMessage(tempMessage);
 
     try {
-      final response = await _chatRepository
-          .sendMessage(message, idReceiver, context, files: files);
+      final response = await _chatRepository.sendMessage(
+          Message(content: content.isNotEmpty ? content : "[Hình ảnh]"),
+          idReceiver,
+          context,
+          files: files);
 
       if (response.isSuccess) {
         print("✅ Tin nhắn đã gửi thành công!");
-        // getListDetailChat(context, messageID);
+        // Cập nhật trạng thái tin nhắn thành công và ID từ server
+        updateMessageStatus(localId, MessageStatus.sent,
+            serverId: response.data?['_id']?.toString());
         print("📡 Phản hồi từ server: ${response.toString()}");
       } else {
         print("⚠️ Gửi tin nhắn thất bại: ${response.message}");
+        // Cập nhật trạng thái tin nhắn thất bại
+        updateMessageStatus(localId, MessageStatus.error,
+            errorMessage: response.message ?? "Không gửi được tin nhắn");
       }
+    } on SocketException catch (e) {
+      print("❌ Lỗi kết nối mạng: $e");
+      updateMessageStatus(localId, MessageStatus.error,
+          errorMessage:
+              "Không thể kết nối đến máy chủ. Kiểm tra kết nối mạng!");
+    } on HttpException catch (e) {
+      print("❌ Lỗi HTTP: $e");
+      updateMessageStatus(localId, MessageStatus.error,
+          errorMessage: "Lỗi phản hồi từ máy chủ. Vui lòng thử lại.");
     } catch (e) {
-      print("❌ Lỗi khi gửi tin nhắn: $e");
+      print("❌ Lỗi không xác định: $e");
+      updateMessageStatus(localId, MessageStatus.error,
+          errorMessage: "Đã xảy ra lỗi. Vui lòng thử lại sau.");
     }
 
     _isLoading = false;
@@ -393,12 +522,14 @@ class ChatProvider with ChangeNotifier {
       if (response.isSuccess) {
         // Xử lý dữ liệu từ response
         _contacts = response.data is List
-            ? (response.data as List).map((item) => Contact.fromJson(item)).toList()
+            ? (response.data as List)
+                .map((item) => Contact.fromJson(item))
+                .toList()
             : [];
-        
+
         // Cập nhật số lượng giỏ hàng
         _cartItemCount = response.total ?? 0;
-        
+
         notifyListeners();
       }
     } catch (e) {
@@ -450,5 +581,45 @@ class ChatProvider with ChangeNotifier {
         print("❌ Lỗi khi cập nhật số lượng tin nhắn mới: $e");
       }
     }
+  }
+
+  // Cập nhật trạng thái tin nhắn
+  void updateMessageStatus(String messageId, MessageStatus status,
+      {String? errorMessage, String? serverId}) {
+    final index = _messages.indexWhere((m) => m.id == messageId);
+    if (index != -1) {
+      // Tạo bản sao của tin nhắn với trạng thái đã cập nhật
+      final updatedMessage = Message(
+        id: serverId ?? _messages[index].id,
+        sender: _messages[index].sender,
+        receiver: _messages[index].receiver,
+        content: _messages[index].content ?? "",
+        album: _messages[index].album ?? [],
+        read: _messages[index].read ?? false,
+        data: _messages[index].data,
+        timestamp: _messages[index].timestamp,
+      );
+
+      // Cập nhật trạng thái và thông báo lỗi
+      updatedMessage.status = status;
+      if (errorMessage != null) {
+        updatedMessage.errorMessage = errorMessage;
+        print(
+            "⚠️ Cập nhật thông báo lỗi cho tin nhắn $messageId: $errorMessage");
+      }
+
+      // Thay thế tin nhắn cũ bằng tin nhắn đã cập nhật
+      _messages[index] = updatedMessage;
+      notifyListeners();
+    } else {
+      print("⚠️ Không tìm thấy tin nhắn với ID: $messageId");
+    }
+  }
+
+  // Thêm tin nhắn tạm thời vào danh sách
+  void addOptimisticMessage(Message message) {
+    // Thêm tin nhắn mới vào cuối danh sách (tin nhắn mới nhất)
+    _messages.add(message);
+    notifyListeners();
   }
 }

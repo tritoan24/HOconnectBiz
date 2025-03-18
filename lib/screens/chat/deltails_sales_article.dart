@@ -46,6 +46,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Sử dụng ChatProvider để xử lý socket
@@ -62,9 +63,19 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     // Ghi chú: không ngắt kết nối toàn bộ socket mà chỉ thoát phòng
     // ChatProvider sẽ quản lý việc này
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels <= 0) {
+      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
+        chatProvider.loadMoreMessages(context);
+      }
+    }
   }
 
   void _connectToSpecificChatRoom() {
@@ -87,8 +98,9 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     super.didChangeDependencies();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
     chatProvider.addListener(() {
-      if (chatProvider.messages.isNotEmpty) {
-        _scrollToBottom();
+      // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
+      if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
+        // _scrollToBottom();
       }
     });
   }
@@ -96,7 +108,11 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   void _scrollToBottom() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 100, // Thêm padding
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
@@ -166,33 +182,70 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                 if (messages.isEmpty) {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
-                // Cuộn xuống khi có tin nhắn mới
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToBottom();
-                });
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.only(
-                      top: 16, left: 16, right: 16, bottom: 80),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return _buildMessageBubble(message);
-                  },
+                // Chỉ cuộn khi có tin nhắn mới được thêm vào
+                if (messages.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToBottom();
+                  });
+                }
+
+                return Stack(
+                  children: [
+                    ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 16,
+                        right: 16,
+                        bottom: 100,
+                      ),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        return _buildMessageBubble(message);
+                      },
+                    ),
+                    if (chatProvider.isLoadingMore)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          color: Colors.white.withOpacity(0.8),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
           ),
-          MessageInputScreen(
-            onMessageChanged: (message, images) {
-              setState(() {
-                selectedImages = images;
-              });
-            },
-            onSubmit: _sendMessage,
-          ),
         ],
+      ),
+      bottomSheet: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              spreadRadius: 1,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: MessageInputScreen(
+          onMessageChanged: (message, images) {
+            setState(() {
+              selectedImages = images;
+            });
+          },
+          onSubmit: _sendMessage,
+        ),
       ),
     );
   }
@@ -281,26 +334,26 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     bool isMe = message.sender?.id == widget.currentUserId;
     print("Message ID: ${message.id}, Has data: ${message.data != null}");
     return Dismissible(
-      key: Key(message.id.toString()), // Mỗi tin nhắn cần có một key duy nhất
-      direction: DismissDirection.endToStart, // Vuốt từ phải sang trái
+      key: Key(message.id.toString()),
+      direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 50),
         decoration: BoxDecoration(
-          color: Colors.red, // Màu nền đỏ
-          borderRadius: BorderRadius.circular(12), // Bo góc mềm mại
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2), // Đổ bóng nhẹ
-              blurRadius: 10, // Làm mờ bóng
-              offset: Offset(2, 2), // Vị trí bóng
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: Offset(2, 2),
             ),
           ],
         ),
         child: const Icon(
           Icons.delete,
           color: Colors.white,
-          size: 30, // Kích thước icon
+          size: 30,
         ),
       ),
       confirmDismiss: (direction) async {
@@ -381,7 +434,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    message.content.toString(),
+                    message.content ?? "",
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -416,6 +469,27 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                   width: double.infinity,
                                   height: 200,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      color: Colors.grey[300],
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.error_outline,
+                                              size: 50, color: Colors.red),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            "Không thể tải ảnh",
+                                            style: TextStyle(
+                                                color: Colors.grey[800]),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                               if (message.album!.length > 1)
@@ -436,6 +510,76 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             ],
                           ),
                         ),
+                      ),
+                    ),
+                  if (message.status == MessageStatus.sending && isMe)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.grey),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Đang gửi...",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (message.status == MessageStatus.error && isMe)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error_outline,
+                              size: 12, color: Colors.red),
+                          const SizedBox(width: 4),
+                          Text(
+                            message.errorMessage ?? "Không gửi được",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              final chatProvider = Provider.of<ChatProvider>(
+                                  context,
+                                  listen: false);
+                              chatProvider.sendMessage(
+                                message.content ?? "",
+                                message.receiver?.id ?? "",
+                                message.id.toString(),
+                                context,
+                                files: message.album
+                                    ?.map((url) => File(url))
+                                    .toList(),
+                              );
+                            },
+                            child: Text(
+                              "Thử lại",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
