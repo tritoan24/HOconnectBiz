@@ -35,7 +35,7 @@ class UrlImage {
   static const String defaultProductImage =
       'https://tse3.mm.bing.net/th?id=OIP.LEx5tdgsnlid1erVFT3H7AHaEF&pid=Api&P=0&h=220';
   static const String defaultBackgroundImage =
-      'https://i.pinimg.com/736x/4d/7f/55/4d7f5567e920f9d1b5ca4f1ebad36072.jpg';
+      'https://img.freepik.com/vector-premium/forma-geometrica-blanca-abstracta-fondo-concepto-futurista_249611-8612.jpg';
   static const String defaultAvatarImage =
       'https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg';
   static const String defaultContactImage =

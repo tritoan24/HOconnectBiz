@@ -6,7 +6,7 @@ import '../../widgets/text_styles.dart';
 import '../../utils/Color/app_color.dart';
 
 class MemberStatistics extends StatefulWidget {
-  const MemberStatistics({Key? key}) : super(key: key);
+  const MemberStatistics({super.key});
 
   @override
   State<MemberStatistics> createState() => _MemberStatisticsState();
@@ -92,7 +92,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                   Container(
                                     width: 50,
                                     height: 100,
-                                    padding: EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsets.only(left: 8),
                                     decoration: headerCellDecoration,
                                     child: Center(
                                         child: Text('Thứ hạng',
@@ -209,7 +209,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                 Container(
                                                   width: 180,
                                                   height: 70,
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding: const EdgeInsets.symmetric(
                                                       horizontal: 8),
                                                   decoration: cellDecoration,
                                                   child: Row(
@@ -232,7 +232,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                                     (context,
                                                                         error,
                                                                         stackTrace) {
-                                                                  return Icon(
+                                                                  return const Icon(
                                                                       Icons
                                                                           .business,
                                                                       size: 24,
@@ -240,7 +240,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                                           .grey);
                                                                 },
                                                               )
-                                                            : Icon(
+                                                            : const Icon(
                                                                 Icons.business,
                                                                 size: 24,
                                                                 color: Colors

@@ -105,10 +105,8 @@ class _EditProfileState extends State<EditProfile> {
       if (newEmail.isNotEmpty && newEmail != oldEmail) {
         if (oldEmail.isNotEmpty) {
           await OneSignal.User.removeEmail(oldEmail);
-          print('🔹 Removed old email from OneSignal: $oldEmail');
         }
         await OneSignal.User.addEmail(newEmail);
-        print('🔹 Added new email to OneSignal: $newEmail');
       }
 
       // Kiểm tra số điện thoại thay đổi
@@ -118,12 +116,10 @@ class _EditProfileState extends State<EditProfile> {
 
         if (formattedOldPhone.isNotEmpty) {
           await OneSignal.User.removeSms(formattedOldPhone);
-          print('🔹 Removed old phone from OneSignal: $formattedOldPhone');
         }
         await OneSignal.User.addSms(formattedNewPhone);
-        print('🔹 Added new phone to OneSignal: $formattedNewPhone');
       }
-
+      if(!mounted) return ;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cập nhật thông tin thành công'),

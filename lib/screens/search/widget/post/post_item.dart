@@ -292,11 +292,14 @@ class _PostItemState extends State<PostItem> {
   }
 
   Widget _buildDateTime() {
+    final dateTime = _parseCustomDateTime(widget.dateTime);
+    final time = DateFormat("HH:mm").format(dateTime);
+    final date = DateFormat("dd/MM/yyyy").format(dateTime);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
       child: Text(
-        DateFormat("HH:mm dd/MM/yyyy")
-            .format(_parseCustomDateTime(widget.dateTime)),
+        "$time, $date",
         style: kDateTimeStyle,
       ),
     );

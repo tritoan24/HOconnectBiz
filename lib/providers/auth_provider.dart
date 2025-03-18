@@ -341,7 +341,7 @@ class AuthProvider extends BaseProvider {
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.go(AppRoutes.login);
+        context.pop();
       },
       successMessage: "Đổi mật khẩu thành công",
     );

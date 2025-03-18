@@ -15,6 +15,8 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
   late Future<void> _loadDataFuture;
+  int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -23,11 +25,14 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
 
   Future<void> _fetchData() async {
     final provider = Provider.of<MemberShipProvider>(context, listen: false);
-    await provider.getListMemberShip(context); // Chờ dữ liệu load xong
+    await provider.getListMemberShip(context);
     if (provider.membership.isNotEmpty) {
-      setState(() {
-        _tabController =
-            TabController(length: provider.membership.length, vsync: this);
+      _tabController = TabController(
+        length: provider.membership.length,
+        vsync: this,
+      );
+      _tabController!.animation!.addListener(() {
+        setState(() {});
       });
     }
   }
@@ -54,7 +59,6 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
             }
 
             final memberships = provider.membership;
-            print("memberships: $memberships");
 
             if (memberships.isEmpty) {
               return const Center(child: Text("Không có dữ liệu thành viên"));
@@ -68,15 +72,24 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
               children: [
                 Container(
                   color: Colors.white,
-                  height: 57,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: List.generate(memberships.length, (index) {
-                      return _buildTab(
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    indicatorColor: AppColor.primaryBlue,
+                    labelColor: AppColor.primaryBlue,
+                    unselectedLabelColor: Colors.grey,
+                    dividerColor: Colors.transparent,
+                    indicatorPadding: const EdgeInsets.only(bottom: 0),
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    tabs: List.generate(
+                      memberships.length,
+                      (index) => Tab(
                         text: 'Cấp ${memberships[index].level}',
-                        index: index,
-                      );
-                    }),
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
@@ -84,8 +97,7 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
                     controller: _tabController,
                     children: List.generate(memberships.length, (index) {
                       return _buildLevelContent(
-                        title:
-                            'Quyền lợi cho hội viên cấp ${memberships[index].level}',
+                        title: 'Quyền lợi cho hội viên cấp ${memberships[index].level}',
                         benefits: _parseBenefits(memberships[index].benefits),
                       );
                     }),
@@ -96,36 +108,6 @@ class _MemberLevelScreenState extends State<MemberLevelScreen>
           },
         );
       },
-    );
-  }
-
-  Widget _buildTab({required String text, required int index}) {
-    bool isSelected = _tabController?.index == index;
-
-    return GestureDetector(
-      onTap: () => _tabController?.animateTo(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              text,
-              style: TextStyle(
-                color:
-                    isSelected == true ? AppColor.primaryBlue : Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          if (isSelected == true)
-            Container(
-              height: 2,
-              width: 80,
-              color: AppColor.primaryBlue,
-            ),
-        ],
-      ),
     );
   }
 
