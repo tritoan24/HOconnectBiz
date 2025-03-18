@@ -112,9 +112,11 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.arrow_back_ios, size: 30),
                               onPressed: () {
-                                Navigator.of(context).pop();
-                                Provider.of<AuthProvider>(context, listen: false)
+                                // Xóa lỗi trước khi quay lại
+                                Provider.of<AuthProvider>(context,
+                                        listen: false)
                                     .clearState();
+                                Navigator.of(context).pop();
                               },
                             ),
                           ),
@@ -232,7 +234,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             Text(
                               formattedTime,
                               style: const TextStyle(
-                                  fontSize: 16, 
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey),
                             ),
@@ -240,10 +242,11 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             ElevatedButton(
                               onPressed: isButtonEnabled
                                   ? () {
-                                print("Gửi OTP: $otpCode");
-                                auth.inputOtp(
-                                    context, widget.email, otpCode);
-                              }
+                                      print("Gửi OTP: $otpCode");
+                                      auth.inputOtp(
+                                          context, widget.email, otpCode);
+                                      // Không cần clearState ở đây vì đã xử lý trong inputOtp
+                                    }
                                   : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isButtonEnabled
@@ -287,6 +290,9 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
+                    // Xóa lỗi trước khi chuyển màn hình
+                    Provider.of<AuthProvider>(context, listen: false)
+                        .clearState();
                     context.push(AppRoutes.dangKyTaiKhoan);
                   },
               ),

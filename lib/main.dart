@@ -21,56 +21,82 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
+import 'core/error/error_handler.dart';
+import 'core/utils/app_logger.dart';
+import 'providers/send_error_log.dart';
 
 import 'firebase_options.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  // Bắt tất cả các lỗi không xử lý trong Zone
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+    await dotenv.load(fileName: ".env");
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 
-  OneSignal.initialize(AppConfig.oneSignalAppId);
-  OneSignal.Notifications.requestPermission(true);
+    OneSignal.initialize(AppConfig.oneSignalAppId);
+    OneSignal.Notifications.requestPermission(true);
 
-  // Khởi tạo các services
-  final socketService = SocketService();
-  final authProvider = AuthProvider();
+    // Khởi tạo logger
+    await AppLogger().initialize();
 
-  // Lấy userId từ local storage hoặc auth state
-  final userId = await authProvider.getuserID();
+    // Thiết lập error handler toàn cục
+    ErrorHandler().setupErrorHandling();
+    
+    // Khởi tạo các services
+    final socketService = SocketService();
+    final authProvider = AuthProvider();
 
-  if (userId != null) {
-    socketService.initializeSocket(userId);
-    socketService.connect(userId);
-  }
+    // Lấy userId từ local storage hoặc auth state
+    final userId = await authProvider.getuserID();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => PostProvider()),
-        ChangeNotifierProvider(create: (_) => BannerProvider()),
-        ChangeNotifierProvider(create: (_) => BusinessProvider()),
-        ChangeNotifierProvider(create: (_) => CommentProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => BusinessOpProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
-        ChangeNotifierProvider(create: (_) => RankProvider()),
-        ChangeNotifierProvider(create: (_) => BoProvider()),
-        ChangeNotifierProvider(create: (_) => MemberShipProvider()),
-        ChangeNotifierProvider(create: (_) => StatisticalProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => socketService),
-        ChangeNotifierProvider(
-            create: (_) => NotificationProvider(socketService: socketService))
-      ],
-      child: const MyApp(),
-    ),
-  );
+    if (userId != null) {
+      socketService.initializeSocket(userId);
+      socketService.connect(userId);
+    }
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => ProductProvider()),
+          ChangeNotifierProvider(create: (_) => PostProvider()),
+          ChangeNotifierProvider(create: (_) => BannerProvider()),
+          ChangeNotifierProvider(create: (_) => BusinessProvider()),
+          ChangeNotifierProvider(create: (_) => CommentProvider()),
+          ChangeNotifierProvider(create: (_) => UserProvider()),
+          ChangeNotifierProvider(create: (_) => BusinessOpProvider()),
+          ChangeNotifierProvider(create: (_) => ChatProvider()),
+          ChangeNotifierProvider(create: (_) => RankProvider()),
+          ChangeNotifierProvider(create: (_) => BoProvider()),
+          ChangeNotifierProvider(create: (_) => MemberShipProvider()),
+          ChangeNotifierProvider(create: (_) => StatisticalProvider()),
+          ChangeNotifierProvider(create: (_) => CartProvider()),
+          ChangeNotifierProvider(create: (_) => socketService),
+          ChangeNotifierProvider(
+              create: (_) => NotificationProvider(socketService: socketService))
+        ],
+        child: const MyApp(),
+      ),
+    );
+  }, (error, stackTrace) {
+    // Gửi báo cáo lỗi Zone
+    sendErrorLog(
+      level: 3, // Lỗi Zone rất nghiêm trọng
+      message: 'Lỗi không xử lý trong Zone: ${error.toString()}',
+      additionalInfo: stackTrace.toString(),
+    );
+    
+    // Log lỗi critical bằng AppLogger
+    AppLogger().fatal("App", "Unhandled", "Lỗi không xử lý trong Zone", 
+      error: error, stackTrace: stackTrace);
+    
+    print('❌ Lỗi không xử lý: $error\n$stackTrace');
+  });
 }

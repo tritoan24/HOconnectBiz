@@ -47,7 +47,7 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -130,11 +130,13 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
                                     widget.email,
                                     passwordController.text,
                                     confirmPasswordController.text);
+                                // Không cần clearState ở đây vì đã xử lý trong resetpassword
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isButtonEnabled ? Colors.blue : Colors.grey.shade300,
+                          backgroundColor: isButtonEnabled
+                              ? Colors.blue
+                              : Colors.grey.shade300,
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
@@ -142,7 +144,7 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
                         ),
                         child: const Text("Hoàn thành"),
                       ),
-                      
+
                       // Spacer khi màn hình lớn
                       SizedBox(height: size.height * 0.05),
                     ],
@@ -171,6 +173,9 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
+                      // Xóa lỗi trước khi chuyển màn hình
+                      Provider.of<AuthProvider>(context, listen: false)
+                          .clearState();
                       context.push(AppRoutes.dangKyTaiKhoan);
                     },
                 ),

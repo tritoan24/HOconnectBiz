@@ -88,10 +88,13 @@ class AuthProvider extends BaseProvider {
 
         // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
         if (context.mounted) {
+          // Xóa lỗi trước khi chuyển màn hình
+          clearState();
           appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
         }
       } else {
         Future.microtask(() {
+          clearState();
           appRouter.go(AppRoutes.login);
         });
       }
@@ -157,6 +160,7 @@ class AuthProvider extends BaseProvider {
           if (context.mounted) {
             // Ẩn loading overlay
             hideLoadingOnce();
+            clearState(); // Xóa lỗi trước khi chuyển màn hình
             context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
           }
         },
@@ -274,6 +278,7 @@ class AuthProvider extends BaseProvider {
       apiCall: () => _authRepository.sendOtpEmail(email, context),
       context: context,
       onSuccess: () {
+        // Xóa lỗi trước khi chuyển màn hình
         clearState();
         context.go(AppRoutes.nhapMaOTP, extra: {'email': email});
       },
@@ -294,6 +299,7 @@ class AuthProvider extends BaseProvider {
       },
       context: context,
       onSuccess: () {
+        // Xóa lỗi trước khi chuyển màn hình
         clearState();
         context.go(AppRoutes.taoMatKhauMoi, extra: {"email": email});
       },
@@ -311,8 +317,9 @@ class AuthProvider extends BaseProvider {
           _authRepository.resetpassword(email, password, repassword, context),
       context: context,
       onSuccess: () {
-        context.go(AppRoutes.login);
+        // Xóa lỗi trước khi chuyển màn hình
         clearState();
+        context.go(AppRoutes.login);
       },
       successMessage: "Đặt lại mật khẩu thành công",
     );
@@ -329,8 +336,9 @@ class AuthProvider extends BaseProvider {
           password, newpassword, repassword, context),
       context: context,
       onSuccess: () {
-        context.go(AppRoutes.login);
+        // Xóa lỗi trước khi chuyển màn hình
         clearState();
+        context.go(AppRoutes.login);
       },
       successMessage: "Đổi mật khẩu thành công",
     );

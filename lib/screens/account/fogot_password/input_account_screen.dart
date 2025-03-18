@@ -40,11 +40,15 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: size.height * 0.05), // Tương đối theo chiều cao màn hình
+                      SizedBox(
+                          height: size.height *
+                              0.05), // Tương đối theo chiều cao màn hình
                       Image.network(
                         UrlImage.logo,
-                        width: size.width * 0.4, // Tương đối theo chiều rộng màn hình
-                        height: size.height * 0.1, // Tương đối theo chiều cao màn hình
+                        width: size.width *
+                            0.4, // Tương đối theo chiều rộng màn hình
+                        height: size.height *
+                            0.1, // Tương đối theo chiều cao màn hình
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
@@ -91,7 +95,8 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min, // ✅ Giữ row nhỏ để không bị kéo dãn
+                          mainAxisSize: MainAxisSize
+                              .min, // ✅ Giữ row nhỏ để không bị kéo dãn
                           children: [
                             Text(
                               'Bạn đã nhớ mật khẩu?',
@@ -99,9 +104,11 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                             ),
                             TextButton(
                               onPressed: () {
-                                context.go(AppRoutes.login);
-                                Provider.of<AuthProvider>(context, listen: false)
+                                // Xóa lỗi trước khi chuyển màn hình
+                                Provider.of<AuthProvider>(context,
+                                        listen: false)
                                     .clearState();
+                                context.go(AppRoutes.login);
                               },
                               child: const Text('Đăng nhập',
                                   style: TextStyle(
@@ -124,9 +131,10 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                             context,
                             accountController.text,
                           );
+                          // Không cần clearState ở đây vì đã xử lý trong sendEmailOtp
                         },
                       ),
-                      
+
                       // Spacer để đẩy nội dung lên khi màn hình lớn
                       SizedBox(height: size.height * 0.05),
                     ],
@@ -155,6 +163,9 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
+                      // Xóa lỗi trước khi chuyển màn hình
+                      Provider.of<AuthProvider>(context, listen: false)
+                          .clearState();
                       context.push(AppRoutes.dangKyTaiKhoan);
                     },
                 ),
