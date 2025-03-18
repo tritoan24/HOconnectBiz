@@ -16,6 +16,7 @@ import '../../screens/account/login.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/home/widget/buy_product.dart';
 import '../../screens/manage/manage.dart';
+import '../../screens/shopping/shopping.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -52,6 +53,11 @@ final GoRouter appRouter = GoRouter(
           path: AppRoutes.dangTin,
           builder: (context, state) {
             return const PostScreen();
+          },
+        ),GoRoute(
+          path: AppRoutes.shopping,
+          builder: (context, state) {
+            return const Shopping();
           },
         ),
         GoRoute(

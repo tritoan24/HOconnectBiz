@@ -74,10 +74,10 @@ class AuthRepository {
 
   // 🔹 **Cập nhật mật khẩu mới- quên mật khẩu**
   Future<ApiResponse> resetpassword(
-      String password, newpassword, repassword, BuildContext context) async {
+      String email, password, repassword, BuildContext context) async {
     final response = await _apiClient.postRequest(
         ApiEndpoints.newPassForgot,
-        {"password": password, "newpassword": newpassword, "repassword": repassword},
+        {"email": email, "password": password, "repassword": repassword},
         context);
 
     return ApiResponse.fromJson(response);

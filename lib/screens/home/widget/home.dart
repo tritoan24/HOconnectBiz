@@ -17,7 +17,11 @@ import '../../../providers/rank_provider.dart';
 import 'bang_xep_hang.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final Function(int)                                                                                                                                                     onNavigateToTab;
+  const Home({
+    super.key,
+    required this.onNavigateToTab,
+  });
 
   @override
   State<Home> createState() => _HomeState();
@@ -221,7 +225,9 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      widget.onNavigateToTab(3); // Index của tab Shopping
+                    },
                     child: const Text(
                       "Xem tất cả",
                       style: TextStyle(
