@@ -81,10 +81,12 @@ class _LoginViewState extends State<LoginView> {
                   // Phần nội dung chính có thể cuộn
                   SingleChildScrollView(
                     // Hỗ trợ tự động cuộn khi bàn phím xuất hiện
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight - 50, // Để lại không gian cho footer
+                        minHeight: constraints.maxHeight -
+                            50, // Để lại không gian cho footer
                       ),
                       child: Padding(
                         padding: EdgeInsets.symmetric(
@@ -143,9 +145,10 @@ class _LoginViewState extends State<LoginView> {
                               name: 'password',
                               title: 'Mật khẩu',
                               hintText: "Nhập mật khẩu",
-                              errorText: authProvider.errorMessage == "Sai mật khẩu"
-                                  ? authProvider.errorMessage
-                                  : null,
+                              errorText:
+                                  authProvider.errorMessage == "Sai mật khẩu"
+                                      ? authProvider.errorMessage
+                                      : null,
                             ),
                             SizedBox(height: screenSize.height * 0.01),
                             Align(
@@ -153,7 +156,8 @@ class _LoginViewState extends State<LoginView> {
                               child: InkWell(
                                 onTap: () => {
                                   context.push(AppRoutes.quenMatKhau),
-                                  Provider.of<AuthProvider>(context, listen: false)
+                                  Provider.of<AuthProvider>(context,
+                                          listen: false)
                                       .clearState()
                                 },
                                 borderRadius: BorderRadius.circular(8),
@@ -186,10 +190,12 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             SizedBox(height: screenSize.height * 0.025),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     flex: 2,
@@ -199,8 +205,8 @@ class _LoginViewState extends State<LoginView> {
                                     ),
                                   ),
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(horizontal: 8.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
                                     child: Text(
                                       "Hoặc đăng nhập bằng",
                                       style: TextStyle(
@@ -234,7 +240,8 @@ class _LoginViewState extends State<LoginView> {
                                   context,
                                   "assets/icons/i_facebook.svg",
                                   "Facebook",
-                                  () => authProvider.signInWithFacebook(context),
+                                  () =>
+                                      authProvider.signInWithFacebook(context),
                                   screenSize,
                                   isSmallScreen,
                                 ),
@@ -247,7 +254,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
-                  
+
                   // Phần footer cố định ở dưới cùng
                   Positioned(
                     left: 0,
@@ -256,7 +263,7 @@ class _LoginViewState extends State<LoginView> {
                     child: Container(
                       color: AppColor.backgroundColorApp,
                       padding: EdgeInsets.only(
-                        bottom: 15, 
+                        bottom: 15,
                         top: 15,
                         left: isPadding ? screenSize.width * 0.1 : 20.0,
                         right: isPadding ? screenSize.width * 0.1 : 20.0,

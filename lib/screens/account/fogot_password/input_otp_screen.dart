@@ -70,14 +70,14 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final fieldWidth = (constraints.maxWidth - 100) / 4;
-            
+
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -114,9 +114,11 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.arrow_back_ios, size: 30),
                               onPressed: () {
-                                Navigator.of(context).pop();
-                                Provider.of<AuthProvider>(context, listen: false)
+                                // Xóa lỗi trước khi quay lại
+                                Provider.of<AuthProvider>(context,
+                                        listen: false)
                                     .clearState();
+                                Navigator.of(context).pop();
                               },
                             ),
                           ),
@@ -149,7 +151,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // OTP Input Fields 
+                            // OTP Input Fields
                             OtpTextField(
                               numberOfFields: 4,
                               borderColor: const Color(0xFF512DA8),
@@ -238,6 +240,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                       print("Gửi OTP: $otpCode");
                                       auth.inputOtp(
                                           context, widget.email, otpCode);
+                                      // Không cần clearState ở đây vì đã xử lý trong inputOtp
                                     }
                                   : null,
                               style: ElevatedButton.styleFrom(
@@ -283,6 +286,9 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
+                    // Xóa lỗi trước khi chuyển màn hình
+                    Provider.of<AuthProvider>(context, listen: false)
+                        .clearState();
                     context.push(AppRoutes.dangKyTaiKhoan);
                   },
               ),

@@ -48,6 +48,10 @@ class _SignUpState extends State<Signup> {
     passwordController.dispose();
     confirmPasswordController.dispose();
 
+    // Xóa thông báo lỗi khi màn hình được hiển thị
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.clearState();
+
     super.dispose();
   }
 
