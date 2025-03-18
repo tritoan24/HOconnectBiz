@@ -96,83 +96,89 @@ class _BusinessOpportunityState extends State<BusinessOpportunity> {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                  child: selectedBusinesses.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Chọn ngành nghề...",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: selectedBusinesses.map((business) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xffD6E9FF),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: IntrinsicWidth(
-                                // Giúp ô không bị giãn full width
-                                child: Row(
-                                  mainAxisSize: MainAxisSize
-                                      .min, // Tự co lại theo nội dung
-                                  children: [
-                                    Flexible(
-                                      // Cho phép chữ tự động xuống dòng
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        child: Text(
-                                          business['title'] ?? '',
-                                          style:
-                                              TextStyles.textStyleNormal14W400,
-                                          overflow: TextOverflow
-                                              .visible, // Không bị cắt chữ
-                                          softWrap: true, // Cho phép xuống dòng
+        GestureDetector(
+          onTap: () {
+            if (selectedBusinesses.isEmpty) _openBusinessModal(context);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                    child: selectedBusinesses.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              "Chọn ngành nghề...",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          )
+                        : Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: selectedBusinesses.map((business) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffD6E9FF),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: IntrinsicWidth(
+                                  // Giúp ô không bị giãn full width
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize
+                                        .min, // Tự co lại theo nội dung
+                                    children: [
+                                      Flexible(
+                                        // Cho phép chữ tự động xuống dòng
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Text(
+                                            business['title'] ?? '',
+                                            style: TextStyles
+                                                .textStyleNormal14W400,
+                                            overflow: TextOverflow
+                                                .visible, // Không bị cắt chữ
+                                            softWrap:
+                                                true, // Cho phép xuống dòng
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        _removeBusiness(business['id']!);
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        size: 22,
-                                        color: Colors.black,
+                                      GestureDetector(
+                                        onTap: () {
+                                          _removeBusiness(business['id']!);
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 22,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
-                        )),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    _openBusinessModal(context);
-                  },
-                  child: Icon(Icons.keyboard_arrow_down_rounded, size: 24),
-                ),
-              )
-            ],
+                              );
+                            }).toList(),
+                          )),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      _openBusinessModal(context);
+                    },
+                    child: Icon(Icons.keyboard_arrow_down_rounded, size: 24),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
         const SizedBox(
@@ -320,4 +326,3 @@ class _BusinessOpportunityState extends State<BusinessOpportunity> {
     );
   }
 }
-

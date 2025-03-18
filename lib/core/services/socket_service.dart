@@ -1,6 +1,7 @@
 import 'package:clbdoanhnhansg/config/app_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import '../../providers/send_error_log.dart';
 
 /// Service quản lý kết nối socket cho ứng dụng
 class SocketService extends ChangeNotifier {
@@ -51,34 +52,68 @@ class SocketService extends ChangeNotifier {
 
   /// Thiết lập kết nối socket
   void _setupSocket() {
-// Build socket options
+    // Build socket options
     final options = IO.OptionBuilder()
         .setTransports(['websocket'])
         .enableAutoConnect()
         .enableReconnection()
         .build();
 
-// Create socket instance
-    _socket = IO.io(_serverUrl, options);
+    // Create socket instance
+    try {
+      _socket = IO.io(_serverUrl, options);
 
-// Set up event handlers
-    _socket!.onConnect((_) {
-      print('📱 Kết nối thành công với Socket.IO server');
-      notifyListeners();
-    });
+      // Set up event handlers
+      _socket!.onConnect((_) {
+        print('📱 Kết nối thành công với Socket.IO server');
+        notifyListeners();
+      });
 
-    _socket!.onDisconnect((_) {
-      print('📴 Ngắt kết nối với Socket.IO server');
-// Reset connection states
-      _connectionStates.clear();
-      notifyListeners();
-    });
+      _socket!.onDisconnect((_) {
+        print('📴 Ngắt kết nối với Socket.IO server');
+        // Reset connection states
+        _connectionStates.clear();
+        notifyListeners();
+      });
 
-    _socket!.onError((error) => print('❌ Socket.IO lỗi: $error'));
-    _socket!.onReconnect((attempt) => print('🔄 Kết nối lại lần $attempt'));
-    _socket!.onReconnectAttempt(
-        (attempt) => print('⏳ Đang thử kết nối lại lần #$attempt'));
-    _socket!.onReconnectFailed((_) => print('❌ Kết nối lại thất bại'));
+      _socket!.onError((error) {
+        print('❌ Socket.IO lỗi: $error');
+        sendErrorLog(
+          level: 2,
+          message: "Socket.IO lỗi kết nối",
+          additionalInfo: "$error - userId: $_currentUserId",
+        );
+      });
+      
+      _socket!.onReconnect((attempt) {
+        print('🔄 Kết nối lại lần $attempt');
+        // Nếu kết nối lại thất bại nhiều lần, báo cáo lỗi
+        if (attempt > 3) {
+          sendErrorLog(
+            level: 1,
+            message: "Socket.IO đang thử kết nối lại nhiều lần",
+            additionalInfo: "Lần thử: $attempt - userId: $_currentUserId",
+          );
+        }
+      });
+      
+      _socket!.onReconnectAttempt((attempt) => print('⏳ Đang thử kết nối lại lần #$attempt'));
+      
+      _socket!.onReconnectFailed((_) {
+        print('❌ Kết nối lại thất bại');
+        sendErrorLog(
+          level: 2,
+          message: "Socket.IO kết nối lại thất bại",
+          additionalInfo: "Máy chủ: $_serverUrl - userId: $_currentUserId",
+        );
+      });
+    } catch (e, stackTrace) {
+      sendErrorLog(
+        level: 3,
+        message: "Lỗi nghiêm trọng khi thiết lập Socket.IO",
+        additionalInfo: "${e.toString()} - Stack: $stackTrace",
+      );
+    }
   }
 
   /// Kết nối tới thông báo chung của người dùng
@@ -160,8 +195,13 @@ class SocketService extends ChangeNotifier {
       _socket!.on(event, (data) {
         try {
           callback(data);
-        } catch (e) {
+        } catch (e, stackTrace) {
           print('❌ Lỗi xử lý sự kiện socket: $e');
+          sendErrorLog(
+            level: 2,
+            message: "Lỗi xử lý sự kiện socket: $event",
+            additionalInfo: "${e.toString()} - Stack: $stackTrace",
+          );
         }
       });
     }
@@ -174,20 +214,46 @@ class SocketService extends ChangeNotifier {
         if (ack != null) {
           try {
             ack(data);
-          } catch (e) {
+          } catch (e, stackTrace) {
             print('❌ Lỗi xử lý phản hồi socket: $e');
+            sendErrorLog(
+              level: 2,
+              message: "Lỗi xử lý phản hồi socket cho sự kiện: $event",
+              additionalInfo: "${e.toString()} - Stack: $stackTrace",
+            );
           }
         }
       });
+    } else {
+      sendErrorLog(
+        level: 1,
+        message: "Socket chưa kết nối khi gửi sự kiện: $event",
+        additionalInfo: "userId: $_currentUserId",
+      );
     }
   }
 
   /// Gửi sự kiện đến server
   void emit(String event, dynamic data) {
     if (_socket != null && _socket!.connected) {
-      _socket!.emit(event, data);
+      try {
+        _socket!.emit(event, data);
+      } catch (e, stackTrace) {
+        sendErrorLog(
+          level: 2,
+          message: "Lỗi khi emit sự kiện socket: $event",
+          additionalInfo: "${e.toString()} - Stack: $stackTrace - Data: $data",
+        );
+      }
     } else {
       print('❌ Socket chưa kết nối. Không thể gửi sự kiện: $event');
+      if (_socket == null) {
+        sendErrorLog(
+          level: 1,
+          message: "Socket null khi gửi sự kiện: $event",
+          additionalInfo: "userId: $_currentUserId",
+        );
+      }
     }
   }
 

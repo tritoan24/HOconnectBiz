@@ -48,6 +48,10 @@ class _SignUpState extends State<Signup> {
     passwordController.dispose();
     confirmPasswordController.dispose();
 
+    // Xóa thông báo lỗi khi màn hình được hiển thị
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.clearState();
+
     super.dispose();
   }
 
@@ -137,7 +141,9 @@ class _SignUpState extends State<Signup> {
                               errorText: (authProvider.errorMessage ==
                                           "Tên đăng nhập không được để trống" ||
                                       authProvider.errorMessage ==
-                                          "Tên đăng nhập phải là email hợp lệ")
+                                          "Tên đăng nhập phải là email hợp lệ" ||
+                                      authProvider.errorMessage ==
+                                          "Email đã tồn tại")
                                   ? authProvider.errorMessage
                                   : null,
                             ),
