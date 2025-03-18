@@ -1,10 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../utils/Color/app_color.dart';
-import '../../widgets/button_widget.dart';
+import '../../utils/router/router.name.dart';
 import '../../widgets/input_text.dart';
 import '../../widgets/inputpassword.dart';
 
@@ -225,7 +226,7 @@ class _SignUpState extends State<Signup> {
                                 style:
                                     const TextStyle(color: Color(0xff006AF5)),
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = () => context.pop(),
+                                  ..onTap = () => context.go(AppRoutes.login),
                               ),
                             ],
                           ),
