@@ -4,6 +4,7 @@ import 'package:clbdoanhnhansg/core/network/api_endpoints.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 Future<void> sendErrorLog({
@@ -14,14 +15,21 @@ Future<void> sendErrorLog({
   // Thu thập thông tin thiết bị và ứng dụng
   final Map<String, dynamic> deviceInfo = await _getDeviceInfo();
   final Map<String, dynamic> appInfo = await _getAppInfo();
-  
+  final String formattedTimestamp =
+      DateFormat("HH:mm:ss dd/MM/yyyy").format(DateTime.now());
+
   final Map<String, dynamic> errorData = {
     "level": level,
-    "message": message,
+    "message": "\nNội dung lỗi: $message" +
+        "\nLevel: $level" +
+        "\nAdditional Info: $additionalInfo" +
+        "\nDevice Info: $deviceInfo" +
+        "\nApp Info: $appInfo" +
+        "\nTimestamp: $formattedTimestamp",
     "additionalInfo": additionalInfo,
     "deviceInfo": deviceInfo,
     "appInfo": appInfo,
-    "timestamp": DateTime.now().toIso8601String(),
+    "timestamp": formattedTimestamp,
   };
 
   try {
@@ -90,4 +98,3 @@ Future<Map<String, dynamic>> _getAppInfo() async {
     return {'error': 'Không thể lấy thông tin ứng dụng'};
   }
 }
-
