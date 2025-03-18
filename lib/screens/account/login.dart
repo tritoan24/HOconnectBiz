@@ -68,6 +68,8 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColorApp,
+      // Cho phép tự động điều chỉnh UI khi bàn phím hiện lên
+      resizeToAvoidBottomInset: true,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: FormBuilder(
@@ -78,6 +80,8 @@ class _LoginViewState extends State<LoginView> {
                 children: [
                   // Phần nội dung chính có thể cuộn
                   SingleChildScrollView(
+                    // Hỗ trợ tự động cuộn khi bàn phím xuất hiện
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight - 50, // Để lại không gian cho footer
