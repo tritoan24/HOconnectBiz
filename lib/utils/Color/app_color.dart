@@ -7,12 +7,12 @@ class AppColor {
   static const primaryBlue = Color(0xff006AF5);
   static const secondaryBlue = Color(0xffD6E9FF);
   static const lightBlue = Color(0xffEBF4FF);
-  
+
   // Màu gradient cho banner
   static const gradientBlueStart = Color(0xff3333CC);
   static const gradientBlueEnd = Color(0xff3366CC);
 
-  // Màu văn bản 
+  // Màu văn bản
   static const textDark = Color(0xff141415);
   static const textGrey = Color(0xff767A7F);
   static const textLightGrey = Color(0xFF8F9499);
