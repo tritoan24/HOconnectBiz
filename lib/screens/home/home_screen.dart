@@ -32,10 +32,10 @@ class _TrangChuViewState extends State<TrangChuView> {
 
   @override
   Widget build(BuildContext context) {
-    // final notificationProvider = Provider.of<NotificationProvider>(context);
-    //
-    // // Cập nhật context cho NotificationProvider
-    // notificationProvider.setContext(context);
+    final notificationProvider = Provider.of<NotificationProvider>(context);
+
+    // Cập nhật context cho NotificationProvider
+    notificationProvider.setContext(context);
 
     final size = MediaQuery.of(context).size;
 
