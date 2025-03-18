@@ -54,8 +54,13 @@ class _LoginViewState extends State<LoginView> {
     final extra = GoRouterState.of(context).extra as Map<String, String>?;
 
     if (extra != null) {
-      identityController.text = extra["identity"] ?? "";
-      passwordController.text = extra["password"] ?? "";
+      // Chỉ set giá trị khi controller trống
+      if (identityController.text.isEmpty) {
+        identityController.text = extra["identity"] ?? "";
+      }
+      if (passwordController.text.isEmpty) {
+        passwordController.text = extra["password"] ?? "";
+      }
     }
   }
 

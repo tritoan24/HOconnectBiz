@@ -65,7 +65,7 @@ class _NotificationPopupState extends State<NotificationPopup>
   @override
   Widget build(BuildContext context) {
     final notificationProvider =
-    Provider.of<NotificationProvider>(context, listen: false);
+        Provider.of<NotificationProvider>(context, listen: false);
 
     return Material(
       color: Colors.transparent,
@@ -75,7 +75,8 @@ class _NotificationPopupState extends State<NotificationPopup>
           position: _offsetAnimation,
           child: GestureDetector(
             onTap: () {
-              notificationProvider.handleNotificationTap(widget.notification, context);
+              notificationProvider.handleNotificationTap(
+                  widget.notification, context);
               if (widget.onDismiss != null) widget.onDismiss!();
             },
             child: Container(
@@ -108,7 +109,8 @@ class _NotificationPopupState extends State<NotificationPopup>
                           width: 32,
                           height: 32,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             width: 32,
                             height: 32,
                             color: Colors.transparent,
@@ -139,13 +141,15 @@ class _NotificationPopupState extends State<NotificationPopup>
                           const SizedBox(height: 4),
                           RichText(
                             text: TextSpan(
-                              style: DefaultTextStyle.of(context).style.copyWith(
-                                decoration: TextDecoration.none,
-                              ),
+                              style:
+                                  DefaultTextStyle.of(context).style.copyWith(
+                                        decoration: TextDecoration.none,
+                                      ),
                               children: [
                                 TextSpan(
-                                  text: "${widget.notification.uId.displayName} ",
-                                  style: TextStyles.textStyleNormal14W700.copyWith(
+                                  text: "${widget.notification.userCreate} ",
+                                  style:
+                                      TextStyles.textStyleNormal14W700.copyWith(
                                     color: Colors.black,
                                     fontSize: 14,
                                     decoration: TextDecoration.none,
