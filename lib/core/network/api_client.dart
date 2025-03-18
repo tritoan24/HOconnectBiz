@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,6 +45,7 @@ class ApiClient {
 
     try {
       late http.Response response;
+      final Stopwatch stopwatch = Stopwatch()..start();
 
       if (method == 'PUT' ||
           method == 'PATCH' && (files != null || body != null)) {
@@ -92,8 +94,13 @@ class ApiClient {
                   mimeType = 'image/bmp';
                   break;
                 default:
-                  throw Exception(
-                      'Định dạng file không được hỗ trợ. Chỉ chấp nhận jpg, jpeg, png, gif, webp, bmp');
+                  String errorMsg = 'Định dạng file không được hỗ trợ. Chỉ chấp nhận jpg, jpeg, png, gif, webp, bmp';
+                  sendErrorLog(
+                    level: 1,
+                    message: errorMsg,
+                    additionalInfo: "File: $fileName, Extension: $fileExt",
+                  );
+                  throw Exception(errorMsg);
               }
 
               var stream = http.ByteStream(file.openRead());
@@ -114,56 +121,157 @@ class ApiClient {
           });
         }
         // Gửi request và chuyển đổi response
-        final streamedResponse = await request.send();
-        response = await http.Response.fromStream(streamedResponse);
+        try {
+          final streamedResponse = await request.send();
+          response = await http.Response.fromStream(streamedResponse);
+        } catch (e, stack) {
+          sendErrorLog(
+            level: 2,
+            message: "Lỗi khi gửi multipart request: $method $url",
+            additionalInfo: "${e.toString()} - Stack: $stack",
+          );
+          rethrow;
+        }
       } else {
         switch (method) {
           case 'POST':
-            response = await http.post(
-              Uri.parse(url),
-              headers: {...headers, 'Content-Type': 'application/json'},
-              body: jsonEncode(body),
-            );
+            try {
+              response = await http.post(
+                Uri.parse(url),
+                headers: {...headers, 'Content-Type': 'application/json'},
+                body: jsonEncode(body),
+              );
+            } catch (e, stack) {
+              sendErrorLog(
+                level: 2,
+                message: "Lỗi khi gửi POST request: $url",
+                additionalInfo: "${e.toString()} - Stack: $stack - Body: $body",
+              );
+              rethrow;
+            }
             break;
           case 'GET':
-            response = await http.get(Uri.parse(url), headers: headers);
+            try {
+              response = await http.get(Uri.parse(url), headers: headers);
+            } catch (e, stack) {
+              sendErrorLog(
+                level: 2,
+                message: "Lỗi khi gửi GET request: $url",
+                additionalInfo: "${e.toString()} - Stack: $stack",
+              );
+              rethrow;
+            }
             break;
           case 'DELETE':
-            response = await http.delete(
-              Uri.parse(url),
-              headers: {...headers, 'Content-Type': 'application/json'},
-              body: body != null ? jsonEncode(body) : null,
-            );
+            try {
+              response = await http.delete(
+                Uri.parse(url),
+                headers: {...headers, 'Content-Type': 'application/json'},
+                body: body != null ? jsonEncode(body) : null,
+              );
+            } catch (e, stack) {
+              sendErrorLog(
+                level: 2,
+                message: "Lỗi khi gửi DELETE request: $url",
+                additionalInfo: "${e.toString()} - Stack: $stack - Body: $body",
+              );
+              rethrow;
+            }
             break;
           case 'PATCH':
-            response = await http.patch(
-              Uri.parse(url),
-              headers: {...headers, 'Content-Type': 'application/json'},
-              body: body != null ? jsonEncode(body) : null,
-            );
+            try {
+              response = await http.patch(
+                Uri.parse(url),
+                headers: {...headers, 'Content-Type': 'application/json'},
+                body: body != null ? jsonEncode(body) : null,
+              );
+            } catch (e, stack) {
+              sendErrorLog(
+                level: 2,
+                message: "Lỗi khi gửi PATCH request: $url",
+                additionalInfo: "${e.toString()} - Stack: $stack - Body: $body",
+              );
+              rethrow;
+            }
             break;
           default:
-            throw Exception("Phương thức HTTP không hợp lệ");
+            String errorMsg = "Phương thức HTTP không hợp lệ: $method";
+            sendErrorLog(
+              level: 1,
+              message: errorMsg,
+              additionalInfo: "URL: $url, Method: $method",
+            );
+            throw Exception(errorMsg);
         }
+      }
+
+      stopwatch.stop();
+      
+      // Log các request chậm
+      if (stopwatch.elapsedMilliseconds > 3000) { // Hơn 3 giây
+        sendErrorLog(
+          level: 1,
+          message: "API gọi chậm: $method $url",
+          additionalInfo: "Thời gian: ${stopwatch.elapsedMilliseconds}ms, Status: ${response.statusCode}",
+        );
       }
 
       debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
       debugPrint(" Response Body: ${response.body}");
 
-      if (response.statusCode >= 200 && response.statusCode < 500) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return jsonDecode(response.body);
+      } else if (response.statusCode >= 400 && response.statusCode < 500) {
+        // Lỗi phía client (400-499)
+        sendErrorLog(
+          level: 2,
+          message: "Lỗi client API: $method $url",
+          additionalInfo: "Status: ${response.statusCode}, Body: ${response.body}",
+        );
+        throw HttpException(response.body);
+      } else if (response.statusCode >= 500) {
+        // Lỗi phía server (500+)
+        sendErrorLog(
+          level: 3, // Nghiêm trọng
+          message: "Lỗi server API: $method $url",
+          additionalInfo: "Status: ${response.statusCode}, Body: ${response.body}",
+        );
+        throw HttpException(response.body);
       } else {
         throw HttpException(response.body);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
       _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
-      sendErrorLog(
-        level: 1,
-        message: "Doanh Nghiệp Lỗi: Lỗi khi gọi API: " + e.toString(),
-        additionalInfo: e.toString(),
-      );
-      rethrow; // Ném lỗi để xử lý ở tầng trên
+      
+      // Phân loại và báo cáo lỗi chi tiết hơn
+      if (e is SocketException) {
+        sendErrorLog(
+          level: 2,
+          message: "Lỗi kết nối: $method $url",
+          additionalInfo: "${e.toString()} - Stack: $stackTrace",
+        );
+      } else if (e is TimeoutException) {
+        sendErrorLog(
+          level: 2,
+          message: "API timeout: $method $url",
+          additionalInfo: "${e.toString()} - Stack: $stackTrace",
+        );
+      } else if (e is FormatException) {
+        sendErrorLog(
+          level: 2,
+          message: "Lỗi định dạng JSON: $method $url",
+          additionalInfo: "${e.toString()} - Stack: $stackTrace",
+        );
+      } else {
+        sendErrorLog(
+          level: 1,
+          message: "Lỗi API không xác định: $method $url",
+          additionalInfo: "${e.toString()} - Stack: $stackTrace",
+        );
+      }
+      
+      rethrow;
     }
   }
 

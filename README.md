@@ -157,6 +157,136 @@ lib/
 ## Liên hệ
 
 Nếu bạn gặp bất kỳ vấn đề nào, vui lòng tạo issue trong repository hoặc liên hệ với team phát triển.
-=======
-# app-clbdoanhnhanhsg
-App cho Câu lạc bộ doanh nhân SG
+
+## Hệ thống báo cáo lỗi
+
+Ứng dụng tích hợp hệ thống theo dõi và báo cáo lỗi tự động, giúp phát hiện sớm các vấn đề và báo cáo qua Telegram để đội phát triển phản ứng nhanh chóng.
+
+### Cài đặt
+
+```bash
+flutter pub add device_info_plus:^9.1.1 package_info_plus:^8.3.0 sentry_flutter:^7.15.0 flutter_logs:^2.1.11
+```
+
+### Tính năng chính
+
+- **Ghi log tự động**: Theo dõi và lưu thông tin lỗi, yêu cầu API, hiệu suất
+- **Thu thập thông tin thiết bị**: Tự động thu thập thông tin thiết bị và phiên bản ứng dụng
+- **Phân loại mức độ lỗi**: 3 cấp độ từ thấp đến cao
+- **Thông báo Telegram**: Gửi thông báo tức thời khi có lỗi nghiêm trọng
+- **Lưu log cục bộ**: Hỗ trợ xuất file log để kiểm tra
+
+### Sử dụng hệ thống báo cáo lỗi
+
+#### 1. Báo cáo lỗi cơ bản:
+
+```dart
+import 'package:clbdoanhnhansg/providers/send_error_log.dart';
+
+sendErrorLog(
+  level: 2, // Mức độ: 1=Thông thường, 2=Quan trọng, 3=Nghiêm trọng
+  message: "Mô tả lỗi",
+  additionalInfo: "Thông tin chi tiết",
+);
+```
+
+#### 2. Sử dụng ErrorReporter (Khuyến nghị):
+
+```dart
+import 'package:clbdoanhnhansg/core/utils/error_reporter.dart';
+
+// Báo cáo lỗi API
+ErrorReporter.reportApiError(
+  'api/endpoint', 
+  exception, 
+  stackTrace
+);
+
+// Báo cáo lỗi dữ liệu
+ErrorReporter.reportDataError(
+  'DataSource', 
+  'Lỗi phân tích dữ liệu', 
+  exception, 
+  stackTrace
+);
+
+// Báo cáo lỗi nghiêm trọng
+ErrorReporter.reportCritical(
+  'AuthService', 
+  'Lỗi xác thực', 
+  exception, 
+  stackTrace
+);
+
+// Báo cáo vấn đề hiệu suất
+ErrorReporter.reportPerformanceIssue(
+  'LoadData', 
+  4500, // Thời gian (ms)
+  details: 'Chi tiết'
+);
+```
+
+#### 3. Ghi log với AppLogger:
+
+```dart
+import 'package:clbdoanhnhansg/core/utils/app_logger.dart';
+
+// Ghi log thông tin
+AppLogger().info("Tag", "SubTag", "Thông điệp");
+
+// Ghi log cảnh báo
+AppLogger().warn("Tag", "SubTag", "Cảnh báo");
+
+// Ghi log lỗi
+AppLogger().error(
+  "Tag", 
+  "SubTag", 
+  "Lỗi", 
+  error: exception, 
+  stackTrace: stackTrace
+);
+
+// Ghi log lỗi nghiêm trọng
+AppLogger().fatal(
+  "Tag", 
+  "SubTag", 
+  "Lỗi nghiêm trọng", 
+  error: exception, 
+  stackTrace: stackTrace
+);
+```
+
+#### 4. Công cụ gỡ lỗi (Chỉ dùng trong môi trường phát triển):
+
+```dart
+import 'package:clbdoanhnhansg/widgets/error_reporting_panel.dart';
+
+// Thêm vào Stack trong màn hình
+Stack(
+  children: [
+    // UI chính
+    // ...
+    
+    // Công cụ gỡ lỗi (chỉ hiển thị trong debug)
+    ErrorReportingPanel(),
+  ],
+)
+```
+
+### Cấu hình
+
+Tệp cấu hình `lib/core/utils/error_reporting_config.dart` cho phép tùy chỉnh các thiết lập báo cáo lỗi:
+
+- Kích hoạt/vô hiệu hóa báo cáo theo loại
+- Đặt ngưỡng hiệu suất
+- Cấu hình mức lọc lỗi
+- Giới hạn số lượng báo cáo
+
+### Khắc phục sự cố
+
+Nếu việc báo cáo lỗi không hoạt động:
+
+1. Kiểm tra kết nối mạng
+2. Đảm bảo endpoint `/log/create` đang hoạt động
+3. Kiểm tra các package đã được cài đặt đúng cách
+4. Dùng `ErrorReportingPanel` để kiểm tra hệ thống

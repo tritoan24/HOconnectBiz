@@ -20,15 +20,6 @@ class InputAccountScreen extends StatefulWidget {
 class _InputAccountScreenState extends State<InputAccountScreen> {
   final TextEditingController accountController = TextEditingController();
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //
-  //   // Xóa thông báo lỗi khi màn hình được hiển thị
-  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
-  //   authProvider.clearState();
-  // }
-
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
