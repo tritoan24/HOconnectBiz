@@ -282,9 +282,18 @@ class _PostItemState extends State<PostItem> {
             _buildDateTime(),
           ],
           _buildTitleAndContent(),
-          _buildBusiness(context),
-          _buildImages(),
-          if (!isBusiness) _buildProductSection(context),
+          if (widget.business.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _buildBusiness(context),
+          ],
+          if (widget.images.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _buildImages(),
+          ],
+          if (!isBusiness) ...[
+            const SizedBox(height: 8),
+            _buildProductSection(context),
+          ],
           _buildActions(context, isLiked),
         ],
       ),

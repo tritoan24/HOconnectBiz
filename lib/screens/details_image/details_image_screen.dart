@@ -1,4 +1,3 @@
-// post_detail_screen.dart
 import 'package:clbdoanhnhansg/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -51,6 +50,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
   String? idUserID;
   bool _hasChanges = false;
   bool _showFullDescription = false; // Thêm biến để kiểm soát hiển thị mô tả
+  double _textContainerPosition = 60; // Vị trí mặc định của phần text
 
   @override
   void initState() {
@@ -100,6 +100,15 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
 
     // Gọi API để cập nhật trạng thái like trên server
     postProvider.toggleLike(widget.postId!, context);
+  }
+
+  // Hàm toggle hiển thị mô tả
+  void _toggleDescription() {
+    setState(() {
+      _showFullDescription = !_showFullDescription;
+      // Điều chỉnh vị trí container text khi chuyển đổi trạng thái
+      _textContainerPosition = _showFullDescription ? 10.0 : -50.0;
+    });
   }
 
   Future<void> _navigateToComments(BuildContext context) async {
@@ -158,6 +167,8 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
@@ -207,9 +218,10 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
         ),
         centerTitle: true,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
+          // Phần ảnh
+          Positioned.fill(
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
@@ -231,7 +243,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
                               ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
+                              loadingProgress.expectedTotalBytes!
                               : null,
                         ),
                       );
@@ -241,118 +253,148 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
               },
             ),
           ),
-          Container(
-            color: Colors.black.withOpacity(0.7),
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (widget.title != null && widget.title!.isNotEmpty) ...[
-                  Text(
-                    widget.title!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showFullDescription = !_showFullDescription;
-                    });
-                  },
+
+          // Phần Text Container - có thể di chuyển lên/xuống
+          AnimatedPositioned(
+            left: 0,
+            right: 0,
+            bottom: _textContainerPosition, // Sử dụng biến vị trí
+            duration: const Duration(milliseconds: 300), // Animation mượt
+            curve: Curves.easeInOut,
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: _showFullDescription ? screenHeight * 0.5 : screenHeight * 0.2,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        widget.description
-                            .split('\n')
-                            .join('\n • '), // Thêm dấu "•" trước mỗi dòng mới
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        maxLines: _showFullDescription ? null : 3,
-                        overflow:
-                            _showFullDescription ? null : TextOverflow.ellipsis,
-                      ),
-                      if (!_showFullDescription &&
-                          widget.description.split('\n').length > 3)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            "Xem thêm...",
-                            style: TextStyle(
-                              color: Colors.blue[300],
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      if (widget.title != null && widget.title!.isNotEmpty) ...[
+                        Text(
+                          widget.title!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                      ],
+                      GestureDetector(
+                        onTap: _toggleDescription,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.description.split('\n').join('\n • '),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                              maxLines: _showFullDescription ? null : 3,
+                              overflow: _showFullDescription ? null : TextOverflow.ellipsis,
+                            ),
+                            if (!_showFullDescription && widget.description.split('\n').length > 3)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  "Xem thêm...",
+                                  style: TextStyle(
+                                    color: Colors.blue[300],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                const HorizontalDivider(),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _likePost(context),
-                          child: Row(
-                            children: [
-                              ImageIcon(
-                                AssetImage(isLiked
-                                    ? 'assets/icons/heart_on.png'
-                                    : 'assets/icons/heart.png'),
-                                color: isLiked ? Colors.red : Colors.white,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "$likeCount",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
+              ),
+            ),
+          ),
+          // Phần Like & Comment - luôn cố định ở dưới cùng
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Column(
+                children: [
+                  const HorizontalDivider(),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _likePost(context),
+                            child: Row(
+                              children: [
+                                ImageIcon(
+                                  AssetImage(isLiked
+                                      ? 'assets/icons/heart_on.png'
+                                      : 'assets/icons/heart.png'),
+                                  color: isLiked ? Colors.red : Colors.white,
+                                  size: 24,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: widget.postId != null
-                              ? () => _navigateToComments(context)
-                              : null,
-                          child: Row(
-                            children: [
-                              const ImageIcon(
-                                AssetImage('assets/icons/comment.png'),
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "${widget.comment}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
+                                const SizedBox(width: 8),
+                                Text(
+                                  "$likeCount",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              ],
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: widget.postId != null
+                                ? () => _navigateToComments(context)
+                                : null,
+                            child: Row(
+                              children: [
+                                const ImageIcon(
+                                  AssetImage('assets/icons/comment.png'),
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${widget.comment}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
