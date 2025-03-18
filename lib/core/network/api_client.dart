@@ -94,7 +94,8 @@ class ApiClient {
                   mimeType = 'image/bmp';
                   break;
                 default:
-                  String errorMsg = 'Định dạng file không được hỗ trợ. Chỉ chấp nhận jpg, jpeg, png, gif, webp, bmp';
+                  String errorMsg =
+                      'Định dạng file không được hỗ trợ. Chỉ chấp nhận jpg, jpeg, png, gif, webp, bmp';
                   sendErrorLog(
                     level: 1,
                     message: errorMsg,
@@ -206,13 +207,15 @@ class ApiClient {
       }
 
       stopwatch.stop();
-      
+
       // Log các request chậm
-      if (stopwatch.elapsedMilliseconds > 3000) { // Hơn 3 giây
+      if (stopwatch.elapsedMilliseconds > 3000) {
+        // Hơn 3 giây
         sendErrorLog(
           level: 1,
           message: "API gọi chậm: $method $url",
-          additionalInfo: "Thời gian: ${stopwatch.elapsedMilliseconds}ms, Status: ${response.statusCode}",
+          additionalInfo:
+              "Thời gian: ${stopwatch.elapsedMilliseconds}ms, Status: ${response.statusCode}",
         );
       }
 
@@ -226,7 +229,8 @@ class ApiClient {
         sendErrorLog(
           level: 2,
           message: "Lỗi client API: $method $url",
-          additionalInfo: "Status: ${response.statusCode}, Body: ${response.body}",
+          additionalInfo:
+              "Status: ${response.statusCode}, Body: ${response.body}",
         );
         throw HttpException(response.body);
       } else if (response.statusCode >= 500) {
@@ -234,7 +238,8 @@ class ApiClient {
         sendErrorLog(
           level: 3, // Nghiêm trọng
           message: "Lỗi server API: $method $url",
-          additionalInfo: "Status: ${response.statusCode}, Body: ${response.body}",
+          additionalInfo:
+              "Status: ${response.statusCode}, Body: ${response.body}",
         );
         throw HttpException(response.body);
       } else {
@@ -242,8 +247,29 @@ class ApiClient {
       }
     } catch (e, stackTrace) {
       debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
-      _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
-      
+
+      // Kiểm tra nếu là HttpException (lỗi từ API)
+      if (e is HttpException) {
+        try {
+          final errorData = e.toString();
+          final Map<String, dynamic> errorMap = Map<String, dynamic>.from(
+            jsonDecode(errorData.replaceAll('HttpException: ', '')),
+          );
+          // final String errorMessage =
+          //     errorMap['message'] as String? ?? "Lỗi không xác định";
+          // _showErrorSnackbar(context, errorMessage);
+        } catch (parseError) {
+          _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
+        }
+      } else if (e is SocketException) {
+        _showErrorSnackbar(context,
+            "Không thể kết nối đến máy chủ.\n Kiểm tra kết nối internet!");
+      } else if (e is TimeoutException) {
+        _showErrorSnackbar(context, "Yêu cầu hết thời gian. Vui lòng thử lại!");
+      } else {
+        _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
+      }
+
       // Phân loại và báo cáo lỗi chi tiết hơn
       if (e is SocketException) {
         sendErrorLog(
@@ -270,7 +296,7 @@ class ApiClient {
           additionalInfo: "${e.toString()} - Stack: $stackTrace",
         );
       }
-      
+
       rethrow;
     }
   }

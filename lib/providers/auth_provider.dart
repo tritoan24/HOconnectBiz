@@ -160,7 +160,8 @@ class AuthProvider extends BaseProvider {
           if (context.mounted) {
             // Ẩn loading overlay
             hideLoadingOnce();
-            clearState(); // Xóa lỗi trước khi chuyển màn hình
+            // Xóa lỗi trước khi chuyển màn hình
+            clearState();
             context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
           }
         },
@@ -174,6 +175,8 @@ class AuthProvider extends BaseProvider {
       // Đảm bảo ẩn loading trong mọi trường hợp lỗi
       LoadingOverlay.hide();
       debugPrint("Lỗi đăng nhập: $e");
+      // Set error message từ exception
+      setError(e.toString());
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../models/apiresponse.dart';
 import '../../models/auth_model.dart';
 import '../../providers/send_error_log.dart';
+import 'dart:convert';
 
 abstract class BaseProvider extends ChangeNotifier {
   ApiResponse? _response;
@@ -88,13 +89,23 @@ abstract class BaseProvider extends ChangeNotifier {
         additionalInfo: "$errorMsg\n${e.toString()}\nStack: $stackTrace",
       );
     } on HttpException catch (e, stackTrace) {
-      final errorMsg = "Lỗi phản hồi từ máy chủ. Vui lòng thử lại.";
-      setError(errorMsg);
+      // Parse error message từ response
+      try {
+        final errorData = e.toString();
+        // Chuyển string thành Map
+        final Map<String, dynamic> errorMap = Map<String, dynamic>.from(
+          jsonDecode(errorData.replaceAll('HttpException: ', '')),
+        );
+        final errorMsg = errorMap['message'] as String? ?? "Lỗi phản hồi từ máy chủ";
+        setError(errorMsg);
+      } catch (parseError) {
+        setError("Lỗi phản hồi từ máy chủ. Vui lòng thử lại.");
+      }
       
       sendErrorLog(
         level: 2,
         message: "HttpException in $_providerName: $operation",
-        additionalInfo: "$errorMsg\n${e.toString()}\nStack: $stackTrace",
+        additionalInfo: "${e.toString()}\nStack: $stackTrace",
       );
     } on TimeoutException catch (e, stackTrace) {
       final errorMsg = "Yêu cầu hết thời gian. Vui lòng thử lại sau.";

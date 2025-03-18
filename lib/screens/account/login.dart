@@ -137,13 +137,12 @@ class _LoginViewState extends State<LoginView> {
                               title: "Tài khoản",
                               hintText: "Nhập email hoặc số điện thoại",
                               name: 'taiKhoan',
-                              errorText: (authProvider.errorMessage ==
-                                          "Người dùng không tồn tại" ||
-                                      authProvider.errorMessage ==
-                                          "Vui lòng nhập tên đăng nhập và mật khẩu")
+                              errorText: authProvider.errorMessage ==
+                                      "Người dùng không tồn tại"
                                   ? authProvider.errorMessage
                                   : null,
                             ),
+
                             SizedBox(height: screenSize.height * 0.015),
                             Inputpassword(
                               controller: passwordController,
