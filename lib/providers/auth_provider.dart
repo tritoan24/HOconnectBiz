@@ -275,7 +275,7 @@ class AuthProvider extends BaseProvider {
       context: context,
       onSuccess: () {
         clearState();
-        context.go(AppRoutes.nhapMaOTP);
+        context.go(AppRoutes.nhapMaOTP, extra: {'email': email});
       },
     );
   }

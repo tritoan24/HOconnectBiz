@@ -18,7 +18,6 @@ class InputOtpScreen extends StatefulWidget {
 }
 
 class _InputOtpScreenState extends State<InputOtpScreen> {
-  // Các biến của OTP
   List<String> otp = ["", "", "", ""];
   bool isButtonEnabled = false;
   int secondsRemaining = 300;
@@ -29,6 +28,9 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
   void initState() {
     super.initState();
     startTimer();
+    print("🔍 DEBUG - Email được truyền vào InputOtpScreen: ${widget.email}");
+    print("🔍 DEBUG - Email có độ dài: ${widget.email.length}");
+    print("🔍 DEBUG - Email có rỗng không: ${widget.email.isEmpty}");
   }
 
   void startTimer() {
@@ -49,19 +51,17 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
     super.dispose();
   }
 
-  // Hàm format thời gian đếm ngược
   String get formattedTime {
     int minutes = secondsRemaining ~/ 60;
     int seconds = secondsRemaining % 60;
     return "$minutes:${seconds.toString().padLeft(2, '0')}";
   }
 
-  // Ẩn tất cả ký tự trước '@', chỉ giữ lại 3 ký tự cuối
   String maskedEmail() {
     int atIndex = widget.email.indexOf('@');
     if (atIndex > 3) {
       String lastThreeChars = widget.email.substring(atIndex - 3, atIndex);
-      return "***" + lastThreeChars + widget.email.substring(atIndex);
+      return "***$lastThreeChars${widget.email.substring(atIndex)}";
     }
     return widget.email;
   }
@@ -70,20 +70,19 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final fieldWidth = (constraints.maxWidth - 100) / 4;
-            
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - 32, // Trừ đi padding
+                    minHeight: constraints.maxHeight - 32,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +105,6 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                         ),
                       ),
                       SizedBox(height: size.height * 0.03),
-                      // Row chứa nút back và tiêu đề
                       Row(
                         children: [
                           Align(
@@ -120,7 +118,6 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                               },
                             ),
                           ),
-                          // Tiêu đề
                           Expanded(
                             child: Align(
                               alignment: Alignment.centerLeft,
@@ -149,36 +146,45 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // OTP Input Fields 
-                            OtpTextField(
-                              numberOfFields: 4,
-                              borderColor: const Color(0xFF512DA8),
-                              focusedBorderColor: Colors.blue,
-                              showFieldAsBox: true,
-                              fieldWidth: fieldWidth,
-                              borderRadius: BorderRadius.circular(10),
-                              textStyle: const TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                              enabledBorderColor: Colors.grey,
-                              disabledBorderColor: Colors.blue,
-                              onCodeChanged: (String code) {
-                                setState(() {
-                                  otpCode = code;
-                                  isButtonEnabled = code.length == 4;
-                                });
-                              },
-                              onSubmit: (String code) {
-                                setState(() {
-                                  otpCode = code;
-                                  isButtonEnabled = true;
-                                });
-                                print("OTP nhập vào: $otpCode");
-                              },
+                            // Sửa lỗi tràn right 2.6px bằng cách điều chỉnh kích thước và padding
+                            SizedBox(
+                              width: constraints.maxWidth - 32,
+                              child: Center(
+                                child: OtpTextField(
+                                  numberOfFields: 4,
+                                  borderColor: otpCode.length == 4 ? Colors.blue : const Color(0xFF512DA8),
+                                  focusedBorderColor: Colors.blue,
+                                  showFieldAsBox: true,
+                                  // Giảm kích thước ô để tránh bị tràn
+                                  fieldWidth: 66,
+                                  // Giảm padding, tạo khoảng cách hợp lý
+                                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                  borderRadius: BorderRadius.circular(10),
+                                  textStyle: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  enabledBorderColor: otpCode.length == 4 ? Colors.blue : Colors.grey,
+                                  disabledBorderColor: Colors.blue,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  onCodeChanged: (String code) {
+                                    setState(() {
+                                      otpCode = code;
+                                      isButtonEnabled = code.length == 4;
+                                    });
+                                  },
+                                  onSubmit: (String code) {
+                                    setState(() {
+                                      otpCode = code;
+                                      isButtonEnabled = true;
+                                    });
+                                    print("OTP nhập vào: $otpCode");
+                                  },
+                                ),
+                              ),
                             ),
                             SizedBox(height: size.height * 0.01),
-                            // Thông báo về email
                             Text(
                               "Mã xác thực đã được gửi đến địa chỉ email",
                               style: TextStyles.textStyleNormal14W400,
@@ -187,7 +193,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             Text(
                               maskedEmail(),
                               style: const TextStyle(
-                                  fontSize: 14, color: Colors.blue),
+                                  fontSize: 13, color: Colors.blue),
                               textAlign: TextAlign.center,
                             ),
                             if (auth.errorMessage != null)
@@ -200,15 +206,14 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                     fontStyle: FontStyle.italic),
                                 textAlign: TextAlign.center,
                               ),
-                            // Nút gửi lại mã OTP
                             TextButton(
                               onPressed: secondsRemaining == 0
                                   ? () {
-                                      setState(() {
-                                        secondsRemaining = 300;
-                                        startTimer();
-                                      });
-                                    }
+                                setState(() {
+                                  secondsRemaining = 300;
+                                  startTimer();
+                                });
+                              }
                                   : null,
                               child: Text(
                                 "Gửi lại mã",
@@ -224,21 +229,21 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                 ),
                               ),
                             ),
-                            // Hiển thị thời gian đếm ngược
                             Text(
                               formattedTime,
                               style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                                  fontSize: 16, 
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey),
                             ),
                             SizedBox(height: size.height * 0.01),
-                            // Nút xác nhận OTP
                             ElevatedButton(
                               onPressed: isButtonEnabled
                                   ? () {
-                                      print("Gửi OTP: $otpCode");
-                                      auth.inputOtp(
-                                          context, widget.email, otpCode);
-                                    }
+                                print("Gửi OTP: $otpCode");
+                                auth.inputOtp(
+                                    context, widget.email, otpCode);
+                              }
                                   : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isButtonEnabled
@@ -255,7 +260,6 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                           ],
                         ),
                       ),
-                      // Thêm space khi màn hình lớn
                       SizedBox(height: size.height * 0.03),
                     ],
                   ),

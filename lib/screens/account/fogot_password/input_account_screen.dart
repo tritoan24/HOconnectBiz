@@ -115,10 +115,11 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       ),
 
                       SizedBox(height: size.height * 0.05),
-
                       ButtonWidget16(
                         label: 'Tiếp theo',
                         onPressed: () {
+                          print("Email${accountController.text}");
+
                           auth.sendEmailOtp(
                             context,
                             accountController.text,
