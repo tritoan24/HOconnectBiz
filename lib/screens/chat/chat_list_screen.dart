@@ -321,10 +321,7 @@ class MessageTile extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(avatarUrls[0]),
-                  radius: 12,
-                ),
+                child: _buildSafeAvatar(avatarUrls[0], 12),
               ),
             ),
 
@@ -341,10 +338,7 @@ class MessageTile extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(avatarUrls[1]),
-                    radius: 12,
-                  ),
+                  child: _buildSafeAvatar(avatarUrls[1], 12),
                 ),
               ),
 
@@ -361,10 +355,7 @@ class MessageTile extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(avatarUrls[2]),
-                    radius: 12,
-                  ),
+                  child: _buildSafeAvatar(avatarUrls[2], 12),
                 ),
               ),
 
@@ -400,17 +391,34 @@ class MessageTile extends StatelessWidget {
         ),
       );
     } else {
-      return CircleAvatar(
-        backgroundImage: contact.avatarImage.isNotEmpty
-            ? NetworkImage(contact.avatarImage)
-            : NetworkImage(contact.avatarImage),
-        child: contact.avatarImage.isEmpty
-            ? const Icon(
-                Icons.person,
-                color: Colors.grey,
-              )
-            : null,
-      );
+      return _buildSafeAvatar(contact.avatarImage, 20);
     }
+  }
+
+  // Widget helper để tạo avatar an toàn với xử lý lỗi
+  Widget _buildSafeAvatar(String imageUrl, double radius) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: Container(
+        width: radius * 2,
+        height: radius * 2,
+        child: imageUrl.isNotEmpty
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Trả về ảnh mặc định khi lỗi
+                  return Image.asset(
+                    UrlImage.imageUserDefault,
+                    fit: BoxFit.cover,
+                  );
+                },
+              )
+            : Image.asset(
+                UrlImage.imageUserDefault,
+                fit: BoxFit.cover,
+              ),
+      ),
+    );
   }
 }

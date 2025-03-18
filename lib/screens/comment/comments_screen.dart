@@ -7,6 +7,7 @@ import 'package:clbdoanhnhansg/screens/comment/widget/comment_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 import 'package:clbdoanhnhansg/models/is_join_model.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -153,6 +154,7 @@ class _CommentState extends State<CommentsScreen> {
     final inputHeight = 80.0;
 
     return Scaffold(
+      backgroundColor: AppColor.backgroundColorApp,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leadingWidth: 50,
@@ -213,15 +215,28 @@ class _CommentState extends State<CommentsScreen> {
           ),
         ],
       ),
-      bottomSheet: MessageInputScreen(
-        onMessageChanged: (message, images) {
-          setState(() {
-            selectedImages = images;
-            currentMessage = message;
-          });
-        },
-        onSubmit: _handleCommentSubmit,
-        isComment: widget.isComment,
+      bottomSheet: Container(
+        decoration: BoxDecoration(
+          color: Colors.white, // Màu nền
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1), // Màu đổ bóng
+              blurRadius: 6, // Độ mờ
+              spreadRadius: 1, // Độ lan
+              offset: Offset(0, -3), // Hướng bóng (âm nghĩa là lên trên)
+            ),
+          ],
+        ),
+        child: MessageInputScreen(
+          onMessageChanged: (message, images) {
+            setState(() {
+              selectedImages = images;
+              currentMessage = message;
+            });
+          },
+          onSubmit: _handleCommentSubmit,
+          isComment: widget.isComment,
+        ),
       ),
     );
   }
