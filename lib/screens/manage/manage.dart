@@ -72,9 +72,9 @@ class _QuanLyViewState extends State<QuanLyView> {
                     pinned: true,
                     backgroundColor: Colors.white,
                     title: Text(
-                      (userProvider.author?.companyName != null)
-                          ? userProvider.author!.companyName.isNotEmpty
-                              ? userProvider.author!.companyName
+                      (userProvider.author?.displayName != null)
+                          ? userProvider.author!.displayName.isNotEmpty
+                              ? userProvider.author!.displayName
                               : "Chưa có thông tin"
                           : "Chưa có thông tin",
                       style: const TextStyle(
@@ -121,13 +121,11 @@ class _QuanLyViewState extends State<QuanLyView> {
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 30),
-                               child: Text(
-                                (userProvider.author?.companyDescription !=
-                                        null)
-                                    ? userProvider.author!.companyDescription
-                                            .isNotEmpty
-                                        ? userProvider
-                                            .author!.companyDescription
+                              child: Text(
+                                (userProvider.author?.description != null)
+                                    ? userProvider
+                                            .author!.description.isNotEmpty
+                                        ? userProvider.author!.description
                                         : "Chưa có thông tin"
                                     : "Chưa có thông tin",
                                 maxLines: 2,
@@ -236,4 +234,3 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
-

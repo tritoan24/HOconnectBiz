@@ -69,10 +69,10 @@ class _BusinessInformationState extends State<BusinessInformation> {
                     floating: false,
                     pinned: true,
                     backgroundColor: Colors.white,
-                     title: Text(
-                      (userProvider.authorByID?.companyName != null)
-                          ? userProvider.authorByID!.companyName.isNotEmpty
-                              ? userProvider.authorByID!.companyName
+                    title: Text(
+                      (userProvider.authorByID?.displayName != null)
+                          ? userProvider.authorByID!.displayName.isNotEmpty
+                              ? userProvider.authorByID!.displayName
                               : "Chưa có thông tin"
                           : "Chưa có thông tin",
                       style: const TextStyle(
@@ -114,26 +114,28 @@ class _BusinessInformationState extends State<BusinessInformation> {
                             ),
                             const SizedBox(height: 8),
                             Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 30),
-                             child: Text(
-                                (userProvider.authorByID?.companyDescription !=
-                                        null)
-                                    ? userProvider.authorByID!
-                                            .companyDescription.isNotEmpty
-                                        ? userProvider
-                                            .authorByID!.companyDescription
-                                        : "Chưa có thông tin"
-                                    : "Chưa có thông tin",
-                                maxLines: 2,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff767A7F),
-                                ),
-                              ),
-                            ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 30),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Căn giữa cả ngang và dọc
+                                  child: Text(
+                                    (userProvider.authorByID?.description !=
+                                                null &&
+                                            userProvider.authorByID!.description
+                                                .isNotEmpty)
+                                        ? userProvider.authorByID!.description
+                                        : "Chưa có thông tin",
+                                    maxLines: 2,
+                                    textAlign: TextAlign
+                                        .center, // Căn giữa nội dung text
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff767A7F),
+                                    ),
+                                  ),
+                                )),
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -230,4 +232,3 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
-

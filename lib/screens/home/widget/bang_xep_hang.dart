@@ -44,7 +44,7 @@ class BangXepHang extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.bottomLeft,
                     end: Alignment.topRight,
-                    colors: [Color(0xff3333CC), Color(0xff3366CC)],
+                    colors: [Color(0xff10144D), Color(0xff3976B9)],
                   ),
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -270,4 +270,3 @@ class BangXepHang extends StatelessWidget {
     );
   }
 }
-
