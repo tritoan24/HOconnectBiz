@@ -54,12 +54,13 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Khởi tạo socket và kết nối tới phòng chat
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-      print("🚀 Khởi tạo socket và kết nối tới phòng chat");
+      // print("🚀 Khởi tạo socket và kết nối tới phòng chat");
+      // _connectToSpecificChatRoom();
 
       // 1. Kết nối socket
       chatProvider.initializeSocket(context, widget.idReceiver).then((_) {
         // 2. Kết nối đến phòng chat cụ thể
-        // _connectToSpecificChatRoom();
+        _connectToSpecificChatRoom();
         print("🚀 Kết nối socket thành công");
 
         // 3. Lấy dữ liệu tin nhắn
@@ -109,10 +110,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   }
 
   void _connectToSpecificChatRoom() {
-    // Kết nối tới phòng chat giữa 2 người dùng
-    // _socketService.connect(widget.currentUserId);
-    _socketService.connectToChat(widget.currentUserId, widget.idReceiver);
-
     // Đăng ký lắng nghe tin nhắn mới
     _socketService.on('new_message', (data) {
       print("📱 Nhận tin nhắn mới từ socket: $data");
@@ -123,6 +120,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
               Provider.of<ChatProvider>(context, listen: false);
           // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
           chatProvider.handleNotificationData(data);
+
           // Cuộn xuống khi nhận tin nhắn mới từ socket
           _scrollToBottom();
         } else {

@@ -55,7 +55,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       // 1. Kết nối socket
       chatProvider.initializeSocket(context, widget.groupId).then((_) {
         // 2. Kết nối đến phòng chat cụ thể
-        // _connectToSpecificChatRoom();
+        _connectToSpecificChatRoom();
         print("🚀 Kết nối socket thành công");
 
         // 3. Lấy tin nhắn cũ
@@ -84,9 +84,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _connectToSpecificChatRoom() {
-    // Kết nối tới phòng chat nhóm
-    _socketService.connectToChat(widget.currentUserId, widget.groupId);
-
     // Đăng ký lắng nghe tin nhắn mới
     _socketService.on('new_message', (data) {
       print("📱 Nhận tin nhắn mới từ socket: $data");
@@ -95,13 +92,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         if (mounted) {
           final chatProvider =
               Provider.of<ChatProvider>(context, listen: false);
-          // Xử lý trực tiếp dữ liệu tin nhắn mới
+          // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
           chatProvider.handleNotificationData(data);
 
-          // Cập nhật UI và cuộn xuống
-          setState(() {}); // Cập nhật UI
-          _scrollToBottom(); // Cuộn xuống khi có tin nhắn mới
-          print("🔄 Đã cập nhật UI với tin nhắn mới");
+          // Cuộn xuống khi nhận tin nhắn mới từ socket
+          _scrollToBottom();
         } else {
           print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
         }
