@@ -59,6 +59,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         chatProvider.getListDetailChat(context, widget.idMessage).then((_) {
           _scrollToBottom();
           print("🚀 Lấy tin nhắn cũ thành công");
+
+          // 4. Đánh dấu tất cả tin nhắn là đã đọc
+          // chatProvider.markAllMessagesAsRead(widget.idMessage, context);
         });
       });
     });
@@ -488,14 +491,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(
-                message.getFormattedTime(),
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                  color: const Color(0xFF767A7F),
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message.getFormattedTime(),
+                    style: GoogleFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: const Color(0xFF767A7F),
+                    ),
+                  ),
+                  if (isMe && message.read == true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.done_all,
+                        size: 14,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  if (isMe && message.read != true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.done,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],

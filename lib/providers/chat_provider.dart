@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,8 @@ import '../repository/chat_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
 import 'auth_provider.dart';
 import 'post_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository = ChatRepository();
@@ -25,7 +28,10 @@ class ChatProvider with ChangeNotifier {
   int _cartItemCount = 0;
   int _currentPage = 1;
   bool _hasMoreMessages = true;
-  static const int _limit = 5;
+  static const int _limit = 15;
+  final _storage = const FlutterSecureStorage();
+  final baseUrl =
+      'https://your-api-base-url.com'; // Replace with your actual base URL
 
   ChatProvider();
 
@@ -152,11 +158,11 @@ class ChatProvider with ChangeNotifier {
           }
 
           // Sắp xếp tin nhắn theo thời gian
-          _messages.sort((a, b) {
-            final timeCompare = a.timestamp.compareTo(b.timestamp);
-            if (timeCompare != 0) return timeCompare;
-            return (a.id ?? "").compareTo(b.id ?? "");
-          });
+          // _messages.sort((a, b) {
+          //   final timeCompare = a.timestamp.compareTo(b.timestamp);
+          //   if (timeCompare != 0) return timeCompare;
+          //   return (a.id ?? "").compareTo(b.id ?? "");
+          // });
           notifyListeners();
         }
       }
@@ -255,7 +261,8 @@ class ChatProvider with ChangeNotifier {
   }
 
   /// Lấy danh sách tin nhắn trong một phòng chat
-  Future<void> getListDetailChat(BuildContext context, String idUser, {bool loadMore = false}) async {
+  Future<void> getListDetailChat(BuildContext context, String idUser,
+      {bool loadMore = false}) async {
     if (!loadMore) {
       _currentPage = 1;
       _hasMoreMessages = true;
@@ -268,8 +275,11 @@ class ChatProvider with ChangeNotifier {
       _isLoadingMore = true;
       notifyListeners();
 
+      print(
+          "🔄 Đang tải tin nhắn, trang: $_currentPage, ID người dùng: $idUser");
+
       final response = await _chatRepository.getListDetailChat(
-        context, 
+        context,
         idUser,
         page: _currentPage,
         limit: _limit,
@@ -280,32 +290,38 @@ class ChatProvider with ChangeNotifier {
             .map((item) => Message.fromJson(item))
             .toList();
 
+        print("📥 Nhận được ${newMessages.length} tin nhắn mới");
+
         // Kiểm tra xem có còn tin nhắn để load không
         _hasMoreMessages = newMessages.length >= _limit;
+        print("📄 Còn tin nhắn để tải: $_hasMoreMessages");
 
         if (loadMore) {
           // Thêm tin nhắn cũ vào đầu danh sách
           _messages.insertAll(0, newMessages);
+          print("⬆️ Đã thêm tin nhắn cũ vào đầu danh sách");
         } else {
           // Thêm tin nhắn vào danh sách
           _messages.addAll(newMessages);
-          
-          // Sắp xếp tin nhắn theo thời gian (từ cũ đến mới)
-          _messages.sort((a, b) {
-            // So sánh timestamp
-            final timeCompare = a.timestamp.compareTo(b.timestamp);
-            if (timeCompare != 0) return timeCompare;
-            
-            // Nếu timestamp bằng nhau, so sánh ID để đảm bảo thứ tự nhất quán
-            return (a.id ?? "").compareTo(b.id ?? "");
-          });
+          print("✅ Đã thêm tin nhắn mới vào danh sách");
         }
+
+        // Sắp xếp tin nhắn theo thời gian sau khi thêm tin nhắn mới
+        // _messages.sort((a, b) {
+        //   final timeCompare = a.timestamp.compareTo(b.timestamp);
+        //   if (timeCompare != 0) return timeCompare;
+        //   return (a.id ?? "").compareTo(b.id ?? "");
+        // });
 
         _currentPage++;
         notifyListeners();
+      } else {
+        print("❌ Lỗi khi tải tin nhắn: ${response.message}");
+        _hasMoreMessages = false;
       }
     } catch (e) {
-      print("Error fetching chat list: $e");
+      print("❌ Lỗi khi tải danh sách chat: $e");
+      _hasMoreMessages = false;
     } finally {
       _isLoadingMore = false;
       notifyListeners();
@@ -314,8 +330,12 @@ class ChatProvider with ChangeNotifier {
 
   /// Load thêm tin nhắn cũ
   Future<void> loadMoreMessages(BuildContext context) async {
+    print("🔄 Đang tải thêm tin nhắn cũ...");
     if (_currentChatReceiverId != null) {
+      print("📩 ID người nhận: $_currentChatReceiverId, Trang: $_currentPage");
       await getListDetailChat(context, _currentChatReceiverId!, loadMore: true);
+    } else {
+      print("❌ ID người nhận không tồn tại!");
     }
   }
 
@@ -490,6 +510,14 @@ class ChatProvider with ChangeNotifier {
 
         // Cập nhật danh sách tin nhắn sau khi xóa
         _messages.removeWhere((message) => message.id.toString() == messageId);
+
+        // Sắp xếp lại danh sách tin nhắn để đảm bảo thứ tự đúng
+        _messages.sort((a, b) {
+          final timeCompare = a.timestamp.compareTo(b.timestamp);
+          if (timeCompare != 0) return timeCompare;
+          return (a.id ?? "").compareTo(b.id ?? "");
+        });
+
         notifyListeners();
       } else {
         print("⚠️ Xóa tin nhắn thất bại: ${response.message}");
@@ -620,6 +648,43 @@ class ChatProvider with ChangeNotifier {
   void addOptimisticMessage(Message message) {
     // Thêm tin nhắn mới vào cuối danh sách (tin nhắn mới nhất)
     _messages.add(message);
+
+    // Sắp xếp tin nhắn theo thời gian
+    // _messages.sort((a, b) {
+    //   final timeCompare = a.timestamp.compareTo(b.timestamp);
+    //   if (timeCompare != 0) return timeCompare;
+    //   return (a.id ?? "").compareTo(b.id ?? "");
+    // });
+
     notifyListeners();
   }
+
+  // // Đánh dấu tất cả tin nhắn là đã đọc
+  // Future<void> markAllMessagesAsRead(String conversationId, BuildContext context) async {
+  //   try {
+  //     final token = await _storage.read(key: 'token');
+  //     if (token == null) {
+  //       throw Exception('Token không tồn tại');
+  //     }
+  //
+  //     final url = Uri.parse('$baseUrl/api/mark-messages-read/$conversationId');
+  //     final response = await http.put(
+  //       url,
+  //       headers: {
+  //         'Authorization': 'Bearer $token',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       notifyListeners();
+  //       print('📖 Đã đánh dấu tất cả tin nhắn là đã đọc');
+  //     } else {
+  //       print('❌ Lỗi đánh dấu tin nhắn đã đọc: ${response.statusCode}');
+  //       print('Body: ${response.body}');
+  //     }
+  //   } catch (e) {
+  //     print('❌ Lỗi đánh dấu tin nhắn đã đọc: $e');
+  //   }
+  // }
 }

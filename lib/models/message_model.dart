@@ -40,6 +40,20 @@ class Message {
       }
     }
 
+    // Xử lý timestamp
+    DateTime parsedTimestamp = DateTime.now();
+    if (json['timestamp'] != null) {
+      try {
+        if (json['timestamp'] is String) {
+          parsedTimestamp = DateTime.parse(json['timestamp']);
+        } else if (json['timestamp'] is DateTime) {
+          parsedTimestamp = json['timestamp'];
+        }
+      } catch (e) {
+        print("Lỗi xử lý timestamp: $e");
+      }
+    }
+
     return Message(
       id: json['_id']?.toString(),
       sender: json['sender'] != null ? Author.fromJson(json['sender']) : null,
@@ -49,9 +63,7 @@ class Message {
       album: albumList,
       read: json['read'] == true,
       data: json['data'] != null ? OrderModel.fromJson(json['data']) : null,
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      timestamp: parsedTimestamp,
     );
   }
 
@@ -63,7 +75,21 @@ class Message {
   }
 
   String getFormattedTime() {
-    return "${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+    // Định dạng giờ:phút
+    String timeStr = "${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
+    
+    // Nếu là ngày hôm nay thì chỉ hiển thị giờ
+    if (messageDate.isAtSameMomentAs(today)) {
+      return timeStr;
+    } 
+    // Nếu khác ngày thì hiển thị thêm ngày/tháng/năm
+    else {
+      return "$timeStr ${timestamp.day}/${timestamp.month}/${timestamp.year}";
+    }
   }
 }
 
