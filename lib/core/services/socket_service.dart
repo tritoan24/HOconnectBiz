@@ -43,12 +43,14 @@ class SocketService extends ChangeNotifier {
     _currentUserId = userId;
 
     if (_socket != null && _socket!.connected) {
-      print('Socket đã được kết nối');
+      debugPrint('Socket đã được kết nối');
       return;
     }
 
     _setupSocket();
   }
+
+  bool _isReconnecting = false;
 
   /// Thiết lập kết nối socket
   void _setupSocket() {
@@ -57,6 +59,9 @@ class SocketService extends ChangeNotifier {
         .setTransports(['websocket'])
         .enableAutoConnect()
         .enableReconnection()
+        .setTimeout(20000)
+        .setReconnectionAttempts(5)
+        .setReconnectionDelay(2000)
         .build();
 
     // Create socket instance
@@ -65,19 +70,21 @@ class SocketService extends ChangeNotifier {
 
       // Set up event handlers
       _socket!.onConnect((_) {
-        print('📱 Kết nối thành công với Socket.IO server');
+        debugPrint('📱 Kết nối thành công với Socket.IO server');
+        _isReconnecting = false;
         notifyListeners();
       });
 
       _socket!.onDisconnect((_) {
-        print('📴 Ngắt kết nối với Socket.IO server');
+        debugPrint('📴 Ngắt kết nối với Socket.IO server');
+        _isReconnecting = false;
         // Reset connection states
         _connectionStates.clear();
         notifyListeners();
       });
 
       _socket!.onError((error) {
-        print('❌ Socket.IO lỗi: $error');
+        debugPrint('❌ Socket.IO lỗi: $error');
         sendErrorLog(
           level: 2,
           message: "Socket.IO lỗi kết nối",
@@ -86,7 +93,9 @@ class SocketService extends ChangeNotifier {
       });
 
       _socket!.onReconnect((attempt) {
-        print('🔄 Kết nối lại lần $attempt');
+        debugPrint('🔄 Kết nối lại lần $attempt');
+        if (_isReconnecting) return;
+        _isReconnecting = true;
         // Nếu kết nối lại thất bại nhiều lần, báo cáo lỗi
         if (attempt > 3) {
           sendErrorLog(
@@ -96,12 +105,11 @@ class SocketService extends ChangeNotifier {
           );
         }
       });
-
-      _socket!.onReconnectAttempt(
-          (attempt) => print('⏳ Đang thử kết nối lại lần #$attempt'));
+      
+      _socket!.onReconnectAttempt((attempt) => debugPrint('⏳ Đang thử kết nối lại lần #$attempt'));
 
       _socket!.onReconnectFailed((_) {
-        print('❌ Kết nối lại thất bại');
+        debugPrint('❌ Kết nối lại thất bại');
         sendErrorLog(
           level: 2,
           message: "Socket.IO kết nối lại thất bại",
@@ -129,7 +137,7 @@ class SocketService extends ChangeNotifier {
       final deviceId = '$PREFIX_NOTIFICATION$userId';
       _socket!.emit(EVENT_CONNECT, {'deviceId': deviceId});
       _connectionStates[deviceId] = true;
-      print('🔔 Kết nối tới kênh thông báo: $deviceId');
+      debugPrint('🔔 Kết nối tới kênh thông báo: $deviceId');
       notifyListeners();
     }
   }
@@ -147,7 +155,7 @@ class SocketService extends ChangeNotifier {
       _socket!.emit(EVENT_CONNECT, {'deviceId': chatDeviceId});
       _connectionStates[chatDeviceId] = true;
 
-      print('💬 Kết nối tới phòng chat: $chatDeviceId');
+      debugPrint('💬 Kết nối tới phòng chat: $chatDeviceId');
       notifyListeners();
     }
   }
@@ -165,7 +173,7 @@ class SocketService extends ChangeNotifier {
       _socket!.emit(EVENT_CONNECT, {'deviceId': contactDeviceId});
       _connectionStates[contactDeviceId] = true;
 
-      print('👥 Kết nối tới kênh danh bạ: $contactDeviceId');
+      debugPrint('👥 Kết nối tới kênh danh bạ: $contactDeviceId');
       notifyListeners();
     }
   }
@@ -176,7 +184,7 @@ class SocketService extends ChangeNotifier {
       _socket!.emit(EVENT_DISCONNECT, {'deviceId': roomId});
       _connectionStates.remove(roomId);
 
-      print('🚪 Rời khỏi phòng: $roomId');
+      debugPrint('🚪 Rời khỏi phòng: $roomId');
       notifyListeners();
     }
   }
@@ -193,7 +201,7 @@ class SocketService extends ChangeNotifier {
         try {
           callback(data);
         } catch (e, stackTrace) {
-          print('❌ Lỗi xử lý sự kiện socket: $e');
+          debugPrint('❌ Lỗi xử lý sự kiện socket: $e');
           sendErrorLog(
             level: 2,
             message: "Lỗi xử lý sự kiện socket: $event",
@@ -208,7 +216,7 @@ class SocketService extends ChangeNotifier {
   void off(String event) {
     if (_socket != null) {
       _socket!.off(event);
-      print('🔕 Đã hủy lắng nghe sự kiện: $event');
+      debugPrint('🔕 Đã hủy lắng nghe sự kiện: $event');
     }
   }
 
@@ -220,7 +228,7 @@ class SocketService extends ChangeNotifier {
           try {
             ack(data);
           } catch (e, stackTrace) {
-            print('❌ Lỗi xử lý phản hồi socket: $e');
+            debugPrint('❌ Lỗi xử lý phản hồi socket: $e');
             sendErrorLog(
               level: 2,
               message: "Lỗi xử lý phản hồi socket cho sự kiện: $event",
@@ -290,7 +298,7 @@ class SocketService extends ChangeNotifier {
       _socket = null;
     }
 
-    print('🔌 Đã ngắt kết nối socket hoàn toàn');
+    debugPrint('🔌 Đã ngắt kết nối socket hoàn toàn');
     notifyListeners();
   }
 }
