@@ -5,6 +5,7 @@ import 'package:clbdoanhnhansg/screens/profile/widget/member_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
+import '../../utils/Color/app_color.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -46,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final height = size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0x00f4f5f6),
+      backgroundColor: AppColor.backgroundColorApp,
       body: Consumer<UserProvider>(builder: (context, userProvider, child) {
         if (userProvider.isLoading) {
           return const Center(
