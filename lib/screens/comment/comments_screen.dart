@@ -1,25 +1,20 @@
 import 'dart:io';
-
+import 'package:clbdoanhnhansg/models/is_join_model.dart';
+import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 import 'package:clbdoanhnhansg/providers/comment_provider.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
-import 'package:clbdoanhnhansg/providers/auth_provider.dart';
 import 'package:clbdoanhnhansg/screens/comment/widget/comment_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
-import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
-import 'package:clbdoanhnhansg/models/is_join_model.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/product_model.dart';
 import '../../models/business_model.dart';
-import '../../providers/business_provider.dart';
+import '../../models/product_model.dart';
+import '../../utils/icons/app_icons.dart';
 import '../../utils/router/router.name.dart';
 import '../chat/widget/message_input.dart';
-import '../../utils/icons/app_icons.dart';
 
 class CommentsScreen extends StatefulWidget {
   static final formatCurrency =

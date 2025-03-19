@@ -21,28 +21,38 @@ class _SignUpState extends State<Signup> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
 
   bool _isFormValid = false;
+  bool _showValidationErrors = false;
+  bool _fieldsNotEmpty = false;
+
+  // Thêm biến để quản lý lỗi validation từ client
+  Map<String, String?> validationErrors = {
+    'email': null,
+    'name': null,
+    'password': null,
+    'confirmPassword': null,
+  };
 
   @override
   void initState() {
     super.initState();
-    // Lắng nghe sự thay đổi trong các trường nhập liệu
-    identityController.addListener(_validateForm);
-    nameController.addListener(_validateForm);
-    passwordController.addListener(_validateForm);
-    confirmPasswordController.addListener(_validateForm);
+    // Thêm listener để kiểm tra các trường đã nhập
+    identityController.addListener(_checkFieldsNotEmpty);
+    nameController.addListener(_checkFieldsNotEmpty);
+    passwordController.addListener(_checkFieldsNotEmpty);
+    confirmPasswordController.addListener(_checkFieldsNotEmpty);
   }
 
   @override
   void dispose() {
-    // Hủy lắng nghe khi widget bị hủy
-    identityController.removeListener(_validateForm);
-    nameController.removeListener(_validateForm);
-    passwordController.removeListener(_validateForm);
-    confirmPasswordController.removeListener(_validateForm);
-
+    // Hủy listener khi widget bị hủy
+    identityController.removeListener(_checkFieldsNotEmpty);
+    nameController.removeListener(_checkFieldsNotEmpty);
+    passwordController.removeListener(_checkFieldsNotEmpty);
+    confirmPasswordController.removeListener(_checkFieldsNotEmpty);
+    
     // Giải phóng bộ nhớ
     identityController.dispose();
     nameController.dispose();
@@ -56,6 +66,42 @@ class _SignUpState extends State<Signup> {
     super.dispose();
   }
 
+  // Chỉ kiểm tra xem các trường đã có giá trị chưa (không validate giá trị)
+  void _checkFieldsNotEmpty() {
+    setState(() {
+      _fieldsNotEmpty = 
+          identityController.text.trim().isNotEmpty &&
+          nameController.text.trim().isNotEmpty &&
+          passwordController.text.isNotEmpty &&
+          confirmPasswordController.text.isNotEmpty;
+    });
+  }
+
+  // Kiểm tra email hợp lệ
+  bool _isValidEmail(String email) {
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$'
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
+  // Kiểm tra mật khẩu mạnh
+  bool _isStrongPassword(String password) {
+    // Ít nhất 8 ký tự
+    if (password.length < 8) return false;
+
+    // Chứa ít nhất một chữ hoa
+    final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
+    // Chứa ít nhất một chữ thường
+    final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
+    // Chứa ít nhất một số
+    final hasNumber = RegExp(r'[0-9]').hasMatch(password);
+    // Chứa ít nhất một ký tự đặc biệt
+    final hasSpecialCharacters = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+
+    return hasUppercase && hasLowercase && hasNumber && hasSpecialCharacters;
+  }
+
   // Kiểm tra tính hợp lệ của form
   void _validateForm() {
     final identity = identityController.text.trim();
@@ -63,16 +109,60 @@ class _SignUpState extends State<Signup> {
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
 
+    // Reset lỗi trước khi validate lại
+    validationErrors = {
+      'email': null,
+      'name': null,
+      'password': null,
+      'confirmPassword': null,
+    };
+
+    // Validate email
+    if (identity.isEmpty) {
+      validationErrors['email'] = "Tên đăng nhập không được để trống";
+    } else if (!_isValidEmail(identity)) {
+      validationErrors['email'] = "Tên đăng nhập phải là email hợp lệ";
+    }
+
+    // Validate name
+    if (name.isEmpty) {
+      validationErrors['name'] = "Tên hiển thị là bắt buộc";
+    }
+
+    // Validate password
+    if (password.isEmpty) {
+      validationErrors['password'] = "Mật khẩu không được để trống";
+    } else if (password.length < 8) {
+      validationErrors['password'] = "Mật khẩu phải có ít nhất 8 ký tự";
+    } else if (!_isStrongPassword(password)) {
+      validationErrors['password'] = "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.";
+    }
+
+    // Validate confirm password
+    if (confirmPassword.isEmpty) {
+      validationErrors['confirmPassword'] = "Xác nhận mật khẩu không được để trống";
+    } else if (password != confirmPassword) {
+      validationErrors['confirmPassword'] = "Mật khẩu và xác nhận mật khẩu không khớp";
+    }
+
     setState(() {
-      // Chỉ kiểm tra xem tất cả các trường đã được điền đủ chưa
+      // Form hợp lệ khi tất cả các trường được điền và không có lỗi
       _isFormValid = identity.isNotEmpty &&
           name.isNotEmpty &&
           password.isNotEmpty &&
-          confirmPassword.isNotEmpty;
+          confirmPassword.isNotEmpty &&
+          !validationErrors.values.any((error) => error != null);
     });
   }
 
   void _register() async {
+    // Validate form trước khi submit
+    _validateForm();
+    
+    setState(() {
+      _showValidationErrors = true;
+    });
+
     if (!_isFormValid) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -83,6 +173,45 @@ class _SignUpState extends State<Signup> {
       confirmPasswordController.text,
       nameController.text,
     );
+  }
+
+  // Lấy thông báo lỗi cho từng trường
+  String? getFieldError(String fieldName) {
+    // Chỉ hiển thị lỗi khi đã nhấn nút đăng ký
+    if (!_showValidationErrors) return null;
+    
+    // Đầu tiên kiểm tra lỗi từ client validation
+    if (validationErrors[fieldName] != null) {
+      return validationErrors[fieldName];
+    }
+
+    // Nếu không có lỗi client thì kiểm tra lỗi từ API
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.errorMessage == null) return null;
+
+    // Kiểm tra lỗi API cho từng trường cụ thể
+    if (fieldName == 'email') {
+      if (authProvider.errorMessage == "Tên đăng nhập không được để trống" ||
+          authProvider.errorMessage == "Tên đăng nhập phải là email hợp lệ" ||
+          authProvider.errorMessage == "Email đã tồn tại") {
+        return authProvider.errorMessage;
+      }
+    } else if (fieldName == 'name') {
+      if (authProvider.errorMessage == "Có lỗi xảy ra") {
+        return "Tên hiển thị là bắt buộc";
+      }
+    } else if (fieldName == 'password') {
+      if (authProvider.errorMessage == "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt." ||
+          authProvider.errorMessage == "Mật khẩu phải có ít nhất 8 ký tự") {
+        return authProvider.errorMessage;
+      }
+    } else if (fieldName == 'confirmPassword') {
+      if (authProvider.errorMessage == "Mật khẩu và xác nhận mật khẩu không khớp") {
+        return authProvider.errorMessage;
+      }
+    }
+
+    return null;
   }
 
   @override
@@ -139,14 +268,7 @@ class _SignUpState extends State<Signup> {
                               title: "Email",
                               hintText: "Nhập email",
                               name: 'taiKhoan',
-                              errorText: (authProvider.errorMessage ==
-                                          "Tên đăng nhập không được để trống" ||
-                                      authProvider.errorMessage ==
-                                          "Tên đăng nhập phải là email hợp lệ" ||
-                                      authProvider.errorMessage ==
-                                          "Email đã tồn tại")
-                                  ? authProvider.errorMessage
-                                  : null,
+                              errorText: getFieldError('email'),
                             ),
                             const SizedBox(height: 16),
                             InputText(
@@ -154,10 +276,7 @@ class _SignUpState extends State<Signup> {
                               title: "Họ và tên",
                               hintText: "Nhập họ và tên",
                               name: 'displayName',
-                              errorText:
-                                  authProvider.errorMessage == "Có lỗi xảy ra"
-                                      ? "Tên hiển thị là bắt buộc"
-                                      : null,
+                              errorText: getFieldError('name'),
                             ),
                             const SizedBox(height: 16),
                             Inputpassword(
@@ -165,12 +284,7 @@ class _SignUpState extends State<Signup> {
                               name: 'password',
                               title: 'Mật khẩu',
                               hintText: "Nhập mật khẩu",
-                              errorText: (authProvider.errorMessage ==
-                                          "Mật khẩu và xác nhận mật khẩu không khớp" ||
-                                      authProvider.errorMessage ==
-                                          "Mật khẩu phải có ít nhất 8 ký tự")
-                                  ? authProvider.errorMessage
-                                  : null,
+                              errorText: getFieldError('password'),
                             ),
                             const SizedBox(height: 16),
                             Inputpassword(
@@ -178,22 +292,19 @@ class _SignUpState extends State<Signup> {
                               name: 'password',
                               title: 'Xác nhận mật khẩu',
                               hintText: 'Nhập lại mật khẩu',
-                              errorText: authProvider.errorMessage ==
-                                      "Mật khẩu và xác nhận mật khẩu không khớp"
-                                  ? authProvider.errorMessage
-                                  : null,
+                              errorText: getFieldError('confirmPassword'),
                             ),
                             const SizedBox(height: 24),
                             // Nút đăng ký với màu sắc phụ thuộc vào trạng thái form
                             InkWell(
-                              onTap: (_isFormValid && !authProvider.isLoading)
-                                  ? _register
-                                  : null,
+                              onTap: (_fieldsNotEmpty && !authProvider.isLoading) 
+                                ? _register 
+                                : null,
                               child: Container(
                                 width: double.infinity,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: _isFormValid
+                                  color: _fieldsNotEmpty && !authProvider.isLoading
                                       ? const Color(0xff006AF5)
                                       : const Color(0xffE9EBED),
                                   borderRadius: BorderRadius.circular(10),
@@ -204,7 +315,7 @@ class _SignUpState extends State<Signup> {
                                         ? "Đang đăng ký..."
                                         : "Đăng ký ngay",
                                     style: TextStyle(
-                                      color: _isFormValid
+                                      color: _fieldsNotEmpty && !authProvider.isLoading
                                           ? Colors.white
                                           : const Color(0xff8F9499),
                                       fontSize: 16,
@@ -230,7 +341,7 @@ class _SignUpState extends State<Signup> {
                               TextSpan(
                                 text: "Đăng nhập",
                                 style:
-                                    const TextStyle(color: Color(0xff006AF5)),
+                                const TextStyle(color: Color(0xff006AF5)),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () => context.go(AppRoutes.login),
                               ),
@@ -267,7 +378,7 @@ class _SignUpState extends State<Signup> {
                       child: Text(
                         authProvider.successMessage!,
                         style:
-                            const TextStyle(color: Colors.white, fontSize: 14),
+                        const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
                   ),

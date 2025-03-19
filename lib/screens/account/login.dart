@@ -27,23 +27,54 @@ class _LoginViewState extends State<LoginView> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final TextEditingController identityController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  
+  bool _showValidationErrors = false;
+  Map<String, String?> validationErrors = {
+    'identity': null,
+    'password': null,
+  };
 
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
 
   @override
   void dispose() {
+    // Xóa listeners
+    identityController.removeListener(_resetErrors);
+    passwordController.removeListener(_resetErrors);
+    
     _tapGestureRecognizer.dispose();
+    identityController.dispose();
+    passwordController.dispose();
+    
+    // Xóa thông báo lỗi khi màn hình bị hủy
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.clearState();
+    
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    
+    // Thêm listener để ẩn lỗi khi người dùng bắt đầu nhập lại
+    identityController.addListener(_resetErrors);
+    passwordController.addListener(_resetErrors);
+    
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bannerProvider =
           Provider.of<BannerProvider>(context, listen: false);
       await bannerProvider.getListBanner(context);
     });
+  }
+  
+  // Hàm reset lỗi khi người dùng bắt đầu nhập lại
+  void _resetErrors() {
+    if (_showValidationErrors) {
+      setState(() {
+        _showValidationErrors = false;
+      });
+    }
   }
 
   @override
@@ -61,6 +92,74 @@ class _LoginViewState extends State<LoginView> {
       if (passwordController.text.isEmpty) {
         passwordController.text = extra["password"] ?? "";
       }
+    }
+  }
+
+  // Hàm validate form
+  bool _validateForm() {
+    setState(() {
+      _showValidationErrors = true;
+      
+      // Reset lỗi
+      validationErrors = {
+        'identity': null,
+        'password': null,
+      };
+      
+      // Validate identity
+      final identity = identityController.text.trim();
+      if (identity.isEmpty) {
+        validationErrors['identity'] = "Vui lòng nhập email hoặc số điện thoại";
+      }
+      
+      // Validate password
+      final password = passwordController.text;
+      if (password.isEmpty) {
+        validationErrors['password'] = "Vui lòng nhập mật khẩu";
+      }
+    });
+    
+    // Form hợp lệ khi không có lỗi
+    return !validationErrors.values.any((error) => error != null);
+  }
+  
+  // Hàm lấy lỗi cho từng trường
+  String? getFieldError(String fieldName) {
+    if (!_showValidationErrors) return null;
+    
+    // Lấy lỗi từ client validation
+    if (validationErrors[fieldName] != null) {
+      return validationErrors[fieldName];
+    }
+    
+    // Lấy lỗi từ API nếu không có lỗi client
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.errorMessage == null) return null;
+    
+    if (fieldName == 'identity') {
+      if (authProvider.errorMessage == "Người dùng không tồn tại" ||
+          authProvider.errorMessage == "Vui lòng nhập tên đăng nhập và mật khẩu") {
+        return authProvider.errorMessage;
+      }
+    } else if (fieldName == 'password') {
+      if (authProvider.errorMessage == "Sai mật khẩu") {
+        return authProvider.errorMessage;
+      }
+    }
+    
+    return null;
+  }
+  
+  // Xử lý đăng nhập
+  void _handleLogin() {
+    // Validate form trước khi submit
+    if (_validateForm()) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.login(
+        context,
+        identityController.text,
+        passwordController.text,
+      );
     }
   }
 
@@ -137,12 +236,7 @@ class _LoginViewState extends State<LoginView> {
                               title: "Tài khoản",
                               hintText: "Nhập email hoặc số điện thoại",
                               name: 'taiKhoan',
-                              errorText: (authProvider.errorMessage ==
-                                          "Người dùng không tồn tại" ||
-                                      authProvider.errorMessage ==
-                                          "Vui lòng nhập tên đăng nhập và mật khẩu")
-                                  ? authProvider.errorMessage
-                                  : null,
+                              errorText: getFieldError('identity'),
                             ),
 
                             SizedBox(height: screenSize.height * 0.015),
@@ -151,10 +245,7 @@ class _LoginViewState extends State<LoginView> {
                               name: 'password',
                               title: 'Mật khẩu',
                               hintText: "Nhập mật khẩu",
-                              errorText:
-                                  authProvider.errorMessage == "Sai mật khẩu"
-                                      ? authProvider.errorMessage
-                                      : null,
+                              errorText: getFieldError('password'),
                             ),
                             SizedBox(height: screenSize.height * 0.01),
                             Align(
@@ -186,13 +277,7 @@ class _LoginViewState extends State<LoginView> {
                               label: "Đăng nhập",
                               onPressed: authProvider.isLoading
                                   ? null
-                                  : () {
-                                      authProvider.login(
-                                        context,
-                                        identityController.text,
-                                        passwordController.text,
-                                      );
-                                    },
+                                  : _handleLogin,
                             ),
                             SizedBox(height: screenSize.height * 0.025),
                             Padding(

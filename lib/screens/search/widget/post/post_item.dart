@@ -59,6 +59,7 @@ class PostItem extends StatefulWidget {
   final List<IsJoin>? isJoin;
   final bool isComment;
   final bool isMe;
+  final bool isF;
   final String idUser;
 
   const PostItem({
@@ -78,6 +79,7 @@ class PostItem extends StatefulWidget {
     this.isJoin,
     this.isComment = false,
     this.isMe = false,
+    this.isF = false,
     required this.idUser,
   }) : super(key: key);
 
@@ -312,7 +314,13 @@ class _PostItemState extends State<PostItem> {
           children: [
             Text(widget.title, style: TextStyles.textStyleNormal14W700),
             const SizedBox(height: 8),
-            Text(widget.content, style: kContentTextStyle),
+            Text(
+              widget.content,
+              style: kContentTextStyle,
+              maxLines: widget.isF ? 2 : 100,
+              overflow:
+                  widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
+            ),
           ],
         ),
       ),
@@ -365,7 +373,6 @@ class _PostItemState extends State<PostItem> {
       return _buildFourOrMoreImages();
     }
   }
-// Cập nhật tất cả các hàm để hiển thị ảnh placeholder khi chờ tải
 
   Widget _buildFourOrMoreImages() {
     var imagesToShow = widget.images.take(4).toList();
@@ -373,103 +380,102 @@ class _PostItemState extends State<PostItem> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Column(
-        children: [
-          // Top image
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: GestureDetector(
-              onTap: () => _navigateToDetailScreen(0),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    imagesToShow[0],
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-                      return Image.asset(
-                        'assets/icons/image_waiting.png',
-                        fit: BoxFit.cover,
-                        width: 30,
-                        height: 30,
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) =>
-                        AppIcons.getBrokenImage(size: _kProductImageSize),
+      child: SizedBox(
+        height: 262, // Fixed height
+        child: Column(
+          children: [
+            // Top image (approximately 2/3 of height)
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () => _navigateToDetailScreen(0),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imagesToShow[0],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Image.asset(
+                          'assets/icons/image_waiting.png',
+                          fit: BoxFit.cover,
+                          width: 30,
+                          height: 30,
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) =>
+                          AppIcons.getBrokenImage(size: _kProductImageSize),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Bottom row with 3 images
-          AspectRatio(
-            aspectRatio: 16 / 5,
-            child: Row(
-              children: [
-                for (int i = 1; i < 4; i++)
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _navigateToDetailScreen(i),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                imagesToShow[i],
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    return child;
-                                  }
-                                  return Image.asset(
-                                    'assets/icons/image_waiting.png',
-                                    width: 20,
-                                    height: 20,
-                                    // fit: BoxFit.cover,
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    AppIcons.getBrokenImage(
-                                        size: _kProductImageSize),
-                              ),
-                            ),
-
-                            // Overlay for the last image if there are more images
-                            if (i == 3 && remainingCount > 0)
+            // Bottom row with 3 images (approximately 1/3 of height)
+            Expanded(
+              flex: 1,
+              child: Row(
+                children: [
+                  for (int i = 1; i < 4; i++)
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _navigateToDetailScreen(i),
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  color: Colors.black.withOpacity(0.5),
-                                  child: Center(
-                                    child: Text(
-                                      '+$remainingCount',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                child: Image.network(
+                                  imagesToShow[i],
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Image.asset(
+                                      'assets/icons/image_waiting.png',
+                                      width: 20,
+                                      height: 20,
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      AppIcons.getBrokenImage(
+                                          size: _kProductImageSize),
+                                ),
+                              ),
+
+                              // Overlay for the last image if there are more images
+                              if (i == 3 && remainingCount > 0)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    color: Colors.black.withOpacity(0.5),
+                                    child: Center(
+                                      child: Text(
+                                        '+$remainingCount',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -477,8 +483,8 @@ class _PostItemState extends State<PostItem> {
   Widget _buildThreeImages() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: AspectRatio(
-        aspectRatio: 4 / 3,
+      child: SizedBox(
+        height: 262, // Fixed height
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -517,8 +523,8 @@ class _PostItemState extends State<PostItem> {
   Widget _buildTwoImages() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
+      child: SizedBox(
+        height: 262, // Fixed height
         child: Row(
           children: widget.images.asMap().entries.map((entry) {
             int idx = entry.key;
@@ -538,29 +544,32 @@ class _PostItemState extends State<PostItem> {
   Widget _buildSingleImage() {
     return GestureDetector(
       onTap: () => _navigateToDetailScreen(0),
-      child: Padding(
+      child: Container(
+        height: 262, // Fixed height
         padding: const EdgeInsets.all(10),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              widget.images[0],
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return Image.asset(
-                  'assets/icons/image_waiting.png',
-                  // fit: BoxFit.cover,
-                  width: 30,
-                  height: 30,
-                );
-              },
-              errorBuilder: (context, error, stackTrace) =>
-                  AppIcons.getBrokenImage(size: _kProductImageSize),
-            ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            widget.images[0],
+            width: double.infinity,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.grey[200],
+                child: Center(
+                  child: Image.asset(
+                    'assets/icons/image_waiting.png',
+                    width: 50,
+                    height: 50,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) =>
+                AppIcons.getBrokenImage(size: _kProductImageSize),
           ),
         ),
       ),
@@ -575,13 +584,12 @@ class _PostItemState extends State<PostItem> {
         child: Image.network(
           imageUrl,
           fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
           loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) {
-              return child;
-            }
+            if (loadingProgress == null) return child;
             return Image.asset(
               'assets/icons/image_waiting.png',
-              // fit: BoxFit.cover,
               width: 30,
               height: 30,
             );

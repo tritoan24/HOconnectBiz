@@ -67,7 +67,8 @@ class _InputpasswordState extends State<Inputpassword> {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12), // Đồng bộ với enabledBorder
+              borderRadius:
+                  BorderRadius.circular(12), // Đồng bộ với enabledBorder
               borderSide: const BorderSide(
                 color: Color(0xffB9BDC1),
                 width: 1.0,
@@ -94,11 +95,6 @@ class _InputpasswordState extends State<Inputpassword> {
             ),
             errorStyle: const TextStyle(height: 0), // Ẩn lỗi mặc định
           ),
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(
-              errorText: "Mật khẩu không được bỏ trống",
-            ),
-          ]),
         ),
         if (widget.errorText != null)
           Container(
