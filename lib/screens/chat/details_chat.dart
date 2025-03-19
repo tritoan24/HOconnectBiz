@@ -36,7 +36,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<String> selectedImages = [];
-  
+
   late SocketService _socketService;
   bool _isLoadingAtTop = false; // Biến theo dõi trạng thái tải ở đầu danh sách
   DateTime _lastLoadTime = DateTime.now(); // Thời điểm tải tin nhắn cuối cùng
@@ -93,10 +93,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       if (data != null && data is Map<String, dynamic>) {
         // Kiểm tra widget còn mounted không trước khi sử dụng context
         if (mounted) {
-          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          final chatProvider =
+              Provider.of<ChatProvider>(context, listen: false);
           // Xử lý trực tiếp dữ liệu tin nhắn mới
           chatProvider.handleNotificationData(data);
-          
+
           // Cập nhật UI và cuộn xuống
           setState(() {}); // Cập nhật UI
           _scrollToBottom(); // Cuộn xuống khi có tin nhắn mới
@@ -113,8 +114,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _scrollController.removeListener(_onScroll);
     // Hủy đăng ký listener socket để tránh lỗi khi widget đã unmounted
     _socketService.off('new_message');
-    // Không ngắt kết nối socket khi thoát màn hình
-    // vì chúng ta muốn tiếp tục nhận thông báo
     super.dispose();
   }
 
@@ -277,7 +276,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         right: 16,
                         bottom: 100,
                       ),
-                      itemCount: messages.length + 
+                      itemCount: messages.length +
                           (chatProvider.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == 0 && chatProvider.isLoadingMore) {
@@ -288,7 +287,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           );
                         }
 
-                        final actualIndex = 
+                        final actualIndex =
                             chatProvider.isLoadingMore ? index - 1 : index;
                         if (actualIndex < 0 || actualIndex >= messages.length) {
                           return const SizedBox.shrink();
@@ -401,12 +400,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      backgroundImage:
-                          (message.sender?.avatarImage != null && message.sender!.avatarImage.isNotEmpty) 
-                          ? NetworkImage(message.sender!.avatarImage) 
+                      backgroundImage: (message.sender?.avatarImage != null &&
+                              message.sender!.avatarImage.isNotEmpty)
+                          ? NetworkImage(message.sender!.avatarImage)
                           : null,
                       radius: 12,
-                      child: (message.sender?.avatarImage == null || message.sender!.avatarImage.isEmpty)
+                      child: (message.sender?.avatarImage == null ||
+                              message.sender!.avatarImage.isEmpty)
                           ? const Icon(Icons.person, size: 14)
                           : null,
                     ),
@@ -457,7 +457,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       color: const Color(0xFF141415),
                     ),
                   ),
-                  if (message.album != null && message.album!.isNotEmpty && message.album!.first.isNotEmpty)
+                  if (message.album != null &&
+                      message.album!.isNotEmpty &&
+                      message.album!.first.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: GestureDetector(
@@ -649,12 +651,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (message.timestamp == null) {
       return "";
     }
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = DateTime(now.year, now.month, now.day - 1);
-    final messageDate = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
-    
+    final messageDate = DateTime(
+        message.timestamp.year, message.timestamp.month, message.timestamp.day);
+
     if (messageDate == today) {
       return "${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')}";
     } else if (messageDate == yesterday) {
