@@ -4,11 +4,13 @@ import 'package:clbdoanhnhansg/providers/bo_provider.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/chat_list_screen.dart';
 import 'package:clbdoanhnhansg/screens/home/widget/slide_view.dart';
+import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +19,7 @@ import '../../../providers/rank_provider.dart';
 import 'bang_xep_hang.dart';
 
 class Home extends StatefulWidget {
-  final Function(int)                                                                                                                                                     onNavigateToTab;
+  final Function(int) onNavigateToTab;
   const Home({
     super.key,
     required this.onNavigateToTab,
@@ -25,6 +27,11 @@ class Home extends StatefulWidget {
 
   @override
   State<Home> createState() => _HomeState();
+}
+
+String formatDateTime(DateTime? dateTime) {
+  if (dateTime == null) return '';
+  return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
 }
 
 class _HomeState extends State<Home> {
@@ -246,7 +253,7 @@ class _HomeState extends State<Home> {
                 width: MediaQuery.of(context).size.width,
                 child: CarouselSlider.builder(
                   options: CarouselOptions(
-                    height: 342,
+                    height: 616,
                     viewportFraction: 1,
                     enableInfiniteScroll: false,
                   ),
@@ -254,15 +261,24 @@ class _HomeState extends State<Home> {
                   itemBuilder: (context, index, realIndex) {
                     final post = posts[index];
 
-                    return SlideView(
-                      postId: post.id.toString(),
-                      displayName: post.author?.displayName ?? '',
-                      avatarImage: post.author?.avatarImage ?? '',
-                      title: post.title.toString(),
-                      content: post.content.toString(),
-                      images: post.album ?? [],
-                      product: post.product ?? [],
-                    );
+                    return PostItem(
+                        postId: post.id ?? '',
+                        postType: post.category ?? 1,
+                        displayName: post.author?.displayName ?? '',
+                        avatar_image: post.author?.avatarImage ?? '',
+                        dateTime: post.createdAt != null
+                            ? formatDateTime(post.createdAt)
+                            : '',
+                        title: post.title ?? '',
+                        content: post.content ?? '',
+                        images: post.album ?? [],
+                        business: post.business ?? [],
+                        product: post.product ?? [],
+                        likes: post.like ?? [],
+                        comments: post.totalComment ?? 0,
+                        isJoin: post.isJoin ?? [],
+                        idUser: post.author!.id,
+                        isF: true);
                   },
                 ),
               ),

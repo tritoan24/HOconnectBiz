@@ -7,6 +7,7 @@ class InputText extends StatefulWidget {
   final String? hintText;
   final TextEditingController? controller;
   final String? errorText;
+  final ValueChanged<String?>? onChanged;
 
   final String name;
   const InputText({
@@ -16,6 +17,7 @@ class InputText extends StatefulWidget {
     required this.name,
     this.errorText,
     this.controller,
+    this.onChanged,
   });
 
 
@@ -45,6 +47,7 @@ class _InputTextState extends State<InputText> {
           maxLines: 1, // Không cho phép xuống dòng
           autovalidateMode: AutovalidateMode.always,
           name: widget.name,
+          onChanged: widget.onChanged,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
             hintText: widget.hintText,

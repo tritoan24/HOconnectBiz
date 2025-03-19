@@ -33,7 +33,7 @@ class PostProvider extends BaseProvider {
   // Thêm biến để lưu số lượng thông báo và tin nhắn mới
   int _newNotificationsCount = 0;
   int _newMessagesCount = 0;
-  
+
   // Getter để truy cập số lượng thông báo và tin nhắn mới
   int get newNotificationsCount => _newNotificationsCount;
   int get newMessagesCount => _newMessagesCount;
@@ -49,7 +49,7 @@ class PostProvider extends BaseProvider {
     notifyListeners();
     print("Cập nhật số tin nhắn mới: $_newMessagesCount");
   }
-  
+
   // Cập nhật số lượng thông báo mới
   void updateNotificationCount({int? count}) {
     if (count != null) {
@@ -61,13 +61,13 @@ class PostProvider extends BaseProvider {
     notifyListeners();
     print("Cập nhật số thông báo mới: $_newNotificationsCount");
   }
-  
+
   // Đặt lại số lượng tin nhắn mới về 0
   void resetMessageCount() {
     _newMessagesCount = 0;
     notifyListeners();
   }
-  
+
   // Đặt lại số lượng thông báo mới về 0
   void resetNotificationCount() {
     _newNotificationsCount = 0;
@@ -193,11 +193,11 @@ class PostProvider extends BaseProvider {
 
         _currentPage++;
       }
-      
+
       // Cập nhật số lượng thông báo mới và tin nhắn mới
       _newNotificationsCount = response['newNotificationsCount'] ?? 0;
       _newMessagesCount = response['newMessagesCount'] ?? 0;
-      
+
       print("Số thông báo mới: $_newNotificationsCount");
       print("Số tin nhắn mới: $_newMessagesCount");
     } else {
@@ -241,7 +241,7 @@ class PostProvider extends BaseProvider {
     notifyListeners();
     try {
       // Tạo dữ liệu body cần gửi
-      Map<String, dynamic> body = {'is_featured': true};
+      Map<String, dynamic> body = {"category": 2};
 
       // Gửi yêu cầu POST đến API
       final response = await ApiClient().postRequest(
@@ -353,7 +353,8 @@ class PostProvider extends BaseProvider {
   }
 
   // Phương thức toggle like không gọi notifyListeners để tránh cập nhật UI hai lần
-  Future<void> toggleLikeWithoutNotify(String postId, BuildContext context) async {
+  Future<void> toggleLikeWithoutNotify(
+      String postId, BuildContext context) async {
     debugPrint("🔍 DEBUG: toggleLikeWithoutNotify bắt đầu cho postId: $postId");
 
     await executeApiCall(
@@ -375,7 +376,7 @@ class PostProvider extends BaseProvider {
 
         // Cập nhật bài viết cục bộ nhưng không gọi notifyListeners
         await updatePostLikeStatusWithoutNotify(postId);
-        
+
         debugPrint(
             "🔍 DEBUG: toggleLikeWithoutNotify hoàn tất cho postId: $postId");
       },
@@ -386,7 +387,8 @@ class PostProvider extends BaseProvider {
 
   // Phương thức cập nhật trạng thái like cho bài viết cục bộ mà không gọi notifyListeners
   Future<void> updatePostLikeStatusWithoutNotify(String postId) async {
-    debugPrint("🔍 DEBUG: updatePostLikeStatusWithoutNotify bắt đầu cho postId: $postId");
+    debugPrint(
+        "🔍 DEBUG: updatePostLikeStatusWithoutNotify bắt đầu cho postId: $postId");
 
     // Lấy ID người dùng hiện tại
     String? userId = await _getCurrentUserId();
@@ -509,8 +511,9 @@ class PostProvider extends BaseProvider {
 
     debugPrint(
         "🔍 DEBUG: Kết quả cập nhật: main list: $updatedMainList, featured list: $updatedFeaturedList, my list: $updatedMyList, list by ID: $updatedListById");
-    debugPrint("🔍 DEBUG: updatePostLikeStatusWithoutNotify hoàn tất cho postId: $postId");
-    
+    debugPrint(
+        "🔍 DEBUG: updatePostLikeStatusWithoutNotify hoàn tất cho postId: $postId");
+
     // Lưu ý: KHÔNG gọi notifyListeners() ở đây
   }
 
