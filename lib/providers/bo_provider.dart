@@ -419,4 +419,45 @@ class BoProvider with ChangeNotifier {
     _isSearching = false;
     notifyListeners();
   }
+
+  Future<void> fetchBusinessesSearch(BuildContext context) async {
+
+
+    _isSearching = true;
+    _searchErrorMessage = '';
+    notifyListeners();
+
+    try {
+      Map<String, dynamic> body = {
+        'keyword': '',
+      };
+
+      final response = await _apiClient.postRequest(
+        ApiEndpoints.company,
+        body,
+        context,
+      );
+
+      if (response != null && response['data'] is List) {
+        _searchResults = (response['data'] as List)
+            .map((json) => Bo.fromJsonAlt(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        _searchResults = [];
+        _searchErrorMessage = 'Không tìm thấy doanh nghiệp phù hợp';
+      }
+    } catch (e) {
+      _searchResults = [];
+      _searchErrorMessage = "Lỗi khi tìm kiếm: $e";
+      debugPrint('Error searching businesses: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi khi tìm kiếm: $e')),
+      );
+    }
+
+    _isSearching = false;
+    notifyListeners();
+  }
+
+
 }

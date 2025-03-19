@@ -28,7 +28,6 @@ class BusinessSearchItem extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           width: MediaQuery.of(context).size.width,
-          height: 160,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: Colors.white70,
@@ -67,9 +66,9 @@ class BusinessSearchItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        business.title.isEmpty
+                        business.companyName.isEmpty
                             ? "Chưa cập nhật"
-                            : business.title,
+                            : business.companyName,
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
