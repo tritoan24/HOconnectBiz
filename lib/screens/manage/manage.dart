@@ -1,12 +1,10 @@
-import 'package:clbdoanhnhansg/providers/product_provider.dart';
-import 'package:clbdoanhnhansg/screens/manage/widget/shop/shoptab.dart';
+import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/screens/manage/widget/information/information.dart';
+import 'package:clbdoanhnhansg/screens/manage/widget/shop/shoptab.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:clbdoanhnhansg/providers/user_provider.dart';
-import '../../providers/business_provider.dart';
-import '../../providers/post_provider.dart';
+
 import 'widget/post/post_tab.dart';
 
 class QuanLyView extends StatefulWidget {
@@ -192,10 +190,10 @@ class _QuanLyViewState extends State<QuanLyView> {
                   : userProvider.author == null
                       ? const Center(
                           child: Text('Không thể tải thông tin công ty'))
-                      : TabBarView(
+                      : const TabBarView(
                           children: [
                             InformationTab(isMe: true),
-                            const PostManageTab(isMe: true),
+                            PostManageTab(isMe: true),
                             TabShop(
                               isLeading: true,
                             ),

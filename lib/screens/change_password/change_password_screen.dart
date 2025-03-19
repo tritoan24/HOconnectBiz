@@ -1,7 +1,9 @@
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../utils/router/router.name.dart';
 import '../../widgets/button_widget.dart';
 import '../../widgets/inputpassword.dart';
 import '../../providers/auth_provider.dart';
@@ -81,7 +83,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Implement forgot password
+                          context.go(AppRoutes.quenMatKhau);
                         },
                         child: const Text(
                           'Quên mật khẩu',

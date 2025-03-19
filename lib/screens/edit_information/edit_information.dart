@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:clbdoanhnhansg/screens/edit_information/widget/AccountForm.dart';
 import 'package:clbdoanhnhansg/screens/edit_information/widget/AddAvatar.dart';
 import 'package:clbdoanhnhansg/screens/edit_information/widget/AddBackgroud.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/widgets/button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -157,6 +158,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.backgroundColorApp,
         appBar: AppBar(
           title: const Text("Chỉnh sửa thông tin"),
           leading: IconButton(

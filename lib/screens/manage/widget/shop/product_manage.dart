@@ -71,6 +71,7 @@ class _ProductManageState extends State<ProductManage> {
     final unpinnedProducts = _products.where((sp) => sp.isPin != true).toList();
 
     return Scaffold(
+      backgroundColor: AppColor.backgroundColorApp,
       appBar: AppBar(
         title: const Text("Quản lý sản phẩm"),
         leading: IconButton(

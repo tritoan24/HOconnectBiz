@@ -52,6 +52,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.backgroundColorApp,
       appBar: AppBar(
         title: const Text('Thống kê thành viên CLB'),
         leading: const BackButton(),

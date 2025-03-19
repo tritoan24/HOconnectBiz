@@ -276,28 +276,31 @@ class _PostItemState extends State<PostItem> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(_kBorderRadius),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!widget.isComment) ...[
-            _buildHeader(context),
-            _buildDateTime(),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!widget.isComment) ...[
+              _buildHeader(context),
+              _buildDateTime(),
+            ],
+            _buildTitleAndContent(),
+            if (widget.business.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildBusiness(context),
+            ],
+            if (widget.images.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildImages(),
+            ],
+            if (!isBusiness) ...[
+              const SizedBox(height: 8),
+              _buildProductSection(context),
+            ],
+            _buildActions(context, isLiked),
           ],
-          _buildTitleAndContent(),
-          if (widget.business.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            _buildBusiness(context),
-          ],
-          if (widget.images.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            _buildImages(),
-          ],
-          if (!isBusiness) ...[
-            const SizedBox(height: 8),
-            _buildProductSection(context),
-          ],
-          _buildActions(context, isLiked),
-        ],
+        ),
       ),
     );
   }
@@ -323,15 +326,20 @@ class _PostItemState extends State<PostItem> {
         padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.title, style: TextStyles.textStyleNormal14W700),
+            Text(
+              widget.title, 
+              style: TextStyles.textStyleNormal14W700,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 8),
             Text(
               widget.content,
               style: kContentTextStyle,
               maxLines: widget.isF ? 2 : 100,
-              overflow:
-                  widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
+              overflow: widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
             ),
           ],
         ),

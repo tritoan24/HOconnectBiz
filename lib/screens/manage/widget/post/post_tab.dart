@@ -33,7 +33,7 @@ class _PostManageState extends State<PostManageTab> {
       final List<Posts> posts =
           widget.isMe ? postProvider.listPostMe : postProvider.listtByID;
 
-      print(
+      debugPrint(
           "🔍 Có ${posts.length} bài viết trong danh sách-----------------------!");
       return Scaffold(
         backgroundColor: AppColor.backgroundColorApp,
@@ -50,7 +50,8 @@ class _PostManageState extends State<PostManageTab> {
               : posts.isEmpty
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      child: SizedBox(
+                      child: Container(
+                        color: AppColor.backgroundColorApp,
                         height: MediaQuery.of(context).size.height * 0.7,
                         child: const Center(
                           child: Text(
@@ -65,7 +66,7 @@ class _PostManageState extends State<PostManageTab> {
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         final post = posts[index];
-                        print("🔍 Bài viết #${index + 1}: ${post.id}");
+                        debugPrint("🔍 Bài viết #${index + 1}: ${post.id}");
                         return PostItem(
                           postId: post.id ?? '',
                           postType: post.category ?? 1,

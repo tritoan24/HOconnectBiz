@@ -28,9 +28,9 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
   void initState() {
     super.initState();
     startTimer();
-    print("🔍 DEBUG - Email được truyền vào InputOtpScreen: ${widget.email}");
-    print("🔍 DEBUG - Email có độ dài: ${widget.email.length}");
-    print("🔍 DEBUG - Email có rỗng không: ${widget.email.isEmpty}");
+    debugPrint("🔍 DEBUG - Email được truyền vào InputOtpScreen: ${widget.email}");
+    debugPrint("🔍 DEBUG - Email có độ dài: ${widget.email.length}");
+    debugPrint("🔍 DEBUG - Email có rỗng không: ${widget.email.isEmpty}");
   }
 
   void startTimer() {
@@ -181,7 +181,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                       otpCode = code;
                                       isButtonEnabled = true;
                                     });
-                                    print("OTP nhập vào: $otpCode");
+                                    debugPrint("OTP nhập vào: $otpCode");
                                   },
                                 ),
                               ),
@@ -242,7 +242,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             ElevatedButton(
                               onPressed: isButtonEnabled
                                   ? () {
-                                      print("Gửi OTP: $otpCode");
+                                      debugPrint("Gửi OTP: $otpCode");
                                       auth.inputOtp(
                                           context, widget.email, otpCode);
                                       // Không cần clearState ở đây vì đã xử lý trong inputOtp
