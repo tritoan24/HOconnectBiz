@@ -46,12 +46,18 @@ class ChatProvider with ChangeNotifier {
   Future<void> initializeSocket(
       BuildContext context, String idReceiverId) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _currentUserId = await authProvider.getuserID();
+
+    // Lấy id người gửi
+    final userId = await authProvider.getuserID();
+    _currentUserId = userId;
     _currentChatReceiverId = idReceiverId;
+
+    debugPrint('id người gửi $userId');
+    debugPrint('id người nhận $idReceiverId');
 
     if (_currentUserId != null) {
       // Kết nối tới socket với ID người dùng
-      _socketService.connectToChat(_currentUserId!, idReceiverId);
+      _socketService.connectToChat(userId!, idReceiverId);
 
       // Cài đặt các listener cho cập nhật tin nhắn thời gian thực
       _setupSocketListeners();
@@ -116,9 +122,10 @@ class ChatProvider with ChangeNotifier {
               _processSingleMessage(msgData);
             }
           }
-        } 
+        }
         // Xử lý tin nhắn đơn
-        else if (innerData['data'] != null && innerData['data'] is Map<String, dynamic>) {
+        else if (innerData['data'] != null &&
+            innerData['data'] is Map<String, dynamic>) {
           _processSingleMessage(innerData['data']);
         }
       }

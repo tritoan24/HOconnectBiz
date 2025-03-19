@@ -8,7 +8,7 @@ class SocketService extends ChangeNotifier {
   // Các loại event socket
   static const String EVENT_CONNECT = 'connect_device';
   static const String EVENT_DISCONNECT = 'disconnect_device';
-  
+
   // Các tiền tố cho kênh socket
   static const String PREFIX_NOTIFICATION = 'notification_';
   static const String PREFIX_INBOX = 'inbox_';
@@ -84,7 +84,7 @@ class SocketService extends ChangeNotifier {
           additionalInfo: "$error - userId: $_currentUserId",
         );
       });
-      
+
       _socket!.onReconnect((attempt) {
         print('🔄 Kết nối lại lần $attempt');
         // Nếu kết nối lại thất bại nhiều lần, báo cáo lỗi
@@ -96,9 +96,10 @@ class SocketService extends ChangeNotifier {
           );
         }
       });
-      
-      _socket!.onReconnectAttempt((attempt) => print('⏳ Đang thử kết nối lại lần #$attempt'));
-      
+
+      _socket!.onReconnectAttempt(
+          (attempt) => print('⏳ Đang thử kết nối lại lần #$attempt'));
+
       _socket!.onReconnectFailed((_) {
         print('❌ Kết nối lại thất bại');
         sendErrorLog(
@@ -144,7 +145,6 @@ class SocketService extends ChangeNotifier {
     if (_socket!.connected) {
       // Tạo ID phòng chat nhất quán bằng cách sắp xếp IDs
       List<String> ids = [senderId, receiverId];
-      ids.sort();
       final chatDeviceId = '$PREFIX_INBOX${ids[0]}_${ids[1]}';
 
       _socket!.emit(EVENT_CONNECT, {'deviceId': chatDeviceId});
