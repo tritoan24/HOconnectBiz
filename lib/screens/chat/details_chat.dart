@@ -36,8 +36,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<String> selectedImages = [];
-
+  
   late SocketService _socketService;
+  bool _isLoadingAtTop = false; // Biến theo dõi trạng thái tải ở đầu danh sách
+  DateTime _lastLoadTime = DateTime.now(); // Thời điểm tải tin nhắn cuối cùng
 
   @override
   void initState() {
@@ -82,8 +84,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _connectToSpecificChatRoom() {
-    // Kết nối tới phòng chat giữa 2 người dùng
-    // _socketService.connect(widget.currentUserId);
+    // Kết nối tới phòng chat nhóm
     _socketService.connectToChat(widget.currentUserId, widget.groupId);
 
     // Đăng ký lắng nghe tin nhắn mới
@@ -92,12 +93,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       if (data != null && data is Map<String, dynamic>) {
         // Kiểm tra widget còn mounted không trước khi sử dụng context
         if (mounted) {
-          final chatProvider =
-              Provider.of<ChatProvider>(context, listen: false);
-          // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
+          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          // Xử lý trực tiếp dữ liệu tin nhắn mới
           chatProvider.handleNotificationData(data);
-          // Cuộn xuống khi nhận tin nhắn mới từ socket
-          _scrollToBottom();
+          
+          // Cập nhật UI và cuộn xuống
+          setState(() {}); // Cập nhật UI
+          _scrollToBottom(); // Cuộn xuống khi có tin nhắn mới
+          print("🔄 Đã cập nhật UI với tin nhắn mới");
         } else {
           print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
         }
@@ -141,10 +144,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels <= 0) {
+    // Nếu vị trí cuộn ở trên đầu danh sách (trong khoảng 5 pixel đầu tiên)
+    // và đã qua ít nhất 500ms kể từ lần tải tin nhắn cuối cùng để tránh tải nhiều lần
+    if (_scrollController.position.pixels <= 5.0 &&
+        !_isLoadingAtTop &&
+        DateTime.now().difference(_lastLoadTime).inMilliseconds > 500) {
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
       if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
-        chatProvider.loadMoreMessages(context);
+        _isLoadingAtTop = true; // Đánh dấu đang tải
+        _lastLoadTime = DateTime.now(); // Cập nhật thời điểm tải
+
+        chatProvider.loadMoreMessages(context).then((_) {
+          // Đảm bảo vị trí cuộn không bị nhảy khi tải thêm tin nhắn
+          if (_scrollController.hasClients) {
+            _scrollController.jumpTo(10.0);
+          }
+          _isLoadingAtTop = false; // Đánh dấu đã hoàn thành tải
+        });
+
+        print("📜 Tải thêm tin nhắn cũ...");
       }
     }
   }
@@ -259,23 +277,38 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         right: 16,
                         bottom: 100,
                       ),
-                      itemCount: messages.length,
+                      itemCount: messages.length + 
+                          (chatProvider.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final message = messages[index];
+                        if (index == 0 && chatProvider.isLoadingMore) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          );
+                        }
+
+                        final actualIndex = 
+                            chatProvider.isLoadingMore ? index - 1 : index;
+                        if (actualIndex < 0 || actualIndex >= messages.length) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final message = messages[actualIndex];
                         return _buildMessageBubble(message);
                       },
                     ),
-                    if (chatProvider.isLoadingMore)
+                    // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
+                    if (_scrollController.hasClients &&
+                        _scrollController.position.pixels <= 0 &&
+                        chatProvider.hasMoreMessages)
                       Positioned(
                         top: 0,
                         left: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.all(8),
-                          color: Colors.white.withOpacity(0.8),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                          height: 3,
+                          child: const LinearProgressIndicator(),
                         ),
                       ),
                   ],
@@ -369,8 +402,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   children: [
                     CircleAvatar(
                       backgroundImage:
-                          NetworkImage(message.sender?.avatarImage ?? ""),
+                          (message.sender?.avatarImage != null && message.sender!.avatarImage.isNotEmpty) 
+                          ? NetworkImage(message.sender!.avatarImage) 
+                          : null,
                       radius: 12,
+                      child: (message.sender?.avatarImage == null || message.sender!.avatarImage.isEmpty)
+                          ? const Icon(Icons.person, size: 14)
+                          : null,
                     ),
                     const SizedBox(width: 4),
                     Container(
@@ -381,7 +419,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
-                        message.sender?.displayName ?? "Unknown",
+                        message.sender?.displayName ?? "Người dùng",
                         textAlign: TextAlign.justify,
                         style: GoogleFonts.roboto(
                           fontSize: 12,
@@ -411,7 +449,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    message.content.toString(),
+                    message.content?.toString() ?? "",
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -419,7 +457,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       color: const Color(0xFF141415),
                     ),
                   ),
-                  if (message.album != null && message.album!.isNotEmpty)
+                  if (message.album != null && message.album!.isNotEmpty && message.album!.first.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: GestureDetector(
@@ -447,7 +485,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                   height: 200,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    // Hiển thị hình ảnh thay thế khi gặp lỗi
+                                    print("Lỗi tải ảnh: $error");
                                     return Container(
                                       width: double.infinity,
                                       height: 200,
@@ -558,7 +596,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    message.getFormattedTime(),
+                    () {
+                      try {
+                        return message.getFormattedTime();
+                      } catch (e) {
+                        return _getFormattedTime(message);
+                      }
+                    }(),
                     style: GoogleFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -598,5 +642,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     chatProvider.updateMessageStatus(message.id!, MessageStatus.sending);
 
     _sendMessage(message.content ?? "", []);
+  }
+
+  // Phương thức hỗ trợ trong trường hợp getFormattedTime chưa được định nghĩa trong Message class
+  String _getFormattedTime(Message message) {
+    if (message.timestamp == null) {
+      return "";
+    }
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    final messageDate = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
+    
+    if (messageDate == today) {
+      return "${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')}";
+    } else if (messageDate == yesterday) {
+      return "Hôm qua";
+    } else {
+      return "${message.timestamp.day}/${message.timestamp.month}/${message.timestamp.year}";
+    }
   }
 }
