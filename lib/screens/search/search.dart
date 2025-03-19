@@ -34,12 +34,15 @@ class _SearchViewState extends State<SearchView>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchInitialData();
+
     });
   }
 
   void _fetchInitialData() {
     final postProvider = Provider.of<PostProvider>(context, listen: false);
     postProvider.fetchPosts(context);
+    final boProvider = Provider.of<BoProvider>(context, listen: false);
+    boProvider.fetchBusinessesSearch(context);
   }
 
   @override
@@ -197,9 +200,9 @@ class _SearchViewState extends State<SearchView>
                 }
 
                 return ListView.builder(
-                  itemCount: provider.boListOut.length,
+                  itemCount: provider.searchResults.length,
                   itemBuilder: (context, index) {
-                    final business = provider.boListOut[index];
+                    final business = provider.searchResults[index];
                     return BusinessSearchItem(
                       business: business,
                     );
