@@ -1107,6 +1107,7 @@ class _PostItemState extends State<PostItem> {
       MaterialPageRoute(
         builder: (context) => BuyProduct(
           product: selectedProduct,
+          idUser: widget.idUser,
           avatar_image: widget.avatar_image,
           displayName: widget.displayName,
         ),

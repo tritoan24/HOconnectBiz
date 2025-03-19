@@ -3,20 +3,24 @@ import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../utils/router/router.name.dart';
+import '../../business_information/business_information.dart';
 import '../../manage/manage.dart';
 import '../../../utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 
 class BuyProduct extends StatefulWidget {
   final ProductModel product;
+  final String idUser;
   final String avatar_image;
   final String displayName;
 
   const BuyProduct(
       {Key? key,
       required this.product,
+      required this.idUser,
       required this.avatar_image,
       required this.displayName})
       : super(key: key);
@@ -28,6 +32,7 @@ class BuyProduct extends StatefulWidget {
 class _BuyProductState extends State<BuyProduct> {
   static final formatCurrency =
       NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,8 +134,8 @@ class _BuyProductState extends State<BuyProduct> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const QuanLyView(isLeading: true)));
+                                  builder: (context) => BusinessInformation(
+                                      idUser: widget.idUser)));
                         },
                         child: const Padding(
                           padding:

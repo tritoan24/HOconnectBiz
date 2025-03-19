@@ -1,4 +1,5 @@
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +36,7 @@ class _PostManageState extends State<PostManageTab> {
       print(
           "🔍 Có ${posts.length} bài viết trong danh sách-----------------------!");
       return Scaffold(
+        backgroundColor: AppColor.backgroundColorApp,
         body: RefreshIndicator(
           onRefresh: () async {
             await postProvider.fetchPostsByUser(context);
@@ -46,17 +48,19 @@ class _PostManageState extends State<PostManageTab> {
                   child: CircularProgressIndicator(),
                 )
               : posts.isEmpty
-                  ? RefreshIndicator(
-                      onRefresh: () async {
-                        // await postProvider.fetchPostsByUser(context);
-                      },
-                      child: const Center(
-                        child: Text(
-                          "Không có bài viết nào.",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: const Center(
+                          child: Text(
+                            "Không có bài viết nào.",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ))
+                      ),
+                    )
                   : ListView.builder(
                       itemCount: posts.length,
                       itemBuilder: (context, index) {

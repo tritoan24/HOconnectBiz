@@ -80,7 +80,7 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             final product = state.extra as ProductModel;
             return BuyProduct(
-                product: product, avatar_image: '', displayName: '');
+                product: product,idUser: '', avatar_image: '', displayName: '');
           },
         ),
         GoRoute(
