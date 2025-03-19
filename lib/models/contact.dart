@@ -1,4 +1,5 @@
 import '../utils/router/router.name.dart';
+import 'package:intl/intl.dart'; // Add this import for date formatting
 
 class Contact {
   final String id;
@@ -57,7 +58,34 @@ class Contact {
   }
 
   String getFormattedTime() {
-    return lastMessage.createdAt;
+    try {
+      // Parse the ISO 8601 string
+      DateTime dateTime = DateTime.parse(lastMessage.createdAt);
+
+      // Get current date
+      DateTime now = DateTime.now();
+      DateTime today = DateTime(now.year, now.month, now.day);
+      DateTime yesterday = today.subtract(const Duration(days: 1));
+      DateTime dateOnly = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+      // Format based on when the message was sent
+      if (dateOnly == today) {
+        // Today: show only time HH:mm
+        return DateFormat('HH:mm').format(dateTime);
+      } else if (dateOnly == yesterday) {
+        // Yesterday: show "Hôm qua"
+        return "Hôm qua";
+      } else if (now.difference(dateTime).inDays < 7) {
+        // Within last week: show day of week
+        return DateFormat('EEEE', 'vi').format(dateTime); // 'vi' for Vietnamese
+      } else {
+        // Older: show date
+        return DateFormat('dd/MM/yyyy').format(dateTime);
+      }
+    } catch (e) {
+      // Return raw string if parsing fails
+      return lastMessage.createdAt;
+    }
   }
 }
 

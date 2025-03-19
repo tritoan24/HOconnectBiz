@@ -161,34 +161,6 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  // /// Cập nhật trạng thái đọc của tin nhắn
-  // void _updateMessageReadStatus(Map<String, dynamic> data) {
-  //   try {
-  //     final String? messageId = data['messageId']?.toString();
-  //     if (messageId != null) {
-  //       final index = _messages.indexWhere((m) => m.id == messageId);
-  //       if (index != -1) {
-  //         // Tạo bản sao của tin nhắn với trạng thái đã đọc
-  //         final updatedMessage = Message(
-  //           id: _messages[index].id,
-  //           sender: _messages[index].sender,
-  //           receiver: _messages[index].receiver,
-  //           content: _messages[index].content,
-  //           album: _messages[index].album,
-  //           read: true,
-  //           data: _messages[index].data,
-  //           timestamp: _messages[index].timestamp,
-  //         );
-  //
-  //         _messages[index] = updatedMessage;
-  //         notifyListeners();
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("❌ Lỗi cập nhật trạng thái đọc: $e");
-  //   }
-  // }
-
   Future<void> sendMessageBuyNow(
       String receiverId, String productId, BuildContext context) async {
     _isLoading = true;
