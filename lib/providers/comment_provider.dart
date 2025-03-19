@@ -6,6 +6,8 @@ import '../repository/comment_repository.dart';
 import '../widgets/loading_overlay.dart';
 import '../providers/post_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 
 class CommentProvider extends BaseProvider {
   List<CommentModel> _comments = [];
@@ -32,7 +34,26 @@ class CommentProvider extends BaseProvider {
         
         // Cập nhật số lượng comment trong danh sách bài viết
         final postProvider = Provider.of<PostProvider>(context, listen: false);
+        
+        // Cập nhật số lượng comment mới
         postProvider.updatePostCommentCount(postId, _comments.length);
+        
+        // Thông báo cho các màn hình khác về sự thay đổi thông qua PostItemChangedNotification
+        final post = postProvider.getPostById(postId);
+        if (post != null) {
+          // Lấy trạng thái like hiện tại của bài viết
+          final storage = FlutterSecureStorage();
+          final userId = await storage.read(key: 'user_id');
+          final isLiked = post.like?.contains(userId) ?? false;
+          
+          // Phát ra thông báo để các màn hình khác cập nhật UI
+          PostItemChangedNotification(
+            postId, 
+            isLiked, 
+            commentCount: _comments.length
+          ).dispatch(context);
+          debugPrint("🔍 DEBUG CommentProvider: Đã phát thông báo thay đổi sau khi thêm comment, số lượng comment mới: ${_comments.length}");
+        }
       },
       successMessage: 'Tạo bình luận thành công!',
     );

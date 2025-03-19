@@ -10,6 +10,10 @@ import '../core/network/api_endpoints.dart';
 import '../models/posts.dart';
 import '../widgets/loading_overlay.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../models/auth_model.dart';
+import '../models/is_join_model.dart';
 
 class PostProvider extends BaseProvider {
   final PostRepository _postRepository = PostRepository();
@@ -761,5 +765,121 @@ class PostProvider extends BaseProvider {
 
     _isLoadingByID = false;
     notifyListeners();
+  }
+
+  // Phương thức mới để cập nhật trạng thái join cho post
+  Future<void> updatePostJoinStatus(String postId, BuildContext context) async {
+    debugPrint("🔍 DEBUG: updatePostJoinStatus bắt đầu cho postId: $postId");
+
+    try {
+      // Lấy userId hiện tại từ AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = await authProvider.getuserID();
+      
+      if (userId == null || userId.isEmpty) {
+        debugPrint("⚠️ WARNING: Không thể lấy userId hiện tại");
+        return;
+      }
+      
+      // Tìm post trong các danh sách
+      final post = getPostById(postId);
+      if (post == null) {
+        debugPrint("⚠️ WARNING: Không tìm thấy post với ID: $postId");
+        return;
+      }
+      
+      // Khởi tạo mảng isJoin nếu chưa có
+      post.isJoin ??= [];
+      
+      // Kiểm tra xem user đã join chưa
+      bool userAlreadyJoined = post.isJoin!.any((join) => join.user?.id == userId);
+      
+      if (!userAlreadyJoined) {
+        // Tạo đối tượng user từ userId
+        final user = Author(
+          id: userId,
+          displayName: "Người dùng",
+          username: "",
+          level: 0,
+          registerType: "",
+          avatarImage: "",
+          coverImage: "",
+          description: "",
+          business: [],
+          companyName: "",
+          address: "",
+          companyDescription: "",
+          email: "",
+          gender: "",
+          status: "",
+          phone: "",
+          roleCode: 0,
+          type: "",
+          userId: userId,
+        );
+        
+        // Tạo đối tượng IsJoin mới
+        final newJoin = IsJoin(
+          id: DateTime.now().millisecondsSinceEpoch.toString(), // ID tạm thời
+          postId: postId,
+          user: user,
+          isJoin: true,
+          isAccept: false, // Chưa được chấp nhận
+          status: 0, // Trạng thái mặc định
+          createdAt: DateTime.now(),
+        );
+        
+        // Thêm vào mảng isJoin của post
+        post.isJoin!.add(newJoin);
+        
+        // Cập nhật post trong tất cả các danh sách
+        updatePostInLists(post);
+        
+        debugPrint("🔍 DEBUG: Đã thêm user vào danh sách join của post: $postId");
+        notifyListeners();
+      } else {
+        debugPrint("🔍 DEBUG: User đã tồn tại trong danh sách join của post: $postId");
+      }
+    } catch (e) {
+      debugPrint("⚠️ ERROR: Lỗi khi cập nhật trạng thái join: $e");
+    }
+  }
+
+  // Hàm hỗ trợ để cập nhật post trong tất cả các danh sách
+  void updatePostInLists(Posts updatedPost) {
+    final String postId = updatedPost.id ?? '';
+    if (postId.isEmpty) return;
+
+    // Cập nhật trong danh sách bài viết chính
+    for (int i = 0; i < _posts.length; i++) {
+      if (_posts[i].id == postId) {
+        _posts[i].isJoin = updatedPost.isJoin;
+        break;
+      }
+    }
+
+    // Cập nhật trong danh sách bài viết nổi bật
+    for (int i = 0; i < _listPostFeatured.length; i++) {
+      if (_listPostFeatured[i].id == postId) {
+        _listPostFeatured[i].isJoin = updatedPost.isJoin;
+        break;
+      }
+    }
+
+    // Cập nhật trong danh sách bài viết của người dùng
+    for (int i = 0; i < _listPostMe.length; i++) {
+      if (_listPostMe[i].id == postId) {
+        _listPostMe[i].isJoin = updatedPost.isJoin;
+        break;
+      }
+    }
+
+    // Cập nhật trong danh sách bài viết by ID
+    for (int i = 0; i < _listtByID.length; i++) {
+      if (_listtByID[i].id == postId) {
+        _listtByID[i].isJoin = updatedPost.isJoin;
+        break;
+      }
+    }
   }
 }

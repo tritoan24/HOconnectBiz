@@ -91,6 +91,7 @@ class _ShoppingState extends State<Shopping> {
 
     // Kiểm tra trạng thái isJoind
     final isJoind = checkIsJoind(latestPost.isJoin, userId);
+    debugPrint("🔍 DEBUG Shopping: Trạng thái isJoind trước khi chuyển màn hình: $isJoind");
 
     debugPrint(
         "🔍 DEBUG Shopping: Dữ liệu bài viết trước khi chuyển màn hình - likes: ${latestPost.like?.length}, comments: ${latestPost.totalComment}, isJoind: $isJoind");
@@ -121,26 +122,26 @@ class _ShoppingState extends State<Shopping> {
     );
 
     // Nếu có thay đổi từ màn hình comment, cập nhật UI cục bộ
-    if (result == true) {
-      debugPrint("🔍 DEBUG Shopping: Nhận result=true từ màn hình comment");
-
-      // THAY ĐỔI Ở ĐÂY: Không gọi fetchPosts, thay vào đó chỉ cập nhật bài viết cụ thể
-      final updatedPost = postProvider.getPostById(post.id ?? '');
-      if (updatedPost != null) {
-        debugPrint(
-            "🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
-
-        // Hiển thị thông báo ngắn để xác nhận cập nhật
+    debugPrint("🔍 DEBUG Shopping: Nhận kết quả từ màn hình comment, result = $result");
+    
+    // Luôn làm mới UI sau khi quay lại từ màn hình comments
+    // Điều này đảm bảo trạng thái mới nhất được hiển thị
+    final updatedPost = postProvider.getPostById(post.id ?? '');
+    if (updatedPost != null) {
+      debugPrint("🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
+      debugPrint("🔍 DEBUG Shopping: isJoin mới có ${updatedPost.isJoin?.length} phần tử");
+      debugPrint("🔍 DEBUG Shopping: Số lượng comment mới: ${updatedPost.totalComment}");
+      
+      if (result == true) {
+        // Hiển thị thông báo ngắn nếu có thay đổi từ màn hình comment
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Đã cập nhật dữ liệu mới nhất"),
           duration: Duration(seconds: 1),
         ));
-
-        // Ép Flutter refresh UI
-        setState(() {});
       }
-    } else {
-      debugPrint("🔍 DEBUG Shopping: Không có thay đổi từ màn hình comment");
+      
+      // Ép Flutter refresh UI
+      setState(() {});
     }
   }
 
@@ -234,8 +235,9 @@ class _ShoppingState extends State<Shopping> {
 
                             final post = posts[index];
                             // Tạo key duy nhất để đảm bảo widget được tạo mới khi có thay đổi
+                            // Thêm isJoin.length vào uniqueKey để làm mới UI khi có thay đổi về join status
                             final uniqueKey = ValueKey(
-                                "post_${post.id}_likes${post.like?.length ?? 0}_comments${post.totalComment ?? 0}");
+                                "post_${post.id}_likes${post.like?.length ?? 0}_comments${post.totalComment ?? 0}_joins${post.isJoin?.length ?? 0}");
 
                             return GestureDetector(
                               onTap: () =>
