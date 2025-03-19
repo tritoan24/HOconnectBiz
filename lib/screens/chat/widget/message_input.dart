@@ -11,11 +11,13 @@ class MessageInputScreen extends StatefulWidget {
   final bool isComment;
   final Function(String message, List<String> images) onMessageChanged;
   final Function(String message, List<String> images) onSubmit;
+  final VoidCallback? onKeyboardOpen;
   const MessageInputScreen({
     super.key,
     this.isComment = false,
     required this.onMessageChanged,
     required this.onSubmit,
+    this.onKeyboardOpen,
   });
 
   @override
@@ -26,6 +28,31 @@ class _MessageInputScreenState extends State<MessageInputScreen> {
   List<XFile> selectedImages = [];
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // Lắng nghe sự kiện focus để biết khi nào bàn phím hiện ra
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus && widget.onKeyboardOpen != null) {
+        // Thêm độ trễ nhỏ để đảm bảo bàn phím đã hiện ra hoàn toàn
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted && _focusNode.hasFocus) {
+            widget.onKeyboardOpen!();
+            print('🔔 Callback onKeyboardOpen được gọi sau độ trễ');
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   /// Hàm chọn nhiều ảnh từ thư viện
   Future<void> pickImages() async {
@@ -144,6 +171,7 @@ class _MessageInputScreenState extends State<MessageInputScreen> {
                         Expanded(
                           child: TextField(
                             controller: _controller,
+                            focusNode: _focusNode,
                             decoration: InputDecoration(
                               hintText: widget.isComment
                                   ? 'viết phản hồi...'

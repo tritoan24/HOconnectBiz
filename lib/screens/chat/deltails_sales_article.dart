@@ -41,22 +41,35 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   final ScrollController _scrollController = ScrollController();
   List<String> selectedImages = [];
   late SocketService _socketService;
+  bool _isLoadingAtTop = false; // Biến theo dõi trạng thái tải ở đầu danh sách
+  DateTime _lastLoadTime = DateTime.now(); // Thời điểm tải tin nhắn cuối cùng
 
   // Trong DeltailsSalesArticle
   @override
   void initState() {
     super.initState();
+    _socketService = SocketService();
     _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Sử dụng ChatProvider để xử lý socket
+      // Khởi tạo socket và kết nối tới phòng chat
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      print("🚀 Khởi tạo socket và kết nối tới phòng chat");
 
-      // Khởi tạo socket một cách rõ ràng
+      // 1. Kết nối socket
       chatProvider.initializeSocket(context, widget.idReceiver).then((_) {
-        // Lấy dữ liệu tin nhắn
-        chatProvider.getListDetailChat(context, widget.idMessage);
-        _scrollToBottom();
+        // 2. Kết nối đến phòng chat cụ thể
+        _connectToSpecificChatRoom();
+        print("🚀 Kết nối socket thành công");
+
+        // 3. Lấy dữ liệu tin nhắn
+        chatProvider.getListDetailChat(context, widget.idMessage).then((_) {
+          _scrollToBottom();
+          print("🚀 Lấy tin nhắn cũ thành công");
+
+          // 4. Đánh dấu tất cả tin nhắn là đã đọc
+          // chatProvider.markAllMessagesAsRead(widget.idMessage, context);
+        });
       });
     });
   }
@@ -64,16 +77,33 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
+    // Hủy đăng ký listener socket để tránh lỗi khi widget đã unmounted
+    _socketService.off('new_message');
     // Ghi chú: không ngắt kết nối toàn bộ socket mà chỉ thoát phòng
     // ChatProvider sẽ quản lý việc này
     super.dispose();
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels <= 0) {
+    // Nếu vị trí cuộn ở trên đầu danh sách (trong khoảng 50 pixel đầu tiên)
+    // và đã qua ít nhất 500ms kể từ lần tải tin nhắn cuối cùng để tránh tải nhiều lần
+    if (_scrollController.position.pixels <= 5.0 &&
+        !_isLoadingAtTop &&
+        DateTime.now().difference(_lastLoadTime).inMilliseconds > 500) {
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
       if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
-        chatProvider.loadMoreMessages(context);
+        _isLoadingAtTop = true; // Đánh dấu đang tải
+        _lastLoadTime = DateTime.now(); // Cập nhật thời điểm tải
+
+        chatProvider.loadMoreMessages(context).then((_) {
+          // Đảm bảo vị trí cuộn không bị nhảy khi tải thêm tin nhắn
+          if (_scrollController.hasClients) {
+            _scrollController.jumpTo(10.0);
+          }
+          _isLoadingAtTop = false; // Đánh dấu đã hoàn thành tải
+        });
+
+        print("📜 Tải thêm tin nhắn cũ...");
       }
     }
   }
@@ -87,8 +117,17 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     _socketService.on('new_message', (data) {
       print("📱 Nhận tin nhắn mới từ socket: $data");
       if (data != null && data is Map<String, dynamic>) {
-        final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-        chatProvider.getListDetailChat(context, widget.idMessage);
+        // Kiểm tra widget còn mounted không trước khi sử dụng context
+        if (mounted) {
+          final chatProvider =
+              Provider.of<ChatProvider>(context, listen: false);
+          // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
+          chatProvider.handleNotificationData(data);
+          // Cuộn xuống khi nhận tin nhắn mới từ socket
+          _scrollToBottom();
+        } else {
+          print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
+        }
       }
     });
   }
@@ -100,7 +139,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     chatProvider.addListener(() {
       // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        // _scrollToBottom();
+        // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
+        print('🔄 Tin nhắn mới được cập nhật');
       }
     });
   }
@@ -111,6 +151,19 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent + 100, // Thêm padding
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _scrollToBottomWithInput() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent +
+              500, // Tăng padding lên cao hơn nữa
+          duration: const Duration(milliseconds: 50),
           curve: Curves.easeOut,
         );
       }
@@ -159,6 +212,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         selectedImages = [];
       });
 
+      // Cuộn xuống sau khi gửi tin nhắn mới
       _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
@@ -166,6 +220,13 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         SnackBar(content: Text("Gửi tin nhắn thất bại: $e")),
       );
     }
+  }
+
+  void _retryMessage(Message message) {
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.updateMessageStatus(message.id!, MessageStatus.sending);
+
+    _sendMessage(message.content ?? "", []);
   }
 
   @override
@@ -183,13 +244,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
 
-                // Chỉ cuộn khi có tin nhắn mới được thêm vào
-                if (messages.isNotEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToBottom();
-                  });
-                }
-
                 return Stack(
                   children: [
                     ListView.builder(
@@ -200,23 +254,38 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                         right: 16,
                         bottom: 100,
                       ),
-                      itemCount: messages.length,
+                      itemCount: messages.length +
+                          (chatProvider.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final message = messages[index];
+                        if (index == 0 && chatProvider.isLoadingMore) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          );
+                        }
+
+                        final actualIndex =
+                            chatProvider.isLoadingMore ? index - 1 : index;
+                        if (actualIndex < 0 || actualIndex >= messages.length) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final message = messages[actualIndex];
                         return _buildMessageBubble(message);
                       },
                     ),
-                    if (chatProvider.isLoadingMore)
+                    // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
+                    if (_scrollController.hasClients &&
+                        _scrollController.position.pixels <= 0 &&
+                        chatProvider.hasMoreMessages)
                       Positioned(
                         top: 0,
                         left: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.all(8),
-                          color: Colors.white.withOpacity(0.8),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                          height: 3,
+                          child: const LinearProgressIndicator(),
                         ),
                       ),
                   ],
@@ -226,6 +295,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
           ),
         ],
       ),
+      resizeToAvoidBottomInset: true, // Thay đổi kích thước để tránh bàn phím
       bottomSheet: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -245,6 +315,11 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             });
           },
           onSubmit: _sendMessage,
+          onKeyboardOpen: () {
+            // Cuộn xuống khi bàn phím mở ra
+            _scrollToBottomWithInput();
+            print('⌨️ Bàn phím hiện ra - cuộn xuống với padding lớn 800');
+          },
         ),
       ),
     );
@@ -334,7 +409,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     bool isMe = message.sender?.id == widget.currentUserId;
     print("Message ID: ${message.id}, Has data: ${message.data != null}");
     return Dismissible(
-      key: Key(message.id.toString()),
+      key: ObjectKey(message.id),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
@@ -346,7 +421,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 10,
-              offset: Offset(2, 2),
+              offset: const Offset(2, 2),
             ),
           ],
         ),
@@ -364,7 +439,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                 titleButtonRight: "Xóa",
                 titleButtonLeft: "Hủy",
                 onConfirm: () {
-                  _deleteMessage(message.id.toString());
+                  _deleteMessage(message.id!);
                 },
               ),
             ) ??
@@ -451,21 +526,21 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => GalleryPhotoViewWrapper(
-                                galleryItems: message.album!,
+                                galleryItems: message.album,
                                 initialIndex: 0,
                               ),
                             ),
                           );
                         },
                         child: Hero(
-                          tag: message.album!.first,
+                          tag: message.album.first,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
                                 child: Image.network(
-                                  message.album!.first,
+                                  message.album.first,
                                   width: double.infinity,
                                   height: 200,
                                   fit: BoxFit.cover,
@@ -492,14 +567,14 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                   },
                                 ),
                               ),
-                              if (message.album!.length > 1)
+                              if (message.album.length > 1)
                                 Container(
                                   width: double.infinity,
                                   height: 200,
                                   color: Colors.black.withOpacity(0.5),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "+${message.album!.length - 1}",
+                                    "+${message.album.length - 1}",
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
@@ -513,8 +588,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                       ),
                     ),
                   if (message.status == MessageStatus.sending && isMe)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -527,7 +602,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                   AlwaysStoppedAnimation<Color>(Colors.grey),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             "Đang gửi...",
                             style: TextStyle(
@@ -557,18 +632,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () {
-                              final chatProvider = Provider.of<ChatProvider>(
-                                  context,
-                                  listen: false);
-                              chatProvider.sendMessage(
-                                message.content ?? "",
-                                message.receiver?.id ?? "",
-                                message.id.toString(),
-                                context,
-                                files: message.album
-                                    ?.map((url) => File(url))
-                                    .toList(),
-                              );
+                              _retryMessage(message);
                             },
                             child: Text(
                               "Thử lại",
@@ -587,14 +651,37 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(
-                message.getFormattedTime(),
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                  color: const Color(0xFF767A7F),
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message.getFormattedTime(),
+                    style: GoogleFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: const Color(0xFF767A7F),
+                    ),
+                  ),
+                  if (isMe && message.read == true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.done_all,
+                        size: 14,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  if (isMe && message.read != true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.done,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                ],
               ),
             ),
             if (message.data != null)
