@@ -28,10 +28,9 @@ class ChatProvider with ChangeNotifier {
   int _cartItemCount = 0;
   int _currentPage = 1;
   bool _hasMoreMessages = true;
-  static const int _limit = 15;
+  int _totalMessageCount = 0;
+  static const int _limit = 10;
   final _storage = const FlutterSecureStorage();
-  final baseUrl =
-      'https://your-api-base-url.com'; // Replace with your actual base URL
 
   ChatProvider();
 
@@ -267,6 +266,7 @@ class ChatProvider with ChangeNotifier {
       _currentPage = 1;
       _hasMoreMessages = true;
       _messages = [];
+      _totalMessageCount = 0; // Reset biến đếm khi tải mới
     }
 
     if (!_hasMoreMessages || _isLoadingMore) return;
@@ -292,8 +292,21 @@ class ChatProvider with ChangeNotifier {
 
         print("📥 Nhận được ${newMessages.length} tin nhắn mới");
 
-        // Kiểm tra xem có còn tin nhắn để load không
-        _hasMoreMessages = newMessages.length >= _limit;
+        // Cập nhật tổng số tin nhắn đã tải
+        _totalMessageCount += newMessages.length;
+
+        // Lấy tổng số tin nhắn từ response nếu có
+        final totalAvailable = response.total ?? -1;
+
+        if (totalAvailable > 0) {
+          // Nếu API trả về tổng số tin nhắn, kiểm tra xem đã tải hết chưa
+          _hasMoreMessages = _totalMessageCount < totalAvailable;
+          print("📊 Đã tải $_totalMessageCount/$totalAvailable tin nhắn");
+        } else {
+          // Nếu API không trả về tổng số, kiểm tra dựa trên số lượng tin nhắn nhận được
+          _hasMoreMessages = newMessages.length == _limit;
+        }
+
         print("📄 Còn tin nhắn để tải: $_hasMoreMessages");
 
         if (loadMore) {
@@ -305,13 +318,6 @@ class ChatProvider with ChangeNotifier {
           _messages.addAll(newMessages);
           print("✅ Đã thêm tin nhắn mới vào danh sách");
         }
-
-        // Sắp xếp tin nhắn theo thời gian sau khi thêm tin nhắn mới
-        // _messages.sort((a, b) {
-        //   final timeCompare = a.timestamp.compareTo(b.timestamp);
-        //   if (timeCompare != 0) return timeCompare;
-        //   return (a.id ?? "").compareTo(b.id ?? "");
-        // });
 
         _currentPage++;
         notifyListeners();
@@ -333,9 +339,12 @@ class ChatProvider with ChangeNotifier {
     print("🔄 Đang tải thêm tin nhắn cũ...");
     if (_currentChatReceiverId != null) {
       print("📩 ID người nhận: $_currentChatReceiverId, Trang: $_currentPage");
-      await getListDetailChat(context, _currentChatReceiverId!, loadMore: true);
+      return await getListDetailChat(context, _currentChatReceiverId!,
+          loadMore: true);
     } else {
       print("❌ ID người nhận không tồn tại!");
+      return Future
+          .value(); // Trả về Promise đã hoàn thành nếu không có người nhận
     }
   }
 

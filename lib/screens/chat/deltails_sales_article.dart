@@ -41,6 +41,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   final ScrollController _scrollController = ScrollController();
   List<String> selectedImages = [];
   late SocketService _socketService;
+  bool _isLoadingAtTop = false; // Biến theo dõi trạng thái tải ở đầu danh sách
+  DateTime _lastLoadTime = DateTime.now(); // Thời điểm tải tin nhắn cuối cùng
 
   // Trong DeltailsSalesArticle
   @override
@@ -81,10 +83,25 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels <= 0) {
+    // Nếu vị trí cuộn ở trên đầu danh sách (trong khoảng 50 pixel đầu tiên)
+    // và đã qua ít nhất 500ms kể từ lần tải tin nhắn cuối cùng để tránh tải nhiều lần
+    if (_scrollController.position.pixels <= 5.0 && 
+        !_isLoadingAtTop && 
+        DateTime.now().difference(_lastLoadTime).inMilliseconds > 500) {
+        
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
       if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
-        chatProvider.loadMoreMessages(context);
+        _isLoadingAtTop = true; // Đánh dấu đang tải
+        _lastLoadTime = DateTime.now(); // Cập nhật thời điểm tải
+        
+        chatProvider.loadMoreMessages(context).then((_) {
+          // Đảm bảo vị trí cuộn không bị nhảy khi tải thêm tin nhắn
+          if (_scrollController.hasClients) {
+            _scrollController.jumpTo(10.0);
+          }
+          _isLoadingAtTop = false; // Đánh dấu đã hoàn thành tải
+        });
+        
         print("📜 Tải thêm tin nhắn cũ...");
       }
     }
