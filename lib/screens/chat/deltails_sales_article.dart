@@ -59,7 +59,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
       // 1. Kết nối socket
       chatProvider.initializeSocket(context, widget.idReceiver).then((_) {
         // 2. Kết nối đến phòng chat cụ thể
-        _connectToSpecificChatRoom();
+        // _connectToSpecificChatRoom();
         print("🚀 Kết nối socket thành công");
 
         // 3. Lấy dữ liệu tin nhắn

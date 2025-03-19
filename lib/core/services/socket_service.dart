@@ -143,10 +143,7 @@ class SocketService extends ChangeNotifier {
     }
 
     if (_socket!.connected) {
-      // Tạo ID phòng chat nhất quán bằng cách sắp xếp IDs
-      List<String> ids = [senderId, receiverId];
-      final chatDeviceId = '$PREFIX_INBOX${ids[0]}_${ids[1]}';
-
+      final chatDeviceId = '$PREFIX_INBOX${senderId}_$receiverId';
       _socket!.emit(EVENT_CONNECT, {'deviceId': chatDeviceId});
       _connectionStates[chatDeviceId] = true;
 
