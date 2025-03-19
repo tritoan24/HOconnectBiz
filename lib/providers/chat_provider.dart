@@ -65,8 +65,17 @@ class ChatProvider with ChangeNotifier {
 
     if (_currentUserId != null) {
       _socketService.connectToContact(_currentUserId!);
-      _setupSocketListeners();
+      _setupSocketListenersContact();
     }
+  }
+
+  /// Thiết lập các listener lắng nghe sự kiện socket
+  void _setupSocketListenersContact() {
+    // Lắng nghe cập nhật danh bạ
+    _socketService.on('contact_update', (data) {
+      print("👥 Cập nhật danh bạ từ socket: $data");
+      _refreshContacts();
+    });
   }
 
   /// Thiết lập các listener lắng nghe sự kiện socket
@@ -74,99 +83,47 @@ class ChatProvider with ChangeNotifier {
     // Lắng nghe tin nhắn mới
     _socketService.on('new_message', (data) {
       print("📥 Nhận tin nhắn mới từ socket: $data");
-      _handleNotificationData(data);
+      handleNotificationData(data);
 
       // Cập nhật PostProvider khi có tin nhắn mới
       _updatePostProviderMessageCount();
     });
+    //
+    // // Lắng nghe thông báo
+    // _socketService.on('notification', (data) {
+    //   print("🔔 Nhận thông báo từ socket: $data");
+    //   _handleNotificationData(data);
+    // });
 
-    // Lắng nghe cập nhật danh bạ
-    _socketService.on('contact_update', (data) {
-      print("👥 Cập nhật danh bạ từ socket: $data");
-      _refreshContacts();
-    });
-
-    // Lắng nghe thông báo
-    _socketService.on('notification', (data) {
-      print("🔔 Nhận thông báo từ socket: $data");
-      _handleNotificationData(data);
-    });
-
-    // Lắng nghe trạng thái tin nhắn đã đọc
-    _socketService.on('message_read', (data) {
-      print("👁️ Cập nhật trạng thái đọc tin nhắn: $data");
-      _updateMessageReadStatus(data);
-    });
+    // // Lắng nghe trạng thái tin nhắn đã đọc
+    // _socketService.on('message_read', (data) {
+    //   print("👁️ Cập nhật trạng thái đọc tin nhắn: $data");
+    //   _updateMessageReadStatus(data);
+    // });
   }
 
   /// Xử lý dữ liệu thông báo từ socket
-  void _handleNotificationData(Map<String, dynamic> data) {
+  void handleNotificationData(Map<String, dynamic> data) {
     try {
       if (data['data'] != null && data['data'] is Map<String, dynamic>) {
         var innerData = data['data'];
 
         // Xử lý danh sách tin nhắn
         if (innerData['data'] != null && innerData['data'] is List) {
-          _processMessageList(innerData['data']);
-        }
+          // Lặp qua từng tin nhắn trong danh sách và xử lý
+          for (var msgData in innerData['data']) {
+            if (msgData is Map<String, dynamic>) {
+              _processSingleMessage(msgData);
+            }
+          }
+        } 
         // Xử lý tin nhắn đơn
-        else if (innerData['data'] != null &&
-            innerData['data'] is Map<String, dynamic>) {
+        else if (innerData['data'] != null && innerData['data'] is Map<String, dynamic>) {
           _processSingleMessage(innerData['data']);
         }
       }
     } catch (e) {
       print("❌ Lỗi xử lý dữ liệu thông báo: $e");
-    }
-  }
-
-  /// Xử lý danh sách tin nhắn từ socket
-  void _processMessageList(List<dynamic> messageList) {
-    try {
-      List<Message> newMessages = [];
-
-      for (var msgData in messageList) {
-        if (msgData is Map<String, dynamic>) {
-          try {
-            final message = Message.fromJson(msgData);
-            newMessages.add(message);
-          } catch (e) {
-            print("❌ Lỗi chuyển đổi tin nhắn: $e");
-          }
-        }
-      }
-
-      // Cập nhật danh sách tin nhắn nếu đang trong màn hình chat
-      if (_currentChatReceiverId != null) {
-        // Lọc tin nhắn liên quan đến cuộc trò chuyện hiện tại
-        final relevantMessages = newMessages.where((msg) {
-          final senderId = msg.sender?.id;
-          final receiverId = msg.receiver?.id;
-          return (senderId == _currentUserId &&
-                  receiverId == _currentChatReceiverId) ||
-              (senderId == _currentChatReceiverId &&
-                  receiverId == _currentUserId);
-        }).toList();
-
-        if (relevantMessages.isNotEmpty) {
-          // Thêm các tin nhắn mới
-          for (var msg in relevantMessages) {
-            if (!_messages.any((m) => m.id == msg.id)) {
-              _messages.add(msg);
-            }
-          }
-
-          // Sắp xếp tin nhắn theo thời gian
-          // _messages.sort((a, b) {
-          //   final timeCompare = a.timestamp.compareTo(b.timestamp);
-          //   if (timeCompare != 0) return timeCompare;
-          //   return (a.id ?? "").compareTo(b.id ?? "");
-          // });
-          notifyListeners();
-        }
-      }
-    } catch (e) {
-      print("❌ Lỗi xử lý danh sách tin nhắn: $e");
     }
   }
 
@@ -197,33 +154,33 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Cập nhật trạng thái đọc của tin nhắn
-  void _updateMessageReadStatus(Map<String, dynamic> data) {
-    try {
-      final String? messageId = data['messageId']?.toString();
-      if (messageId != null) {
-        final index = _messages.indexWhere((m) => m.id == messageId);
-        if (index != -1) {
-          // Tạo bản sao của tin nhắn với trạng thái đã đọc
-          final updatedMessage = Message(
-            id: _messages[index].id,
-            sender: _messages[index].sender,
-            receiver: _messages[index].receiver,
-            content: _messages[index].content,
-            album: _messages[index].album,
-            read: true,
-            data: _messages[index].data,
-            timestamp: _messages[index].timestamp,
-          );
-
-          _messages[index] = updatedMessage;
-          notifyListeners();
-        }
-      }
-    } catch (e) {
-      print("❌ Lỗi cập nhật trạng thái đọc: $e");
-    }
-  }
+  // /// Cập nhật trạng thái đọc của tin nhắn
+  // void _updateMessageReadStatus(Map<String, dynamic> data) {
+  //   try {
+  //     final String? messageId = data['messageId']?.toString();
+  //     if (messageId != null) {
+  //       final index = _messages.indexWhere((m) => m.id == messageId);
+  //       if (index != -1) {
+  //         // Tạo bản sao của tin nhắn với trạng thái đã đọc
+  //         final updatedMessage = Message(
+  //           id: _messages[index].id,
+  //           sender: _messages[index].sender,
+  //           receiver: _messages[index].receiver,
+  //           content: _messages[index].content,
+  //           album: _messages[index].album,
+  //           read: true,
+  //           data: _messages[index].data,
+  //           timestamp: _messages[index].timestamp,
+  //         );
+  //
+  //         _messages[index] = updatedMessage;
+  //         notifyListeners();
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("❌ Lỗi cập nhật trạng thái đọc: $e");
+  //   }
+  // }
 
   Future<void> sendMessageBuyNow(
       String receiverId, String productId, BuildContext context) async {

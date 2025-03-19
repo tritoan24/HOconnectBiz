@@ -77,6 +77,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
+    // Hủy đăng ký listener socket để tránh lỗi khi widget đã unmounted
+    _socketService.off('new_message');
     // Ghi chú: không ngắt kết nối toàn bộ socket mà chỉ thoát phòng
     // ChatProvider sẽ quản lý việc này
     super.dispose();
@@ -116,8 +118,14 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     _socketService.on('new_message', (data) {
       print("📱 Nhận tin nhắn mới từ socket: $data");
       if (data != null && data is Map<String, dynamic>) {
-        final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-        chatProvider.getListDetailChat(context, widget.idMessage);
+        // Kiểm tra widget còn mounted không trước khi sử dụng context
+        if (mounted) {
+          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
+          chatProvider.handleNotificationData(data);
+        } else {
+          print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
+        }
       }
     });
   }

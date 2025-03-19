@@ -207,6 +207,14 @@ class SocketService extends ChangeNotifier {
     }
   }
 
+  /// Hủy đăng ký lắng nghe sự kiện
+  void off(String event) {
+    if (_socket != null) {
+      _socket!.off(event);
+      print('🔕 Đã hủy lắng nghe sự kiện: $event');
+    }
+  }
+
   /// Gửi sự kiện và chờ phản hồi
   void emitWithAck(String event, dynamic data, {Function(dynamic)? ack}) {
     if (_socket != null && _socket!.connected) {
