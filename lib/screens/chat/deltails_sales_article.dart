@@ -526,21 +526,21 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => GalleryPhotoViewWrapper(
-                                galleryItems: message.album!,
+                                galleryItems: message.album,
                                 initialIndex: 0,
                               ),
                             ),
                           );
                         },
                         child: Hero(
-                          tag: message.album!.first,
+                          tag: message.album.first,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
                                 child: Image.network(
-                                  message.album!.first,
+                                  message.album.first,
                                   width: double.infinity,
                                   height: 200,
                                   fit: BoxFit.cover,
@@ -567,14 +567,14 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                   },
                                 ),
                               ),
-                              if (message.album!.length > 1)
+                              if (message.album.length > 1)
                                 Container(
                                   width: double.infinity,
                                   height: 200,
                                   color: Colors.black.withOpacity(0.5),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "+${message.album!.length - 1}",
+                                    "+${message.album.length - 1}",
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
@@ -588,8 +588,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                       ),
                     ),
                   if (message.status == MessageStatus.sending && isMe)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -602,7 +602,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                                   AlwaysStoppedAnimation<Color>(Colors.grey),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             "Đang gửi...",
                             style: TextStyle(

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:clbdoanhnhansg/providers/chat_provider.dart';
 import 'package:clbdoanhnhansg/screens/chat/widget/message_input.dart';
 import '../../models/message_model.dart';
+import '../../widgets/confirmdialog.dart';
 import '../../widgets/galleryphotoview.dart';
 import '../../utils/router/router.name.dart';
 
@@ -130,7 +131,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 500, // Padding lớn hơn cho bàn phím
+          _scrollController.position.maxScrollExtent +
+              500, // Padding lớn hơn cho bàn phím
           duration: const Duration(milliseconds: 100), // Thời gian ngắn hơn
           curve: Curves.easeOut,
         );
@@ -319,8 +321,39 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Dismissible(
       key: ObjectKey(message.id),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        _deleteMessage(message.id!);
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(2, 2),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 30,
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+              context: context,
+              builder: (context) => CustomConfirmDialog(
+                content: "Bạn có chắc chắn muốn xóa tin nhắn này?",
+                titleButtonRight: "Xóa",
+                titleButtonLeft: "Hủy",
+                onConfirm: () {
+                  _deleteMessage(message.id!);
+                },
+              ),
+            ) ??
+            false;
       },
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
