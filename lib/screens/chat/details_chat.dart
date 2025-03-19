@@ -74,8 +74,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     chatProvider.addListener(() {
       // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        print('isLoadingMore: ${chatProvider.isLoadingMore}');
-        // _scrollToBottom();
+        print('🔄 Cuộn xuống tin nhắn mới');
+        _scrollToBottom();
       }
     });
   }
