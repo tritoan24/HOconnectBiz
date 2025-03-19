@@ -11,6 +11,7 @@ import '../../../widgets/text_styles.dart';
 
 class InputOtpScreen extends StatefulWidget {
   final String email;
+
   const InputOtpScreen({super.key, required this.email});
 
   @override
@@ -28,7 +29,8 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
   void initState() {
     super.initState();
     startTimer();
-    debugPrint("🔍 DEBUG - Email được truyền vào InputOtpScreen: ${widget.email}");
+    debugPrint(
+        "🔍 DEBUG - Email được truyền vào InputOtpScreen: ${widget.email}");
     debugPrint("🔍 DEBUG - Email có độ dài: ${widget.email.length}");
     debugPrint("🔍 DEBUG - Email có rỗng không: ${widget.email.isEmpty}");
   }
@@ -154,20 +156,25 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                               child: Center(
                                 child: OtpTextField(
                                   numberOfFields: 4,
-                                  borderColor: otpCode.length == 4 ? Colors.blue : const Color(0xFF512DA8),
+                                  borderColor: otpCode.length == 4
+                                      ? Colors.blue
+                                      : const Color(0xFF512DA8),
                                   focusedBorderColor: Colors.blue,
                                   showFieldAsBox: true,
                                   // Giảm kích thước ô để tránh bị tràn
                                   fieldWidth: 66,
                                   // Giảm padding, tạo khoảng cách hợp lý
-                                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 4.0),
                                   borderRadius: BorderRadius.circular(10),
                                   textStyle: const TextStyle(
                                     fontSize: 20,
                                     color: Colors.blue,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  enabledBorderColor: otpCode.length == 4 ? Colors.blue : Colors.grey,
+                                  enabledBorderColor: otpCode.length == 4
+                                      ? Colors.blue
+                                      : Colors.grey,
                                   disabledBorderColor: Colors.blue,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   onCodeChanged: (String code) {
@@ -211,11 +218,24 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             TextButton(
                               onPressed: secondsRemaining == 0
                                   ? () {
-                                setState(() {
-                                  secondsRemaining = 300;
-                                  startTimer();
-                                });
-                              }
+                                      auth.sendEmailOtp(context, widget.email);
+                                      setState(() {
+                                        secondsRemaining = 300;
+                                        startTimer();
+                                      });
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Mã xác thực đã được gửi lại thành công',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          backgroundColor: Colors.green,
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
                                   : null,
                               child: Text(
                                 "Gửi lại mã",
