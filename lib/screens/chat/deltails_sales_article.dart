@@ -87,15 +87,14 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   void _onScroll() {
     // Nếu vị trí cuộn ở trên đầu danh sách (trong khoảng 50 pixel đầu tiên)
     // và đã qua ít nhất 500ms kể từ lần tải tin nhắn cuối cùng để tránh tải nhiều lần
-    if (_scrollController.position.pixels <= 5.0 && 
-        !_isLoadingAtTop && 
+    if (_scrollController.position.pixels <= 5.0 &&
+        !_isLoadingAtTop &&
         DateTime.now().difference(_lastLoadTime).inMilliseconds > 500) {
-        
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
       if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
         _isLoadingAtTop = true; // Đánh dấu đang tải
         _lastLoadTime = DateTime.now(); // Cập nhật thời điểm tải
-        
+
         chatProvider.loadMoreMessages(context).then((_) {
           // Đảm bảo vị trí cuộn không bị nhảy khi tải thêm tin nhắn
           if (_scrollController.hasClients) {
@@ -103,7 +102,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
           }
           _isLoadingAtTop = false; // Đánh dấu đã hoàn thành tải
         });
-        
+
         print("📜 Tải thêm tin nhắn cũ...");
       }
     }
@@ -120,9 +119,12 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
       if (data != null && data is Map<String, dynamic>) {
         // Kiểm tra widget còn mounted không trước khi sử dụng context
         if (mounted) {
-          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          final chatProvider =
+              Provider.of<ChatProvider>(context, listen: false);
           // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
           chatProvider.handleNotificationData(data);
+          // Cuộn xuống khi nhận tin nhắn mới từ socket
+          _scrollToBottom();
         } else {
           print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
         }
@@ -137,8 +139,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     chatProvider.addListener(() {
       // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        print('🔄 Cuộn xuống tin nhắn mới');
-        _scrollToBottom();
+        // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
+        print('🔄 Tin nhắn mới được cập nhật');
       }
     });
   }
@@ -149,6 +151,19 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent + 100, // Thêm padding
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _scrollToBottomWithInput() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent +
+              500, // Tăng padding lên cao hơn nữa
+          duration: const Duration(milliseconds: 50),
           curve: Curves.easeOut,
         );
       }
@@ -197,6 +212,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         selectedImages = [];
       });
 
+      // Cuộn xuống sau khi gửi tin nhắn mới
       _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
@@ -228,13 +244,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
 
-                // Chỉ cuộn khi có tin nhắn mới được thêm vào
-                if (messages.isNotEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToBottom();
-                  });
-                }
-
                 return Stack(
                   children: [
                     ListView.builder(
@@ -245,7 +254,8 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                         right: 16,
                         bottom: 100,
                       ),
-                      itemCount: messages.length + (chatProvider.isLoadingMore ? 1 : 0),
+                      itemCount: messages.length +
+                          (chatProvider.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == 0 && chatProvider.isLoadingMore) {
                           return Container(
@@ -254,19 +264,20 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             child: const CircularProgressIndicator(),
                           );
                         }
-                        
-                        final actualIndex = chatProvider.isLoadingMore ? index - 1 : index;
+
+                        final actualIndex =
+                            chatProvider.isLoadingMore ? index - 1 : index;
                         if (actualIndex < 0 || actualIndex >= messages.length) {
                           return const SizedBox.shrink();
                         }
-                        
+
                         final message = messages[actualIndex];
                         return _buildMessageBubble(message);
                       },
                     ),
                     // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
-                    if (_scrollController.hasClients && 
-                        _scrollController.position.pixels <= 0 && 
+                    if (_scrollController.hasClients &&
+                        _scrollController.position.pixels <= 0 &&
                         chatProvider.hasMoreMessages)
                       Positioned(
                         top: 0,
@@ -284,6 +295,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
           ),
         ],
       ),
+      resizeToAvoidBottomInset: true, // Thay đổi kích thước để tránh bàn phím
       bottomSheet: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -303,6 +315,11 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             });
           },
           onSubmit: _sendMessage,
+          onKeyboardOpen: () {
+            // Cuộn xuống khi bàn phím mở ra
+            _scrollToBottomWithInput();
+            print('⌨️ Bàn phím hiện ra - cuộn xuống với padding lớn 800');
+          },
         ),
       ),
     );

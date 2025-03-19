@@ -74,8 +74,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     chatProvider.addListener(() {
       // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        print('🔄 Cuộn xuống tin nhắn mới');
-        _scrollToBottom();
+        // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
+        print('🔄 Tin nhắn mới được cập nhật');
       }
     });
   }
@@ -91,9 +91,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       if (data != null && data is Map<String, dynamic>) {
         // Kiểm tra widget còn mounted không trước khi sử dụng context
         if (mounted) {
-          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          final chatProvider =
+              Provider.of<ChatProvider>(context, listen: false);
           // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
           chatProvider.handleNotificationData(data);
+          // Cuộn xuống khi nhận tin nhắn mới từ socket
+          _scrollToBottom();
         } else {
           print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
         }
@@ -117,6 +120,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent + 100,
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _scrollToBottomWithInput() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 500, // Padding lớn hơn cho bàn phím
+          duration: const Duration(milliseconds: 100), // Thời gian ngắn hơn
           curve: Curves.easeOut,
         );
       }
@@ -173,6 +188,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         selectedImages = [];
       });
 
+      // Cuộn xuống sau khi gửi tin nhắn mới
       _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
@@ -267,6 +283,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
         ],
       ),
+      resizeToAvoidBottomInset: true,
       bottomSheet: Container(
         decoration: BoxDecoration(
           color: Colors.white, // Màu nền
@@ -286,6 +303,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             });
           },
           onSubmit: _sendMessage,
+          onKeyboardOpen: () {
+            // Cuộn xuống khi bàn phím mở ra với padding lớn hơn
+            _scrollToBottomWithInput();
+            print('⌨️ Bàn phím hiện ra - cuộn xuống với padding lớn');
+          },
         ),
       ),
     );
