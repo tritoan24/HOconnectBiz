@@ -183,6 +183,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   }
 
   void _sendMessage(String message, List<String> images) async {
+    _scrollToBottom();
     if (message.trim().isEmpty && images.isEmpty) {
       print('Không có gì để gửi');
       return;
@@ -211,8 +212,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         selectedImages = [];
       });
 
-      // Cuộn xuống sau khi gửi tin nhắn mới
-      _scrollToBottom();
+      // _scrollToBottom();
     } catch (e) {
       print("Error sending message: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -551,33 +551,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Image.network(
-                                  message.album.first,
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: double.infinity,
-                                      height: 200,
-                                      color: Colors.grey[300],
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.error_outline,
-                                              size: 50, color: Colors.red),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            "Không thể tải ảnh",
-                                            style: TextStyle(
-                                                color: Colors.grey[800]),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
+                                child: _buildImageWidget(message),
                               ),
                               if (message.album.length > 1)
                                 Container(
@@ -704,6 +678,56 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Thêm phương thức mới để xử lý hiển thị ảnh
+  Widget _buildImageWidget(Message message) {
+    final String imageUrl = message.album.first;
+
+    // Kiểm tra nếu là đường dẫn local
+    if (imageUrl.startsWith('file://')) {
+      return Image.file(
+        File(imageUrl.replaceFirst('file://', '')),
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print("❌ Lỗi tải ảnh local: $error");
+          return _buildErrorImageWidget();
+        },
+      );
+    } else {
+      // Ảnh từ máy chủ
+      return Image.network(
+        imageUrl,
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print("❌ Lỗi tải ảnh từ server: $error");
+          return _buildErrorImageWidget();
+        },
+      );
+    }
+  }
+
+  Widget _buildErrorImageWidget() {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      color: Colors.grey[300],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 50, color: Colors.red),
+          SizedBox(height: 8),
+          Text(
+            "Không thể tải ảnh",
+            style: TextStyle(color: Colors.grey[800]),
+          ),
+        ],
       ),
     );
   }
