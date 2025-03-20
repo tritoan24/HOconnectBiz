@@ -26,32 +26,80 @@ import '../utils/router/router.name.dart';
 
 class AuthProvider extends BaseProvider {
   final AuthRepository _authRepository = AuthRepository();
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final socketService = SocketService();
 
+  // Phương thức lưu token vào shared preferences
   Future<void> _saveToken(String token) async {
-    await _storage.write(key: 'auth_token', value: token);
-  }
-
-  Future<void> _saveUserId(String id) async {
-    await _storage.write(key: 'user_id', value: id);
-    if (kDebugMode) {
-      print("🔑 id user: $id");
+    try {
+      // Lưu vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+    } catch (e) {
+      print('Lỗi lưu token: $e');
     }
   }
 
-  Future<String?> _getToken() async {
-    return await _storage.read(key: 'auth_token');
+  // Phương thức lưu userId vào shared preferences
+  Future<void> _saveUserId(String id) async {
+    try {
+      // Lưu vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', id);
+      if (kDebugMode) {
+        print("🔑 id user: $id");
+      }
+    } catch (e) {
+      print('Lỗi lưu user ID: $e');
+    }
   }
 
+  // Phương thức đọc token từ shared preferences
+  Future<String?> _getToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
+    } catch (e) {
+      print('Lỗi đọc token: $e');
+      return null;
+    }
+  }
+
+  // Phương thức đọc userId từ shared preferences
   Future<String?> getuserID() async {
-    return await _storage.read(key: 'user_id');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('user_id');
+    } catch (e) {
+      print('Error getting user ID: $e');
+      return null;
+    }
+  }
+  
+  // Xóa toàn bộ dữ liệu khi đăng xuất
+  Future<void> _clearAllData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_id');
+    } catch (e) {
+      print('Lỗi xóa dữ liệu: $e');
+    }
+    
+    // Xóa dữ liệu của flutter_secure_storage nếu có
+    try {
+      const FlutterSecureStorage().deleteAll();
+    } catch (e) {
+      // Bỏ qua lỗi
+    }
   }
 
   Future<void> checkLoginStatus(BuildContext context) async {
-    final token = await _getToken();
-
     try {
+      // Bắt đầu loading
+      setLoading(true);
+      
+      final token = await _getToken();
+
       if (token != null && token.isNotEmpty) {
         // Get user ID for socket connection
         final userId = await getuserID();
@@ -61,27 +109,27 @@ class AuthProvider extends BaseProvider {
           socketService.connect(userId);
         }
 
+        if (!context.mounted) return;
+
         // Tạo danh sách các Future để theo dõi
         final futures = <Future>[];
 
-        if (context.mounted) {
-          // Thêm các tác vụ fetch dữ liệu vào danh sách
-          futures.add(Provider.of<UserProvider>(context, listen: false)
-              .fetchUser(context));
-          futures.add(Provider.of<ProductProvider>(context, listen: false)
-              .getListProduct(context));
+        // Thêm các tác vụ fetch dữ liệu vào danh sách
+        futures.add(Provider.of<UserProvider>(context, listen: false)
+            .fetchUser(context));
+        futures.add(Provider.of<ProductProvider>(context, listen: false)
+            .getListProduct(context));
 
-          final postProvider =
-              Provider.of<PostProvider>(context, listen: false);
-          final rankProvider =
-              Provider.of<RankProvider>(context, listen: false);
+        final postProvider =
+            Provider.of<PostProvider>(context, listen: false);
+        final rankProvider =
+            Provider.of<RankProvider>(context, listen: false);
 
-          futures.add(rankProvider.fetchRanksRevenue(context));
-          futures.add(rankProvider.fetchRankBusiness(context));
+        futures.add(rankProvider.fetchRanksRevenue(context));
+        futures.add(rankProvider.fetchRankBusiness(context));
 
-          futures.add(postProvider.fetchPostsFeatured(context));
-          futures.add(postProvider.fetchPostsByUser(context));
-        }
+        futures.add(postProvider.fetchPostsFeatured(context));
+        futures.add(postProvider.fetchPostsByUser(context));
 
         // Chờ tất cả các tác vụ hoàn thành
         await Future.wait(futures);
@@ -99,10 +147,13 @@ class AuthProvider extends BaseProvider {
         });
       }
     } catch (e) {
-      // Ẩn loading overlay nếu có lỗi
-      // hideLoadingOnce();
       setError("Lỗi điều hướng: $e");
+      // Nếu có lỗi, chuyển về trang login
+      if (context.mounted) {
+        appRouter.go(AppRoutes.login);
+      }
     } finally {
+      // Kết thúc loading trong mọi trường hợp
       setLoading(false);
     }
   }
@@ -240,40 +291,32 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<void> logout(BuildContext context) async {
-    await executeApiCall(
-      apiCall: () async {
-        await _storage.delete(key: 'auth_token');
-        // Lấy registerType từ SharedPreferences
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? registerType = prefs.getString('register_type');
-
-        if (registerType == null) {
-          developer.log('Không tìm thấy registerType trong storage',
-              name: 'LOGOUT.ERROR');
-        } else if (registerType == 'gg') {
-          final GoogleSignIn googleSignIn = GoogleSignIn(
-            scopes: [
-              'email',
-              'https://www.googleapis.com/auth/userinfo.profile'
-            ],
-          );
-          await googleSignIn.signOut();
-          developer.log('Đã đăng xuất Google', name: 'PROFILE_LOGOUT.GOOGLE');
-        } else if (registerType == 'fb') {
-          await FacebookAuth.instance.logOut();
-          developer.log('Đã đăng xuất Facebook',
-              name: 'PROFILE_LOGOUT.FACEBOOK');
-        }
-        OneSignal.logout();
-        await prefs.remove('register_type');
-        return ApiResponse(isSuccess: true, message: "Đăng xuất thành công");
-      },
-      context: context,
-      onSuccess: () {
-        clearState();
+    try {
+      // Xóa token authentication
+      await _clearAllData();
+      
+      socketService.disconnect();
+      
+      // Đặt lại trạng thái hiện tại
+      clearState();
+      
+      // Hiển thị thông báo thành công
+      setSuccess("Đăng xuất thành công!");
+      
+      // Chuyển hướng về trang đăng nhập
+      if (context.mounted) {
         context.go(AppRoutes.login);
-      },
-    );
+      }
+      
+      // Xóa thông báo trạng thái sau 2 giây
+      Future.delayed(const Duration(seconds: 2), () {
+        clearState();
+      });
+    } catch (e) {
+      // Xử lý nếu có lỗi
+      setError("Có lỗi xảy ra khi đăng xuất: $e");
+      print("Lỗi đăng xuất: $e");
+    }
   }
 
   Future<void> sendEmailOtp(BuildContext context, String email) async {
