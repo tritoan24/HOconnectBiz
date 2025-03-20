@@ -9,6 +9,7 @@ import 'screens/home/widget/notification.dart';
 import 'utils/router/router.dart';
 import 'utils/router/router.name.dart';
 import 'widgets/handling_permissions.dart';
+import 'widgets/loading_overlay.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -30,20 +31,30 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<void> _initializeApp() async {
-    setState(() => _isInitializing = true);
-
-    // Request permissions first
-    await PermissionService.requestPermissions(context);
-
-    // Then check login status
-    if (mounted) {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .checkLoginStatus(context);
+  /// Khởi tạo các dịch vụ cần thiết cho ứng dụng
+  Future<void> initializeServices() async {
+    // Yêu cầu quyền truy cập
+    if (context.mounted) {
+      await PermissionService.requestPermissions(context);
     }
+    
+    // Đợi kiểm tra trạng thái đăng nhập
+    if (context.mounted) {
+      await Provider.of<AuthProvider>(context, listen: false).checkLoginStatus(context);
+    }
+  }
 
-    if (mounted) {
-      setState(() => _isInitializing = false);
+  Future<void> _initializeApp() async {
+    try {
+      await initializeServices();
+    } catch (e) {
+      print("Lỗi khởi tạo: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
     }
 
     OneSignal.Notifications.addClickListener((event) {
@@ -87,38 +98,60 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              elevation: 5,
-              surfaceTintColor: Colors.transparent,
-              shadowColor: Colors.white,
-              backgroundColor: Colors.white,
-            ),
-          ),
-          routerConfig: appRouter,
-          title: 'GoRouter Flutter Example',
-          builder: (context, child) {
-            return Stack(
-              children: [
-                child!,
-                if (_isInitializing)
-                  Material(
-                    color: Colors.black54,
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/lottie/loading.json',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.contain,
-                      ),
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              MaterialApp.router(
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData(
+                  useMaterial3: true,
+                  appBarTheme: const AppBarTheme(
+                    elevation: 5,
+                    surfaceTintColor: Colors.transparent,
+                    shadowColor: Colors.white,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                routerConfig: appRouter,
+                title: 'GoRouter Flutter Example',
+                builder: (context, child) {
+                  return Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Stack(
+                      children: [
+                        child!,
+                        if (authProvider.isLoading)
+                          Material(
+                            color: Colors.black54,
+                            child: Center(
+                              child: Lottie.asset(
+                                'assets/lottie/loading.json',
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          )
+                      ],
+                    ),
+                  );
+                },
+              ),
+              if (_isInitializing)
+                Material(
+                  color: Colors.black54,
+                  child: Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading.json',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.contain,
                     ),
                   ),
-              ],
-            );
-          },
+                ),
+            ],
+          ),
         );
       },
     );
