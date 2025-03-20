@@ -47,6 +47,48 @@ class NotificationModel {
         userCreate: json['userCreate']);
   }
 
+  // Constructor cho trường hợp tạo từ dữ liệu thông báo OneSignal
+  factory NotificationModel.fromNotificationData(Map<String, dynamic> data) {
+    final String notificationId = data['id'] ?? '';
+    final String message = data['message'] ?? '';
+    final String deeplink = data['deeplink'] ?? 'dnsgapp://notification';
+    
+    // Tạo đối tượng Author giả
+    final Author defaultAuthor = Author(
+      id: '',
+      displayName: '',
+      avatarImage: '',
+      username: '',
+      level: 0,
+      registerType: '0',
+      coverImage: '',
+      description: '',
+      business: [],
+      companyName: '',
+      address: '',
+      companyDescription: '',
+      email: '',
+      gender: '0',
+      status: '0',
+      phone: '',
+      roleCode: 0,
+      type: '0',
+      userId: '', // Thêm userId bắt buộc
+    );
+    
+    return NotificationModel(
+      id: notificationId,
+      userId: '',  // Giá trị mặc định
+      uId: defaultAuthor,
+      message: message,
+      deeplink: deeplink,
+      read: false,
+      timestamp: DateTime.now(),
+      v: 0,
+      // Các trường khác có thể là null
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         '_id': id,
         'userId': userId,

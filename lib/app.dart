@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
 
   /// Khởi tạo các dịch vụ cần thiết cho ứng dụng
   Future<void> initializeServices() async {
-    // Yêu cầu quyền truy cập
+    // Yêu cầu quyền truy cập cơ bản
     if (context.mounted) {
       await PermissionService.requestPermissions(context);
     }
@@ -41,6 +41,14 @@ class _MyAppState extends State<MyApp> {
     // Đợi kiểm tra trạng thái đăng nhập
     if (context.mounted) {
       await Provider.of<AuthProvider>(context, listen: false).checkLoginStatus(context);
+    }
+    
+    // Đợi một chút trước khi yêu cầu quyền thông báo để không hiện quá nhiều dialog cùng lúc
+    await Future.delayed(const Duration(seconds: 1));
+    
+    // Yêu cầu riêng quyền thông báo trên Android để đảm bảo người dùng thấy dialog
+    if (context.mounted) {
+      await PermissionService.requestNotificationPermissionOnly(context);
     }
   }
 
@@ -58,9 +66,32 @@ class _MyAppState extends State<MyApp> {
     }
 
     OneSignal.Notifications.addClickListener((event) {
+      print('Notification clicked: ${event.notification.jsonRepresentation()}');
       if (event.notification.jsonRepresentation().isNotEmpty) {
         final data = event.notification.additionalData;
-        appRouter.go(AppRoutes.thongBao, extra: data);
+        // Kiểm tra nếu data null hoặc rỗng
+        if (data == null || (data is Map && data.isEmpty)) {
+          // Lấy thông tin cơ bản từ notification
+          final notificationId = event.notification.notificationId;
+          final notificationTitle = event.notification.title ?? '';
+          final notificationBody = event.notification.body ?? '';
+          
+          print('Android notification: ID=$notificationId, Title=$notificationTitle');
+          
+          // Tạo map data với thông tin cơ bản
+          final Map<String, dynamic> extractedData = {
+            'message': notificationTitle,
+            'id': notificationId,
+            // Sử dụng deeplink mặc định hoặc lấy từ nơi khác nếu có
+            'deeplink': 'dnsgapp://notification'
+          };
+          
+          // Điều hướng với data đã trích xuất
+          appRouter.go(AppRoutes.thongBao, extra: extractedData);
+        } else {
+          // Trường hợp có additionalData (iOS)
+          appRouter.go(AppRoutes.thongBao, extra: data);
+        }
       }
     });
 

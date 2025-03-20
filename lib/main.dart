@@ -22,6 +22,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'core/error/error_handler.dart';
 import 'core/utils/app_logger.dart';
 import 'providers/send_error_log.dart';
@@ -40,8 +42,14 @@ void main() {
     );
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 
+    // Khởi tạo OneSignal
     OneSignal.initialize(AppConfig.oneSignalAppId);
-    OneSignal.Notifications.requestPermission(true);
+    
+    // Yêu cầu quyền thông báo cho iOS 
+    // Android sẽ sử dụng permission_handler trong PermissionService
+    if (Platform.isIOS) {
+      OneSignal.Notifications.requestPermission(true);
+    }
 
     // Khởi tạo logger
     await AppLogger().initialize();
@@ -99,4 +107,13 @@ void main() {
     
     print('❌ Lỗi không xử lý: $error\n$stackTrace');
   });
+}
+
+// Kiểm tra xem thiết bị có phải là Android 13 (API level 33) trở lên không
+Future<bool> _isAndroid13OrHigher() async {
+  if (Platform.isAndroid) {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    return androidInfo.version.sdkInt >= 33;
+  }
+  return false;
 }

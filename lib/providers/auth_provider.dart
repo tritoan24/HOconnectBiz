@@ -33,11 +33,26 @@ class AuthProvider extends BaseProvider {
   // Phương thức lưu token vào SharedPreferences
   Future<void> _saveToken(String token) async {
     try {
-      // Chỉ sử dụng SharedPreferences, không dùng flutter_secure_storage
+      if (token.isEmpty) {
+        if (kDebugMode) {
+          print("⚠️ Token trống, không lưu");
+        }
+        return;
+      }
+      
+      // Lưu token vào SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
+      
+      // Xác minh token đã được lưu đúng
+      final savedToken = prefs.getString('auth_token');
+      if (savedToken != token) {
+        throw Exception("Token lưu không khớp với token đã lưu");
+      }
+      
       if (kDebugMode) {
         print("💾 Đã lưu token thành công vào SharedPreferences");
+        print("💾 Độ dài token: ${token.length} ký tự");
       }
     } catch (e) {
       print('Lỗi lưu token: $e');
@@ -54,9 +69,23 @@ class AuthProvider extends BaseProvider {
   // Phương thức lưu userId vào SharedPreferences
   Future<void> _saveUserId(String id) async {
     try {
-      // Chỉ sử dụng SharedPreferences, không dùng flutter_secure_storage
+      if (id.isEmpty) {
+        if (kDebugMode) {
+          print("⚠️ userId trống, không lưu");
+        }
+        return;
+      }
+      
+      // Lưu userId vào SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_id', id);
+      
+      // Xác minh userId đã được lưu đúng
+      final savedUserId = prefs.getString('user_id');
+      if (savedUserId != id) {
+        throw Exception("UserId lưu không khớp với userId đã lưu");
+      }
+      
       if (kDebugMode) {
         print("🔑 Đã lưu user ID: $id vào SharedPreferences");
       }
@@ -172,23 +201,55 @@ class AuthProvider extends BaseProvider {
       
       // Nếu có token, kiểm tra người dùng
       final userId = await getuserID();
+      if (kDebugMode) {
+        print("🔍 UserId từ SharedPreferences: ${userId ?? 'Không tìm thấy'}");
+      }
+
       if (userId != null) {
         // Kết nối socket nếu có user ID
-        socketService.connect(userId);
+        try {
+          socketService.connect(userId);
+          if (kDebugMode) {
+            print("🔌 Đã kết nối socket với userId: $userId");
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print("⚠️ Lỗi kết nối socket: $e");
+          }
+          // Lỗi socket không nên ảnh hưởng đến trạng thái đăng nhập
+        }
       }
       
       if (!context.mounted) return;
       
       try {
         // Tải thông tin người dùng
-        await Provider.of<UserProvider>(context, listen: false).fetchUser(context);
+        if (kDebugMode) {
+          print("🔄 Bắt đầu tải thông tin người dùng");
+        }
+        
+        // Thiết lập timeout để tránh treo vô hạn
+        final userFuture = Provider.of<UserProvider>(context, listen: false).fetchUser(context);
+        await userFuture.timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            if (kDebugMode) {
+              print("⏱️ Timeout khi tải thông tin người dùng");
+            }
+            throw TimeoutException("Lấy thông tin người dùng quá thời gian");
+          }
+        );
+        
+        if (kDebugMode) {
+          print("✅ Tải thông tin người dùng thành công");
+        }
         
         if (context.mounted) {
           // Chuyển hướng đến trang chủ nếu token hợp lệ
           context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
         }
       } catch (e) {
-        // Nếu có lỗi khi fetch user data (token không hợp lệ), xử lý đăng xuất
+        // Nếu có lỗi khi fetch user data, xử lý theo loại lỗi
         if (kDebugMode) {
           print("❌ Lỗi khi kiểm tra trạng thái đăng nhập: $e");
         }
@@ -200,13 +261,32 @@ class AuthProvider extends BaseProvider {
           additionalInfo: e.toString(),
         );
         
-        // Xóa token và dữ liệu người dùng
-        await _clearAllData();
+        // Kiểm tra xem có phải lỗi kết nối không
+        if (e is SocketException || e is TimeoutException) {
+          if (kDebugMode) {
+            print("🌐 Lỗi kết nối mạng, giữ nguyên token và chuyển đến trang đăng nhập");
+          }
+          // Không xóa token nếu chỉ là lỗi kết nối
+          // Đây là thay đổi quan trọng - không xóa token khi chỉ là lỗi mạng
+          if (context.mounted) {
+            // Chuyển đến trang đăng nhập nhưng giữ lại token
+            context.go(AppRoutes.login);
+          }
+        } else {
+          if (kDebugMode) {
+            print("🔒 Lỗi xác thực, cần đăng nhập lại");
+          }
+          // Xóa token chỉ khi có lỗi xác thực
+          await _clearAllData();
+          if (context.mounted) {
+            context.go(AppRoutes.login);
+          }
+        }
       }
     } catch (e, stackTrace) {
-      // Xử lý lỗi
+      // Xử lý lỗi không xác định
       if (kDebugMode) {
-        print("❌ Lỗi trong checkLoginStatus: $e");
+        print("❌ Lỗi không xác định trong checkLoginStatus: $e");
       }
       
       // Log lỗi
@@ -216,8 +296,9 @@ class AuthProvider extends BaseProvider {
         additionalInfo: "${e.toString()}\n${stackTrace.toString()}",
       );
       
-      // Xóa token để tránh tình trạng lỗi lặp lại
-      await _clearAllData();
+      // KHÔNG xóa token ở đây, chỉ thông báo lỗi
+      // Thay đổi quan trọng - không xóa token tự động khi có lỗi
+      setError("Có lỗi khi kiểm tra trạng thái đăng nhập. Vui lòng thử lại.");
     } finally {
       // Kết thúc loading
       setLoading(false);

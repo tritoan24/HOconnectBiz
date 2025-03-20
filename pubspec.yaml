@@ -75,7 +75,7 @@ dependencies:
   firebase_messaging: ^15.2.4
 
   # Các package mới cho theo dõi lỗi
-  device_info_plus: ^9.1.1
+  device_info_plus: ^9.1.2
   package_info_plus: ^8.3.0
   sentry_flutter: ^7.15.0
   path_provider: ^2.1.2

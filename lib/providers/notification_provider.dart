@@ -63,6 +63,8 @@ class NotificationProvider extends BaseProvider {
 
   void handleNotificationTap(
       NotificationModel notification, BuildContext context) async {
+    debugPrint('Handling notification tap: ${notification.deeplink}');
+    
     if (notification.deeplink.startsWith('dnsgapp://post/')) {
       final postId = notification.deeplink.split('/').last;
       final post = notification.post;
@@ -98,7 +100,40 @@ class NotificationProvider extends BaseProvider {
           ),
         );
       } else {
-        debugPrint('Post data is null for notification: ${notification.id}');
+        // Nếu không có post data (trường hợp trên Android), thì tải post từ API
+        debugPrint('Post data is null, fetching from API for ID: $postId');
+        try {
+          // Giả định có một API để lấy post theo ID
+          // Thay thế phần code bên dưới bằng API thực tế của bạn
+          // final fetchedPost = await _postRepository.getPostById(postId);
+          // Nếu bạn không có API cụ thể, có thể chuyển đến màn hình comment với ID
+          
+          // Tạm thời điều hướng với postId
+          final userId = await _authProvider.getuserID() ?? '';
+          if (!context.mounted) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CommentsScreen(
+                postId: postId,
+                postType: 0, // Giá trị mặc định
+                displayName: 'Không xác định',
+                avatar_image: '',
+                dateTime: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                title: '',
+                content: '',
+                images: [],
+                business: [],
+                product: [],
+                likes: [],
+                commentCount: 0,
+                idUser: userId,
+              ),
+            ),
+          );
+        } catch (e) {
+          debugPrint('Error fetching post data: $e');
+        }
       }
     } else if (notification.deeplink.startsWith('dnsgapp://order/')) {
       // final orderId = notification.deeplink.split('/').last;

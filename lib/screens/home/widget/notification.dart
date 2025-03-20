@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/models/notification_model.dart';
 import 'package:clbdoanhnhansg/providers/notification_provider.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,9 @@ import 'package:provider/provider.dart';
 import 'conten_thong_bao.dart';
 
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+  final Map<String, dynamic>? notificationData;
+  
+  const NotificationScreen({super.key, this.notificationData});
 
   @override
   State<NotificationScreen> createState() => _NotificationState();
@@ -22,6 +25,16 @@ class _NotificationState extends State<NotificationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notiProvider =
           Provider.of<NotificationProvider>(context, listen: false);
+      
+      // Xử lý dữ liệu thông báo nếu được truyền vào
+      if (widget.notificationData != null) {
+        print('Received notification data: ${widget.notificationData}');
+        // Tạo model từ dữ liệu thông báo
+        final notification = NotificationModel.fromNotificationData(widget.notificationData!);
+        // Xử lý tap notification
+        notiProvider.handleNotificationTap(notification, context);
+      }
+      
       notiProvider.fetchNotifications(context);
     });
   }

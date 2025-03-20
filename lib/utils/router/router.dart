@@ -114,7 +114,9 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.thongBao,
           builder: (context, state) {
-            return const NotificationScreen();
+            // Lấy dữ liệu thông báo từ extra nếu có
+            final notificationData = state.extra as Map<String, dynamic>?;
+            return NotificationScreen(notificationData: notificationData);
           },
         ),
         GoRoute(
