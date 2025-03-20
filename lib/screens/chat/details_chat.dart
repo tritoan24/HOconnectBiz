@@ -53,9 +53,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       print("🚀 Khởi tạo socket và kết nối tới phòng chat");
 
       // 1. Kết nối socket
-      chatProvider.initializeSocket(context, widget.groupId).then((_) {
+      chatProvider.initializeSocketChatGroup(context, widget.groupId).then((_) {
         // 2. Kết nối đến phòng chat cụ thể
-        _connectToSpecificChatRoom();
+        // _connectToSpecificChatRoom();
         print("🚀 Kết nối socket thành công");
 
         // 3. Lấy tin nhắn cũ
@@ -78,31 +78,32 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
         // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
+        _scrollToBottom();
         print('🔄 Tin nhắn mới được cập nhật');
       }
     });
   }
 
-  void _connectToSpecificChatRoom() {
-    // Đăng ký lắng nghe tin nhắn mới
-    _socketService.on('new_message', (data) {
-      print("📱 Nhận tin nhắn mới từ socket: $data");
-      if (data != null && data is Map<String, dynamic>) {
-        // Kiểm tra widget còn mounted không trước khi sử dụng context
-        if (mounted) {
-          final chatProvider =
-              Provider.of<ChatProvider>(context, listen: false);
-          // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
-          chatProvider.handleNotificationData(data);
-
-          // Cuộn xuống khi nhận tin nhắn mới từ socket
-          _scrollToBottom();
-        } else {
-          print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
-        }
-      }
-    });
-  }
+  // void _connectToSpecificChatRoom() {
+  //   // Đăng ký lắng nghe tin nhắn mới
+  //   _socketService.on('new_message_group', (data) {
+  //     print("📱 Nhận tin nhắn mới từ socket: $data");
+  //     if (data != null && data is Map<String, dynamic>) {
+  //       // Kiểm tra widget còn mounted không trước khi sử dụng context
+  //       if (mounted) {
+  //         final chatProvider =
+  //             Provider.of<ChatProvider>(context, listen: false);
+  //         // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
+  //         chatProvider.handleNotificationData(data);
+  //
+  //         // Cuộn xuống khi nhận tin nhắn mới từ socket
+  //         _scrollToBottom();
+  //       } else {
+  //         print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
+  //       }
+  //     }
+  //   });
+  // }
 
   @override
   void dispose() {

@@ -10,6 +10,7 @@ class Message {
   final bool read;
   final OrderModel? data;
   final DateTime timestamp;
+  final String? conversationId;
   MessageStatus status = MessageStatus.sent;
   String? errorMessage;
 
@@ -22,6 +23,7 @@ class Message {
     this.read = false,
     this.data,
     DateTime? timestamp,
+    this.conversationId,
   }) : this.timestamp = timestamp ?? DateTime.now();
 
   // Trong Message.fromJson
@@ -64,6 +66,7 @@ class Message {
       read: json['read'] == true,
       data: json['data'] != null ? OrderModel.fromJson(json['data']) : null,
       timestamp: parsedTimestamp,
+      conversationId: json['conversationId']?.toString(),
     );
   }
 

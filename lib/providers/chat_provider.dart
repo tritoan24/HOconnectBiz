@@ -25,6 +25,7 @@ class ChatProvider with ChangeNotifier {
   List<Contact> _contacts = [];
   String? _currentUserId;
   String? _currentChatReceiverId;
+  String? _currentGroupChatId;
   int _cartItemCount = 0;
   int _currentPage = 1;
   bool _hasMoreMessages = true;
@@ -64,6 +65,25 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  /// Khởi tạo socket cho màn hình chat
+  Future<void> initializeSocketChatGroup(
+      BuildContext context, String idGroup) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Lấy id người gửi
+    final userId = await authProvider.getuserID();
+
+    _currentGroupChatId = idGroup;
+
+    if (_currentUserId != null) {
+      // Kết nối tới socket với ID người dùng
+      _socketService.connectToChat(userId!, idGroup);
+
+      // Cài đặt các listener cho cập nhật tin nhắn thời gian thực
+      _setupSocketListenersChatGroup();
+    }
+  }
+
   /// Khởi tạo socket cho màn hình danh bạ
   Future<void> initializeContactSocket(
       BuildContext context, String UserID) async {
@@ -94,18 +114,94 @@ class ChatProvider with ChangeNotifier {
       // Cập nhật PostProvider khi có tin nhắn mới
       _updatePostProviderMessageCount();
     });
-    //
-    // // Lắng nghe thông báo
-    // _socketService.on('notification', (data) {
-    //   print("🔔 Nhận thông báo từ socket: $data");
-    //   _handleNotificationData(data);
-    // });
+  }
 
-    // // Lắng nghe trạng thái tin nhắn đã đọc
-    // _socketService.on('message_read', (data) {
-    //   print("👁️ Cập nhật trạng thái đọc tin nhắn: $data");
-    //   _updateMessageReadStatus(data);
-    // });
+  /// Thiết lập các listener lắng nghe sự kiện socket
+  void _setupSocketListenersChatGroup() {
+    // Lắng nghe tin nhắn mới
+    _socketService.on('new_message_group', (data) {
+      print("📥 Nhận tin nhắn mới từ socket: $data");
+      handleNotificationDataGroup(data);
+
+      // Cập nhật PostProvider khi có tin nhắn mới
+      _updatePostProviderMessageCount();
+    });
+  }
+
+  /// Xử lý dữ liệu thông báo từ socket
+  void handleNotificationDataGroup(Map<String, dynamic> data) {
+    try {
+      print("📥 Nhận dữ liệu socket group: $data");
+      
+      if (data['data'] != null && data['data'] is Map<String, dynamic>) {
+        var responseData = data['data'];
+        
+        // Kiểm tra status thành công
+        if (responseData['status'] == 'success' && responseData['data'] != null) {
+          var messagesData = responseData['data'];
+          
+          // Lặp qua từng conversationId và danh sách tin nhắn
+          messagesData.forEach((conversationId, messages) {
+            if (messages is List) {
+              for (var msgData in messages) {
+                if (msgData is Map<String, dynamic>) {
+                  // Chuyển đổi cấu trúc dữ liệu để phù hợp với Message model
+                  var formattedMsgData = {
+                    '_id': msgData['_id'],
+                    'sender': {
+                      '_id': msgData['sender']['_id'],
+                      'username': msgData['sender']['username'],
+                      'displayName': msgData['sender']['displayName'],
+                      'avatar_image': msgData['sender']['avatar_image'] ?? '',
+                      'description': msgData['sender']['description'] ?? '',
+                      'company_name': msgData['sender']['company_name'] ?? '',
+                      'level': 0,
+                      'registerType': '',
+                      'coverImage': '',
+                      'business': [],
+                      'address': '',
+                      'companyDescription': '',
+                      'email': '',
+                      'gender': '',
+                      'status': '',
+                      'phone': '',
+                      'roleCode': 0,
+                      'type': '',
+                      'userId': ''
+                    },
+                    'receiver': null,
+                    'content': msgData['content'],
+                    'album': msgData['album'],
+                    'read': msgData['read'] ?? false,
+                    'timestamp': msgData['timestamp'],
+                    'conversationId': conversationId,
+                    'status': MessageStatus.sent
+                  };
+
+                  // Tạo message mới từ dữ liệu đã format
+                  final message = Message.fromJson(formattedMsgData);
+                  
+                  // Kiểm tra xem tin nhắn có thuộc về group hiện tại không
+                  if (_currentGroupChatId != null && 
+                      message.conversationId == _currentGroupChatId) {
+                    // Thêm vào danh sách nếu chưa có
+                    if (!_messages.any((m) => m.id == message.id)) {
+                      print("✅ Thêm tin nhắn mới vào danh sách");
+                      _messages.add(message);
+                      notifyListeners();
+                    }
+                  }
+                }
+              }
+            }
+          });
+        } else {
+          print("❌ Nhận dữ liệu không thành công: ${responseData['message']}");
+        }
+      }
+    } catch (e) {
+      print("❌ Lỗi xử lý dữ liệu thông báo group: $e");
+    }
   }
 
   /// Xử lý dữ liệu thông báo từ socket
@@ -148,6 +244,29 @@ class ChatProvider with ChangeNotifier {
                 receiverId == _currentChatReceiverId) ||
             (senderId == _currentChatReceiverId &&
                 receiverId == _currentUserId)) {
+          // Thêm vào danh sách nếu chưa có
+          if (!_messages.any((m) => m.id == message.id)) {
+            // Thêm tin nhắn mới vào cuối danh sách
+            _messages.add(message);
+            notifyListeners();
+          }
+        }
+      }
+    } catch (e) {
+      print("❌ Lỗi xử lý tin nhắn đơn: $e");
+    }
+  }
+
+  /// Xử lý một tin nhắn group từ socket
+  void _processGroupMessage(Map<String, dynamic> messageData) {
+    try {
+      final message = Message.fromJson(messageData);
+
+      // Kiểm tra nếu tin nhắn thuộc về cuộc trò chuyện hiện tại
+      if (_currentGroupChatId != null) {
+        final idGroup = message.id;
+
+        if (idGroup == _currentGroupChatId) {
           // Thêm vào danh sách nếu chưa có
           if (!_messages.any((m) => m.id == message.id)) {
             // Thêm tin nhắn mới vào cuối danh sách
