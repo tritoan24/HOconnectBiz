@@ -87,7 +87,7 @@ class ChatProvider with ChangeNotifier {
   /// Thiết lập các listener lắng nghe sự kiện socket
   void _setupSocketListeners() {
     // Lắng nghe tin nhắn mới
-    _socketService.on('notification', (data) {
+    _socketService.on('new_message', (data) {
       print("📥 Nhận tin nhắn mới từ socket: $data");
       handleNotificationData(data);
 
