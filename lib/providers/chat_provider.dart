@@ -65,9 +65,9 @@ class ChatProvider with ChangeNotifier {
   }
 
   /// Khởi tạo socket cho màn hình danh bạ
-  Future<void> initializeContactSocket(BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _currentUserId = await authProvider.getuserID();
+  Future<void> initializeContactSocket(
+      BuildContext context, String UserID) async {
+    _currentUserId = await UserID;
 
     if (_currentUserId != null) {
       _socketService.connectToContact(_currentUserId!);
@@ -78,7 +78,7 @@ class ChatProvider with ChangeNotifier {
   /// Thiết lập các listener lắng nghe sự kiện socket
   void _setupSocketListenersContact() {
     // Lắng nghe cập nhật danh bạ
-    _socketService.on('contact_update', (data) {
+    _socketService.on('notification', (data) {
       print("👥 Cập nhật danh bạ từ socket: $data");
       _refreshContacts();
     });
@@ -87,7 +87,7 @@ class ChatProvider with ChangeNotifier {
   /// Thiết lập các listener lắng nghe sự kiện socket
   void _setupSocketListeners() {
     // Lắng nghe tin nhắn mới
-    _socketService.on('new_message', (data) {
+    _socketService.on('notification', (data) {
       print("📥 Nhận tin nhắn mới từ socket: $data");
       handleNotificationData(data);
 
