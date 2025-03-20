@@ -118,21 +118,22 @@ class ChatProvider with ChangeNotifier {
 
   /// Thiết lập các listener lắng nghe sự kiện socket
   void _setupSocketListenersChatGroup() {
+    // Hủy đăng ký listener cũ nếu có
+    _socketService.off('new_message_group');
+    
     // Lắng nghe tin nhắn mới
     _socketService.on('new_message_group', (data) {
-      print("📥 Nhận tin nhắn mới từ socket: $data");
-      handleNotificationDataGroup(data);
-
-      // Cập nhật PostProvider khi có tin nhắn mới
-      _updatePostProviderMessageCount();
+      if (data != null && data is Map<String, dynamic>) {
+        print("📥 Nhận tin nhắn mới từ socket group");
+        handleNotificationDataGroup(data);
+        _updatePostProviderMessageCount();
+      }
     });
   }
 
   /// Xử lý dữ liệu thông báo từ socket
   void handleNotificationDataGroup(Map<String, dynamic> data) {
     try {
-      print("📥 Nhận dữ liệu socket group: $data");
-      
       if (data['data'] != null && data['data'] is Map<String, dynamic>) {
         var responseData = data['data'];
         
@@ -186,7 +187,6 @@ class ChatProvider with ChangeNotifier {
                       message.conversationId == _currentGroupChatId) {
                     // Thêm vào danh sách nếu chưa có
                     if (!_messages.any((m) => m.id == message.id)) {
-                      print("✅ Thêm tin nhắn mới vào danh sách");
                       _messages.add(message);
                       notifyListeners();
                     }
@@ -195,12 +195,10 @@ class ChatProvider with ChangeNotifier {
               }
             }
           });
-        } else {
-          print("❌ Nhận dữ liệu không thành công: ${responseData['message']}");
         }
       }
     } catch (e) {
-      print("❌ Lỗi xử lý dữ liệu thông báo group: $e");
+      print("❌ Lỗi xử lý tin nhắn group: $e");
     }
   }
 
