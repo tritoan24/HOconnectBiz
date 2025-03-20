@@ -5,6 +5,7 @@ import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/socket_service.dart';
 import '../../models/message_model.dart';
@@ -238,6 +239,16 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
                 final messages = chatProvider.messages;
+                if (chatProvider.isLoadingMessages) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading.json',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                  );
+                }
                 if (messages.isEmpty) {
                   return const Center(child: Text("Chưa có tin nhắn nào"));
                 }
@@ -256,10 +267,13 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                           (chatProvider.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == 0 && chatProvider.isLoadingMore) {
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            alignment: Alignment.center,
-                            child: const CircularProgressIndicator(),
+                          return Center(
+                            child: Lottie.asset(
+                              'assets/lottie/loading.json',
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.contain,
+                            ),
                           );
                         }
 

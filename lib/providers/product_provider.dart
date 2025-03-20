@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 import '../core/base/base_provider.dart';
 import '../repository/product_repository.dart';
@@ -14,7 +16,27 @@ class ProductProvider extends BaseProvider {
   List<ProductModel> _productsByUser = [];
   List<ProductModel> get productsByUser => _productsByUser;
 
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   final ProductRepository _productRepository = ProductRepository();
+
+  // Phương thức hiển thị thông báo ghim thành công
+  void showSuccessMessage(String message, {BuildContext? context}) {
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
 
   Future<void> createProduct(BuildContext context, ProductModel product,
       {List<File>? files}) async {
@@ -34,6 +56,9 @@ class ProductProvider extends BaseProvider {
 
   Future<void> getListProduct(BuildContext context) async {
     try {
+      _isLoading = true;
+      notifyListeners();
+      
       final response = await _productRepository.getListProduct(context);
 
       if (response.isSuccess && response.data is List) {
@@ -45,6 +70,9 @@ class ProductProvider extends BaseProvider {
     } catch (e) {
       // Handle error appropriately
       print('Error fetching products: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -73,44 +101,61 @@ class ProductProvider extends BaseProvider {
     LoadingOverlay.hide();
   }
 
- //chỉnh sủa pin
+  //chỉnh sủa pin
   Future<void> editPinProduct(
     List<Map<String, dynamic>> pinData,
     BuildContext context,
   ) async {
     try {
+      _isLoading = true;
       notifyListeners();
+      
+      LoadingOverlay.show(context);
 
       final response =
           await _productRepository.editProductPin(pinData, context);
 
       if (response.isSuccess) {
         // Cập nhật state nếu cần
-        print('Cập nhật ghim sản phẩm thành công');
+        //load lại danh sách sản phẩm
+        await getListProduct(context);
+        showSuccessMessage('Cập nhật ghim sản phẩm thành công', context: context);
+        Navigator.of(context).pop();
       } else {
         print('Lỗi: ${response.message}');
-        // Hiển thị thông báo lỗi nếu cần
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: ${response.message}')),
+        );
       }
     } catch (e) {
       print('Lỗi khi cập nhật ghim sản phẩm: $e');
-      // Xử lý lỗi
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi cập nhật ghim sản phẩm: $e')),
+      );
     } finally {
+      _isLoading = false;
       notifyListeners();
+      LoadingOverlay.hide();
     }
   }
 
   Future<void> deleteProduct(BuildContext context, String productId) async {
+    LoadingOverlay.show(context);
     await executeApiCall(
       apiCall: () => _productRepository.deleteProduct(productId, context),
       context: context,
       onSuccess: () => getListProduct(context),
       successMessage: 'Xóa sản phẩm thành công!',
     );
+    LoadingOverlay.hide();
   }
 
   //get list product by User ID
   Future<void> fetchListProductByUser(BuildContext context, String id) async {
     try {
+      _isLoading = true;
+      notifyListeners();
+      
       final response =
           await _productRepository.fetchListProductByUser(context, id);
       if (response.isSuccess) {
@@ -125,6 +170,9 @@ class ProductProvider extends BaseProvider {
       }
     } catch (e) {
       print('Error fetching products by user: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

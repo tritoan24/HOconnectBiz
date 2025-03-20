@@ -4,6 +4,7 @@ import 'package:clbdoanhnhansg/screens/manage/widget/shop/widget/button_add.dart
 import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../models/product_model.dart';
 import 'add_product.dart';
 import 'item_product.dart';
@@ -29,6 +30,18 @@ class _TabShopState extends State<TabShop> {
   Widget build(BuildContext context) {
     return Consumer<ProductProvider>(
         builder: (context, productProvider, child) {
+      // Hiển thị loading khi đang tải dữ liệu
+      if (productProvider.isLoading) {
+        return Center(
+          child: Lottie.asset(
+            'assets/lottie/loading.json',
+            width: 50,
+            height: 50,
+            fit: BoxFit.contain,
+          ),
+        );
+      }
+
       // Use the already loaded products from provider instead of calling async methods
       final List<ProductModel> products = widget.isLeading
           ? productProvider.products
@@ -76,7 +89,7 @@ class _TabShopState extends State<TabShop> {
                           )
                         : Container(),
                     SizedBox(
-                      height: 280, // Đặt chiều cao cho danh sách
+                      height: sanPhamGhim.isEmpty ? 30 : 380,
                       child: sanPhamGhim.isNotEmpty
                           ? ListView.builder(
                               scrollDirection: Axis.horizontal, // Kéo ngang
@@ -123,7 +136,7 @@ class _TabShopState extends State<TabShop> {
                           )
                         : Container(),
                     SizedBox(
-                      height: 380, // Đặt chiều cao cho danh sách
+                      height: sanPhamKhac.isEmpty ? 30 : 380,
                       child: sanPhamKhac.isNotEmpty
                           ? GridView.builder(
                               gridDelegate:
@@ -158,4 +171,3 @@ class _TabShopState extends State<TabShop> {
     });
   }
 }
-

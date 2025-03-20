@@ -2,6 +2,7 @@ import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../../../models/posts.dart';
 import '../../../../providers/post_provider.dart';
@@ -33,6 +34,11 @@ class _PostManageState extends State<PostManageTab> {
       final List<Posts> posts =
           widget.isMe ? postProvider.listPostMe : postProvider.listtByID;
 
+      // Kiểm tra trạng thái loading một cách rõ ràng
+      final bool isLoading = widget.isMe 
+          ? postProvider.isLoading 
+          : postProvider.isLoadingByID;
+
       debugPrint(
           "🔍 Có ${posts.length} bài viết trong danh sách-----------------------!");
       return Scaffold(
@@ -41,11 +47,14 @@ class _PostManageState extends State<PostManageTab> {
           onRefresh: () async {
             await postProvider.fetchPostsByUser(context);
           },
-          child: (widget.isMe
-                  ? postProvider.isLoading
-                  : postProvider.isLoadingByID)
-              ? const Center(
-                  child: CircularProgressIndicator(),
+          child: isLoading
+              ? Center(
+                  child: Lottie.asset(
+                    'assets/lottie/loading.json',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
                 )
               : posts.isEmpty
                   ? SingleChildScrollView(
