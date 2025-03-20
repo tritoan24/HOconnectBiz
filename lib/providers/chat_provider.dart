@@ -11,6 +11,7 @@ import '../models/message_model.dart';
 import '../models/auth_model.dart';
 import '../repository/chat_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
+import '../utils/router/router.name.dart';
 import 'auth_provider.dart';
 import 'post_provider.dart';
 import 'package:http/http.dart' as http;
@@ -89,10 +90,12 @@ class ChatProvider with ChangeNotifier {
   /// Khởi tạo socket cho màn hình danh bạ
   Future<void> initializeContactSocket(
       BuildContext context, String UserID) async {
+    print("🔌 Khởi tạo kết nối socket danh bạ...");
     _currentUserId = await UserID;
-
+    print("👤 ID người dùng hiện tại: $_currentUserId");
     if (_currentUserId != null) {
       _socketService.connectToContact(_currentUserId!);
+      print("🔌 Đã kết nối socket danh bạ");
       _setupSocketListenersContact();
     }
   }
@@ -100,9 +103,9 @@ class ChatProvider with ChangeNotifier {
   /// Thiết lập các listener lắng nghe sự kiện socket
   void _setupSocketListenersContact() {
     // Lắng nghe cập nhật danh bạ
-    _socketService.on('notification', (data) {
+    _socketService.on('contact_update', (data) {
       print("👥 Cập nhật danh bạ từ socket: $data");
-      _refreshContacts();
+      handleContactData(data);
     });
   }
 
@@ -122,7 +125,7 @@ class ChatProvider with ChangeNotifier {
   void _setupSocketListenersChatGroup() {
     // Hủy đăng ký listener cũ nếu có
     _socketService.off('new_message_group');
-    
+
     // Lắng nghe tin nhắn mới
     _socketService.on('new_message_group', (data) {
       if (data != null && data is Map<String, dynamic>) {
@@ -138,11 +141,12 @@ class ChatProvider with ChangeNotifier {
     try {
       if (data['data'] != null && data['data'] is Map<String, dynamic>) {
         var responseData = data['data'];
-        
+
         // Kiểm tra status thành công
-        if (responseData['status'] == 'success' && responseData['data'] != null) {
+        if (responseData['status'] == 'success' &&
+            responseData['data'] != null) {
           var messagesData = responseData['data'];
-          
+
           // Lặp qua từng conversationId và danh sách tin nhắn
           messagesData.forEach((conversationId, messages) {
             if (messages is List) {
@@ -183,18 +187,18 @@ class ChatProvider with ChangeNotifier {
 
                   // Tạo message mới từ dữ liệu đã format
                   final message = Message.fromJson(formattedMsgData);
-                  
+
                   // Kiểm tra xem tin nhắn có thuộc về group hiện tại không
-                  if (_currentGroupChatId != null && 
+                  if (_currentGroupChatId != null &&
                       message.conversationId == _currentGroupChatId) {
                     // Kiểm tra xem tin nhắn đã tồn tại chưa
                     bool isDuplicate = false;
-                    
+
                     // 1. Kiểm tra trùng ID
                     if (_messages.any((m) => m.id == message.id)) {
                       isDuplicate = true;
                     }
-                    
+
                     // 2. Kiểm tra trùng nội dung và thời gian (chỉ cho tin nhắn đang gửi)
                     if (!isDuplicate) {
                       isDuplicate = _messages.any((m) {
@@ -203,7 +207,12 @@ class ChatProvider with ChangeNotifier {
                           // So sánh nội dung
                           if (m.content == message.content) {
                             // So sánh thời gian (trong khoảng 1 giây)
-                            final timeDiff = m.timestamp?.difference(message.timestamp ?? DateTime.now()).inSeconds.abs() ?? 0;
+                            final timeDiff = m.timestamp
+                                    ?.difference(
+                                        message.timestamp ?? DateTime.now())
+                                    .inSeconds
+                                    .abs() ??
+                                0;
                             return timeDiff < 1;
                           }
                         }
@@ -254,6 +263,59 @@ class ChatProvider with ChangeNotifier {
       }
     } catch (e) {
       print("❌ Lỗi xử lý dữ liệu thông báo: $e");
+    }
+  }
+
+  /// Xử lý dữ liệu contact từ socket
+  void handleContactData(Map<String, dynamic> data) {
+    try {
+      if (data['data'] != null && data['data'] is Map<String, dynamic>) {
+        var innerData = data['data'];
+
+        if (innerData['data'] != null && innerData['data'] is List) {
+          // Chuyển đổi dữ liệu từ socket thành danh sách Contact
+          List<Contact> newContacts = (innerData['data'] as List).map((item) {
+            // Tạo lastMessage từ dữ liệu
+            LastMessage lastMessage = LastMessage(
+              content: item['lastMessage']?['content'] ?? '',
+              createdAt: item['lastMessage']?['createdAt'] ?? DateTime.now().toIso8601String(),
+            );
+
+            // Tạo Contact mới
+            return Contact(
+              id: item['_id'] ?? '',
+              displayName: item['displayName'] ?? 'No Name',
+              avatarImage: item['avatar_image'] ?? UrlImage.defaultContactImage,
+              username: item['username'] ?? '',
+              userId: item['user_id']?.toString() ?? '',
+              type: item['type'] ?? '',
+              lastMessage: lastMessage,
+            );
+          }).toList();
+
+          // Lọc ra các contact mới (chưa tồn tại trong danh sách)
+          List<Contact> uniqueNewContacts = newContacts.where((newContact) {
+            return !_contacts.any((existingContact) => 
+              existingContact.id == newContact.id
+            );
+          }).toList();
+
+          if (uniqueNewContacts.isNotEmpty) {
+            // Thêm các contact mới vào đầu danh sách
+            _contacts.insertAll(0, uniqueNewContacts);
+            
+            // Cập nhật số lượng contact
+            _cartItemCount = _contacts.length;
+            
+            print("👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
+            notifyListeners();
+          } else {
+            print("ℹ️ Không có contact mới để thêm");
+          }
+        }
+      }
+    } catch (e) {
+      print("❌ Lỗi xử lý dữ liệu contact từ socket: $e");
     }
   }
 
@@ -573,7 +635,7 @@ class ChatProvider with ChangeNotifier {
             serverAlbum = [response.data['album']];
           }
         }
-        
+
         updateMessageStatus(localId, MessageStatus.sent,
             serverId: response.data?['_id']?.toString(),
             serverAlbum: serverAlbum);
@@ -650,33 +712,6 @@ class ChatProvider with ChangeNotifier {
     if (_currentChatReceiverId != null && _currentUserId != null) {
       _socketService.leaveChatRoom(_currentChatReceiverId!);
       _currentChatReceiverId = null;
-    }
-  }
-
-  /// Cập nhật danh sách liên hệ
-  Future<void> _refreshContacts() async {
-    if (_currentUserId == null) return;
-
-    try {
-      final ApiResponse response = await _chatRepository.getContacts(
-        GlobalKey<NavigatorState>().currentContext!,
-      );
-
-      if (response.isSuccess) {
-        // Xử lý dữ liệu từ response
-        _contacts = response.data is List
-            ? (response.data as List)
-                .map((item) => Contact.fromJson(item))
-                .toList()
-            : [];
-
-        // Cập nhật số lượng giỏ hàng
-        _cartItemCount = response.total ?? 0;
-
-        notifyListeners();
-      }
-    } catch (e) {
-      print("❌ Lỗi cập nhật danh sách liên hệ: $e");
     }
   }
 
