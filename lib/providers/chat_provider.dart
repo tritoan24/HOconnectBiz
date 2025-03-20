@@ -185,8 +185,21 @@ class ChatProvider with ChangeNotifier {
                   // Kiểm tra xem tin nhắn có thuộc về group hiện tại không
                   if (_currentGroupChatId != null && 
                       message.conversationId == _currentGroupChatId) {
-                    // Thêm vào danh sách nếu chưa có
-                    if (!_messages.any((m) => m.id == message.id)) {
+                    // Kiểm tra xem tin nhắn đã tồn tại chưa (dựa vào ID hoặc nội dung và thời gian)
+                    bool isDuplicate = _messages.any((m) {
+                      if (m.id == message.id) return true;
+                      
+                      // Kiểm tra nội dung và thời gian
+                      if (m.content == message.content) {
+                        final timeDiff = m.timestamp?.difference(message.timestamp ?? DateTime.now()).inSeconds.abs() ?? 0;
+                        return timeDiff < 1;
+                      }
+                      
+                      return false;
+                    });
+
+                    // Chỉ thêm vào danh sách nếu chưa tồn tại
+                    if (!isDuplicate) {
                       _messages.add(message);
                       notifyListeners();
                     }
@@ -458,6 +471,13 @@ class ChatProvider with ChangeNotifier {
     // Tạo ID tạm thời cho tin nhắn
     final localId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
 
+    // Tạo album local paths cho tin nhắn tạm thời
+    List<String> localAlbum = [];
+    if (files != null && files.isNotEmpty) {
+      localAlbum = files.map((file) => 'file://${file.path}').toList();
+      print("🖼 Album local paths: $localAlbum");
+    }
+
     // Tạo tin nhắn tạm thời với trạng thái "đang gửi"
     final tempMessage = Message(
       id: localId,
@@ -503,7 +523,7 @@ class ChatProvider with ChangeNotifier {
           roleCode: 0,
           type: "",
           userId: ""),
-      album: [],
+      album: localAlbum,
     );
 
     // Đặt trạng thái tin nhắn là đang gửi
@@ -522,8 +542,19 @@ class ChatProvider with ChangeNotifier {
       if (response.isSuccess) {
         print("✅ Tin nhắn đã gửi thành công!");
         // Cập nhật trạng thái tin nhắn thành công và ID từ server
+        // Lấy album từ response nếu có
+        List<String> serverAlbum = [];
+        if (response.data != null && response.data['album'] != null) {
+          if (response.data['album'] is List) {
+            serverAlbum = List<String>.from(response.data['album']);
+          } else if (response.data['album'] is String) {
+            serverAlbum = [response.data['album']];
+          }
+        }
+        
         updateMessageStatus(localId, MessageStatus.sent,
-            serverId: response.data?['_id']?.toString());
+            serverId: response.data?['_id']?.toString(),
+            serverAlbum: serverAlbum);
         print("📡 Phản hồi từ server: ${response.toString()}");
       } else {
         print("⚠️ Gửi tin nhắn thất bại: ${response.message}");
@@ -675,7 +706,7 @@ class ChatProvider with ChangeNotifier {
 
   // Cập nhật trạng thái tin nhắn
   void updateMessageStatus(String messageId, MessageStatus status,
-      {String? errorMessage, String? serverId}) {
+      {String? errorMessage, String? serverId, List<String>? serverAlbum}) {
     final index = _messages.indexWhere((m) => m.id == messageId);
     if (index != -1) {
       // Tạo bản sao của tin nhắn với trạng thái đã cập nhật
@@ -684,7 +715,7 @@ class ChatProvider with ChangeNotifier {
         sender: _messages[index].sender,
         receiver: _messages[index].receiver,
         content: _messages[index].content ?? "",
-        album: _messages[index].album ?? [],
+        album: serverAlbum ?? _messages[index].album ?? [],
         read: _messages[index].read ?? false,
         data: _messages[index].data,
         timestamp: _messages[index].timestamp,

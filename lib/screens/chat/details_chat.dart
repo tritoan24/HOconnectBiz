@@ -460,15 +460,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GalleryPhotoViewWrapper(
-                                galleryItems: message.album!,
-                                initialIndex: 0,
+                          // Không mở xem ảnh khi đang gửi
+                          if (message.status != MessageStatus.sending) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => GalleryPhotoViewWrapper(
+                                  galleryItems: message.album!,
+                                  initialIndex: 0,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: Hero(
                           tag: message.album!.first,
@@ -477,34 +480,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Image.network(
-                                  message.album!.first,
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    print("Lỗi tải ảnh: $error");
-                                    return Container(
-                                      width: double.infinity,
-                                      height: 200,
-                                      color: Colors.grey[300],
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.error_outline,
-                                              size: 50, color: Colors.red),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            "Không thể tải ảnh",
-                                            style: TextStyle(
-                                                color: Colors.grey[800]),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
+                                child: _buildImageWidget(message),
                               ),
                               if (message.album!.length > 1)
                                 Container(
@@ -661,5 +637,55 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     } else {
       return "${message.timestamp.day}/${message.timestamp.month}/${message.timestamp.year}";
     }
+  }
+
+  // Phương thức mới để xử lý hiển thị ảnh (local hoặc remote)
+  Widget _buildImageWidget(Message message) {
+    final String imageUrl = message.album!.first;
+
+    // Kiểm tra nếu là đường dẫn local
+    if (imageUrl.startsWith('file://')) {
+      return Image.file(
+        File(imageUrl.replaceFirst('file://', '')),
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print("❌ Lỗi tải ảnh local: $error");
+          return _buildErrorImageWidget();
+        },
+      );
+    } else {
+      // Ảnh từ máy chủ
+      return Image.network(
+        imageUrl,
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print("❌ Lỗi tải ảnh từ server: $error");
+          return _buildErrorImageWidget();
+        },
+      );
+    }
+  }
+
+  Widget _buildErrorImageWidget() {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      color: Colors.grey[300],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 50, color: Colors.red),
+          SizedBox(height: 8),
+          Text(
+            "Không thể tải ảnh",
+            style: TextStyle(color: Colors.grey[800]),
+          ),
+        ],
+      ),
+    );
   }
 }
