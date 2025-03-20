@@ -26,70 +26,95 @@ import '../utils/router/router.name.dart';
 
 class AuthProvider extends BaseProvider {
   final AuthRepository _authRepository = AuthRepository();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final socketService = SocketService();
 
-  // Phương thức lưu token vào shared preferences
   Future<void> _saveToken(String token) async {
     try {
-      // Lưu vào SharedPreferences
+      // Lưu vào FlutterSecureStorage
+      await _storage.write(key: 'auth_token', value: token);
+
+      // Lưu vào SharedPreferences như backup
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
     } catch (e) {
       print('Lỗi lưu token: $e');
+      // Nếu FlutterSecureStorage lỗi, chỉ lưu vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
     }
   }
 
-  // Phương thức lưu userId vào shared preferences
   Future<void> _saveUserId(String id) async {
     try {
-      // Lưu vào SharedPreferences
+      // Lưu vào FlutterSecureStorage
+      await _storage.write(key: 'user_id', value: id);
+
+      // Lưu vào SharedPreferences như backup
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_id', id);
+
       if (kDebugMode) {
         print("🔑 id user: $id");
       }
     } catch (e) {
       print('Lỗi lưu user ID: $e');
+      // Nếu FlutterSecureStorage lỗi, chỉ lưu vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', id);
     }
   }
 
-  // Phương thức đọc token từ shared preferences
   Future<String?> _getToken() async {
     try {
+      // Thử lấy từ FlutterSecureStorage trước
+      final secureToken = await _storage.read(key: 'auth_token');
+      if (secureToken != null) return secureToken;
+
+      // Nếu không có, lấy từ SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString('auth_token');
     } catch (e) {
       print('Lỗi đọc token: $e');
-      return null;
+      // Nếu FlutterSecureStorage lỗi, lấy từ SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
     }
   }
 
-  // Phương thức đọc userId từ shared preferences
   Future<String?> getuserID() async {
     try {
+      // Thử lấy từ FlutterSecureStorage trước
+      final secureId = await _storage.read(key: 'user_id');
+      if (secureId != null) return secureId;
+
+      // Nếu không có, lấy từ SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString('user_id');
     } catch (e) {
-      print('Error getting user ID: $e');
-      return null;
+      print('Lỗi đọc user ID: $e');
+      // Nếu FlutterSecureStorage lỗi, lấy từ SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('user_id');
     }
   }
 
-  // Xóa toàn bộ dữ liệu khi đăng xuất
   Future<void> _clearAllData() async {
     try {
+      // Xóa dữ liệu từ FlutterSecureStorage
+      await _storage.delete(key: 'auth_token');
+      await _storage.delete(key: 'user_id');
+
+      // Xóa dữ liệu từ SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('user_id');
     } catch (e) {
       print('Lỗi xóa dữ liệu: $e');
-    }
-
-    // Xóa dữ liệu của flutter_secure_storage nếu có
-    try {
-      const FlutterSecureStorage().deleteAll();
-    } catch (e) {
-      // Bỏ qua lỗi
+      // Nếu FlutterSecureStorage lỗi, chỉ xóa từ SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_id');
     }
   }
 
@@ -289,32 +314,103 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<void> logout(BuildContext context) async {
-    try {
-      // Xóa token authentication
-      await _clearAllData();
+    await executeApiCall(
+      apiCall: () async {
+        // Xóa dữ liệu từ cả hai storage
+        await _clearAllData();
 
-      socketService.disconnect();
+        // Lấy registerType từ SharedPreferences
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        final String? registerType = prefs.getString('register_type');
 
-      // Đặt lại trạng thái hiện tại
-      clearState();
+        if (registerType == null) {
+          developer.log('Không tìm thấy registerType trong storage',
+              name: 'LOGOUT.ERROR');
+        } else if (registerType == 'gg') {
+          try {
+            developer.log('Bắt đầu quá trình đăng xuất Google',
+                name: 'LOGOUT_GOOGLE');
 
-      // Hiển thị thông báo thành công
-      setSuccess("Đăng xuất thành công!");
+            // Đăng xuất Google
+            final GoogleSignIn googleSignIn = GoogleSignIn(
+              scopes: [
+                'email',
+                'https://www.googleapis.com/auth/userinfo.profile'
+              ],
+              clientId: Platform.isIOS ? AppConfig.clientIdIos : null,
+            );
 
-      // Chuyển hướng về trang đăng nhập
-      if (context.mounted) {
-        context.go(AppRoutes.login);
-      }
+            developer.log('Kiểm tra phiên đăng nhập hiện tại...',
+                name: 'LOGOUT_GOOGLE');
+            // Kiểm tra xem có đang đăng nhập không
+            final currentUser = await googleSignIn.signInSilently();
 
-      // Xóa thông báo trạng thái sau 2 giây
-      Future.delayed(const Duration(seconds: 2), () {
+            if (currentUser != null) {
+              developer.log(
+                  'Tìm thấy người dùng đã đăng nhập: ${currentUser.email}',
+                  name: 'LOGOUT_GOOGLE');
+
+              try {
+                developer.log('Thực hiện disconnect()...',
+                    name: 'LOGOUT_GOOGLE');
+                await googleSignIn.disconnect();
+                developer.log('Đã thực hiện disconnect thành công',
+                    name: 'LOGOUT_GOOGLE');
+              } catch (disconnectError) {
+                developer.log('Lỗi khi disconnect: $disconnectError',
+                    name: 'LOGOUT_GOOGLE_ERROR');
+              }
+
+              try {
+                developer.log('Thực hiện signOut()...', name: 'LOGOUT_GOOGLE');
+                await googleSignIn.signOut();
+                developer.log('Đã thực hiện signOut thành công',
+                    name: 'LOGOUT_GOOGLE');
+              } catch (signOutError) {
+                developer.log('Lỗi khi signOut: $signOutError',
+                    name: 'LOGOUT_GOOGLE_ERROR');
+              }
+
+              // Đảm bảo xóa register_type
+              await prefs.remove('register_type');
+              developer.log('Đã xóa register_type', name: 'LOGOUT_GOOGLE');
+
+              developer.log('Quá trình đăng xuất Google hoàn tất',
+                  name: 'LOGOUT_GOOGLE');
+            } else {
+              developer.log('Không tìm thấy phiên đăng nhập Google hiện tại',
+                  name: 'LOGOUT_GOOGLE');
+            }
+
+            // Kiểm tra lại sau khi đăng xuất
+            final checkUser = await googleSignIn.signInSilently();
+            developer.log(
+                'Kiểm tra sau đăng xuất: ${checkUser == null ? "Đã đăng xuất thành công" : "Vẫn còn đăng nhập"}',
+                name: 'LOGOUT_GOOGLE');
+          } catch (e) {
+            developer.log('Lỗi trong quá trình đăng xuất Google: $e',
+                name: 'LOGOUT_GOOGLE_ERROR', error: e);
+          }
+        } else if (registerType == 'fb') {
+          await FacebookAuth.instance.logOut();
+          developer.log('Đã đăng xuất Facebook',
+              name: 'PROFILE_LOGOUT.FACEBOOK');
+        }
+
+        // Đăng xuất OneSignal
+        OneSignal.logout();
+
+        // Xóa tất cả dữ liệu từ SharedPreferences
+        await prefs.clear();
+
+        return ApiResponse(isSuccess: true, message: "Đăng xuất thành công");
+      },
+      context: context,
+      onSuccess: () {
         clearState();
-      });
-    } catch (e) {
-      // Xử lý nếu có lỗi
-      setError("Có lỗi xảy ra khi đăng xuất: $e");
-      print("Lỗi đăng xuất: $e");
-    }
+        context.go(AppRoutes.login);
+      },
+    );
   }
 
   Future<void> sendEmailOtp(BuildContext context, String email) async {
