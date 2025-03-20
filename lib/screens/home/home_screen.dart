@@ -20,7 +20,8 @@ class TrangChuView extends StatefulWidget {
   State<TrangChuView> createState() => _TrangChuViewState();
 }
 
-class _TrangChuViewState extends State<TrangChuView> with TickerProviderStateMixin {
+class _TrangChuViewState extends State<TrangChuView>
+    with TickerProviderStateMixin {
   int selectedIndex = 0;
   late TabController _tabController;
 
@@ -123,15 +124,11 @@ class _TrangChuViewState extends State<TrangChuView> with TickerProviderStateMix
               TabItem(
                 icon: SvgPicture.asset(
                   "assets/icons/vector_noselect.svg",
-                  width: 28,
-                  height: 28,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
                 activeIcon: SvgPicture.asset(
                   "assets/icons/vector.svg",
-                  width: 28,
-                  height: 28,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
                 title: 'Dạo chợ',
               ),
