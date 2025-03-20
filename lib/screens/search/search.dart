@@ -8,6 +8,7 @@ import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/item_business_search.dart';
 import 'package:clbdoanhnhansg/providers/bo_provider.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
+import 'package:lottie/lottie.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -34,7 +35,6 @@ class _SearchViewState extends State<SearchView>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchInitialData();
-
     });
   }
 
@@ -113,8 +113,9 @@ class _SearchViewState extends State<SearchView>
                     controller: _searchController,
                     textAlign: TextAlign.left,
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 9),
                       hintText: "Tìm kiếm...",
+                      hintStyle: const TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       icon: AppIcons.getSearch(color: Colors.grey),
                     ),
@@ -131,19 +132,20 @@ class _SearchViewState extends State<SearchView>
                     onTap: () {
                       setState(() {
                         _searchController.clear();
-                        _performSearch();
                       });
+                      // Trả về danh sách mặc định
+                      if (_tabController.index == 0) {
+                        // Tab doanh nghiệp - tải lại danh sách mặc định
+                        final boProvider = Provider.of<BoProvider>(context, listen: false);
+                        boProvider.fetchBusinessesSearch(context);
+                      } else {
+                        // Tab bài viết - tải lại danh sách mặc định
+                        final postProvider = Provider.of<PostProvider>(context, listen: false);
+                        postProvider.fetchPosts(context);
+                      }
                     },
                     child: AppIcons.getClear(color: Colors.grey, size: 20),
                   ),
-                // Add search button
-                GestureDetector(
-                  onTap: _performSearch,
-                  child: const Padding(
-                    padding: EdgeInsets.only(left: 8.0),
-                    child: AppIcons.searchRounded,
-                  ),
-                ),
               ],
             ),
           ),
@@ -172,7 +174,14 @@ class _SearchViewState extends State<SearchView>
               builder: (context, provider, child) {
                 // Kiểm tra nếu đang tìm kiếm
                 if (provider.isSearching) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading.json',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                  );
                 }
 
                 // Nếu có lỗi tìm kiếm
@@ -200,9 +209,9 @@ class _SearchViewState extends State<SearchView>
                 }
 
                 return ListView.builder(
-                  itemCount: provider.searchResults.length,
+                  itemCount: provider.boListOut.length,
                   itemBuilder: (context, index) {
-                    final business = provider.searchResults[index];
+                    final business = provider.boListOut[index];
                     return BusinessSearchItem(
                       business: business,
                     );
@@ -215,7 +224,14 @@ class _SearchViewState extends State<SearchView>
             Consumer<PostProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading.json',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                  );
                 }
 
                 // Hiển thị kết quả tìm kiếm nếu có

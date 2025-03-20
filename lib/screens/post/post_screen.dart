@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:clbdoanhnhansg/screens/post/widget/advertising_article/advertising_article.dart';
 import 'package:clbdoanhnhansg/screens/post/widget/business_opportunity/business_opportunity.dart';
+import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ class _PostScreenState extends State<PostScreen> {
     return FormBuilder(
       key: _formKey,
       child: Scaffold(
+        backgroundColor: AppColor.backgroundColorApp,
         appBar: AppBar(
           centerTitle: false,
           leading: IconButton(
@@ -254,4 +256,3 @@ class _PostScreenState extends State<PostScreen> {
     context.read<PostProvider>().createPostAD(post, context, files: files);
   }
 }
-
