@@ -44,7 +44,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       currentUserId = (await authProvider.getuserID())!;
 
       // Kết nối socket cho danh sách liên hệ
-      await chatProvider.initializeContactSocket(context);
+      await chatProvider.initializeContactSocket(context, currentUserId);
 
       // Tải danh sách liên hệ
       chatProvider.getContacts(context);
