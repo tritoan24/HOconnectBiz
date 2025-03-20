@@ -1,13 +1,13 @@
 import 'package:clbdoanhnhansg/core/network/api_endpoints.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 import '../models/apiresponse.dart';
 import '../core/network/api_client.dart';
+import '../providers/send_error_log.dart';
 
 class AuthRepository {
   final ApiClient _apiClient = ApiClient();
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   //🔹 **Đăng Nhập**
   Future<ApiResponse> login(
@@ -41,8 +41,17 @@ class AuthRepository {
   // 🔹 **Đăng xuất**
   Future<void> logout() async {
     try {
-      await _storage.delete(key: 'auth_token'); // Xóa token khỏi storage
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_id');
+      developer.log('Đã xóa dữ liệu đăng nhập', name: 'AUTH_REPO');
     } catch (e) {
+      developer.log('Lỗi khi đăng xuất: $e', name: 'AUTH_REPO', error: e);
+      sendErrorLog(
+        level: 2,
+        message: "Lỗi khi đăng xuất",
+        additionalInfo: e.toString(),
+      );
       throw Exception("Lỗi khi đăng xuất: ${e.toString()}");
     }
   }

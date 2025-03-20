@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class ApiResponse<T> {
   final String? token;
   final String? message;
@@ -16,14 +18,73 @@ class ApiResponse<T> {
   });
 
   factory ApiResponse.fromJson(Map<String, dynamic> json) {
-    return ApiResponse(
-      token: json['token'],
-      message: json['message'],
-      isSuccess: json['status'] == "success",
-      data: json['data'],
-      total: json['total'],
-      idUser: json['userID'] ?? '',
-    );
+    try {
+      // Xử lý trường hợp response không có định dạng mong đợi
+      if (json == null) {
+        return ApiResponse(
+          isSuccess: false,
+          message: "Response không hợp lệ",
+          data: null,
+        );
+      }
+      
+      // Kiểm tra nếu response có trường status
+      final bool success = json.containsKey('status') 
+          ? json['status'] == 'success' || json['status'] == true || json['status'] == 1
+          : false;
+      
+      // Kiểm tra thông điệp lỗi
+      String? message;
+      if (json.containsKey('message')) {
+        message = json['message']?.toString();
+      } else if (json.containsKey('error')) {
+        message = json['error']?.toString();
+      }
+      
+      // Xử lý dữ liệu trả về
+      dynamic data;
+      if (json.containsKey('data')) {
+        data = json['data'];
+      } else if (success && !json.containsKey('data')) {
+        // Trường hợp không có trường data nhưng thành công, lấy tất cả trừ status và message
+        final tempJson = Map<String, dynamic>.from(json);
+        tempJson.remove('status');
+        tempJson.remove('message');
+        tempJson.remove('total');
+        data = tempJson;
+      }
+      
+      // Xử lý total nếu có
+      int? total;
+      if (json.containsKey('total') && json['total'] != null) {
+        total = int.tryParse(json['total'].toString()) ?? 0;
+      }
+      
+      // Lấy token và userID từ response nếu có
+      String? token = json['token'];
+      String? idUser = json['userID'] ?? json['idUser'];
+      
+      if (success && kDebugMode) {
+        print("🔑 Đọc từ API Response - Token: ${token != null ? 'Có token' : 'Không có token'}");
+        print("🔑 Đọc từ API Response - UserID: ${idUser != null ? idUser : 'Không có userID'}");
+      }
+      
+      return ApiResponse(
+        isSuccess: success,
+        message: message,
+        data: data,
+        total: total,
+        token: token,
+        idUser: idUser,
+      );
+    } catch (e) {
+      print("Lỗi khi xử lý API response: $e");
+      return ApiResponse(
+        isSuccess: false,
+        message: "Lỗi xử lý dữ liệu: ${e.toString()}",
+        data: null,
+      );
+    }
   }
 
   static ApiResponse<T> success<T>(T data,

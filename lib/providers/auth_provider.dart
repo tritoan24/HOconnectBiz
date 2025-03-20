@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:async';
 
 import 'package:clbdoanhnhansg/config/app_config.dart';
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
@@ -23,54 +24,90 @@ import '../models/apiresponse.dart';
 import '../repository/auth_repository.dart';
 import '../utils/router/router.dart';
 import '../utils/router/router.name.dart';
+import '../providers/send_error_log.dart';
 
 class AuthProvider extends BaseProvider {
   final AuthRepository _authRepository = AuthRepository();
   final socketService = SocketService();
 
-  // Phương thức lưu token vào shared preferences
+  // Phương thức lưu token vào SharedPreferences
   Future<void> _saveToken(String token) async {
     try {
-      // Lưu vào SharedPreferences
+      // Chỉ sử dụng SharedPreferences, không dùng flutter_secure_storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
+      if (kDebugMode) {
+        print("💾 Đã lưu token thành công vào SharedPreferences");
+      }
     } catch (e) {
       print('Lỗi lưu token: $e');
+      sendErrorLog(
+        level: 2,
+        message: "Lỗi khi lưu token",
+        additionalInfo: e.toString(),
+      );
+      // Set error để hiển thị cho người dùng
+      setError("Không thể lưu thông tin đăng nhập: $e");
     }
   }
 
-  // Phương thức lưu userId vào shared preferences
+  // Phương thức lưu userId vào SharedPreferences
   Future<void> _saveUserId(String id) async {
     try {
-      // Lưu vào SharedPreferences
+      // Chỉ sử dụng SharedPreferences, không dùng flutter_secure_storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_id', id);
       if (kDebugMode) {
-        print("🔑 id user: $id");
+        print("🔑 Đã lưu user ID: $id vào SharedPreferences");
       }
     } catch (e) {
       print('Lỗi lưu user ID: $e');
+      sendErrorLog(
+        level: 2,
+        message: "Lỗi khi lưu userId",
+        additionalInfo: e.toString(),
+      );
+      // Set error để hiển thị cho người dùng
+      setError("Không thể lưu ID người dùng: $e");
     }
   }
 
-  // Phương thức đọc token từ shared preferences
+  // Phương thức đọc token từ SharedPreferences
   Future<String?> _getToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('auth_token');
+      final token = prefs.getString('auth_token');
+      if (kDebugMode) {
+        print("🔍 Đọc token từ SharedPreferences: ${token != null ? 'Thành công' : 'Không tìm thấy'}");
+      }
+      return token;
     } catch (e) {
       print('Lỗi đọc token: $e');
+      sendErrorLog(
+        level: 1,
+        message: "Lỗi khi đọc token",
+        additionalInfo: e.toString(),
+      );
       return null;
     }
   }
 
-  // Phương thức đọc userId từ shared preferences
+  // Phương thức đọc userId từ SharedPreferences
   Future<String?> getuserID() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('user_id');
+      final userId = prefs.getString('user_id');
+      if (kDebugMode) {
+        print("🔍 Đọc user ID từ SharedPreferences: ${userId != null ? userId : 'Không tìm thấy'}");
+      }
+      return userId;
     } catch (e) {
-      print('Error getting user ID: $e');
+      print('Lỗi đọc user ID: $e');
+      sendErrorLog(
+        level: 1,
+        message: "Lỗi khi đọc userId",
+        additionalInfo: e.toString(),
+      );
       return null;
     }
   }
@@ -81,15 +118,38 @@ class AuthProvider extends BaseProvider {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('user_id');
+      await prefs.remove('register_type');
+      
+      if (kDebugMode) {
+        print("🗑️ Đã xóa dữ liệu người dùng từ SharedPreferences");
+      }
     } catch (e) {
-      print('Lỗi xóa dữ liệu: $e');
+      print('Lỗi xóa dữ liệu SharedPreferences: $e');
+      sendErrorLog(
+        level: 1,
+        message: "Lỗi khi xóa dữ liệu SharedPreferences",
+        additionalInfo: e.toString(),
+      );
     }
     
-    // Xóa dữ liệu của flutter_secure_storage nếu có
+    // Cố gắng xóa flutter_secure_storage nếu có dữ liệu cũ
     try {
-      const FlutterSecureStorage().deleteAll();
+      final secureStorage = FlutterSecureStorage(
+        aOptions: const AndroidOptions(
+          encryptedSharedPreferences: true,
+          resetOnError: true,
+        )
+      );
+      await secureStorage.deleteAll();
+      
+      if (kDebugMode) {
+        print("🗑️ Đã xóa dữ liệu người dùng từ SecureStorage");
+      }
     } catch (e) {
-      // Bỏ qua lỗi
+      // Bỏ qua lỗi, chỉ log
+      if (kDebugMode) {
+        print("⚠️ Không thể xóa dữ liệu từ SecureStorage: $e");
+      }
     }
   }
 
@@ -99,61 +159,67 @@ class AuthProvider extends BaseProvider {
       setLoading(true);
       
       final token = await _getToken();
-
-      if (token != null && token.isNotEmpty) {
-        // Get user ID for socket connection
-        final userId = await getuserID();
-
-        if (userId != null) {
-          // Connect to socket if we have a user ID
-          socketService.connect(userId);
-        }
-
-        if (!context.mounted) return;
-
-        // Tạo danh sách các Future để theo dõi
-        final futures = <Future>[];
-
-        // Thêm các tác vụ fetch dữ liệu vào danh sách
-        futures.add(Provider.of<UserProvider>(context, listen: false)
-            .fetchUser(context));
-        futures.add(Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context));
-
-        final postProvider =
-            Provider.of<PostProvider>(context, listen: false);
-        final rankProvider =
-            Provider.of<RankProvider>(context, listen: false);
-
-        futures.add(rankProvider.fetchRanksRevenue(context));
-        futures.add(rankProvider.fetchRankBusiness(context));
-
-        futures.add(postProvider.fetchPostsFeatured(context));
-        futures.add(postProvider.fetchPostsByUser(context));
-
-        // Chờ tất cả các tác vụ hoàn thành
-        await Future.wait(futures);
-
-        // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
+      
+      if (kDebugMode) {
+        print("🔍 Kiểm tra trạng thái đăng nhập: ${token != null ? 'Có token' : 'Không có token'}");
+      }
+      
+      // Nếu không có token, người dùng chưa đăng nhập
+      if (token == null) {
+        setLoading(false);
+        return;
+      }
+      
+      // Nếu có token, kiểm tra người dùng
+      final userId = await getuserID();
+      if (userId != null) {
+        // Kết nối socket nếu có user ID
+        socketService.connect(userId);
+      }
+      
+      if (!context.mounted) return;
+      
+      try {
+        // Tải thông tin người dùng
+        await Provider.of<UserProvider>(context, listen: false).fetchUser(context);
+        
         if (context.mounted) {
-          // Xóa lỗi trước khi chuyển màn hình
-          clearState();
-          appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+          // Chuyển hướng đến trang chủ nếu token hợp lệ
+          context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
         }
-      } else {
-        Future.microtask(() {
-          clearState();
-          appRouter.go(AppRoutes.login);
-        });
+      } catch (e) {
+        // Nếu có lỗi khi fetch user data (token không hợp lệ), xử lý đăng xuất
+        if (kDebugMode) {
+          print("❌ Lỗi khi kiểm tra trạng thái đăng nhập: $e");
+        }
+        
+        // Log lỗi
+        sendErrorLog(
+          level: 1,
+          message: "Lỗi khi kiểm tra đăng nhập",
+          additionalInfo: e.toString(),
+        );
+        
+        // Xóa token và dữ liệu người dùng
+        await _clearAllData();
       }
-    } catch (e) {
-      setError("Lỗi điều hướng: $e");
-      // Nếu có lỗi, chuyển về trang login
-      if (context.mounted) {
-        appRouter.go(AppRoutes.login);
+    } catch (e, stackTrace) {
+      // Xử lý lỗi
+      if (kDebugMode) {
+        print("❌ Lỗi trong checkLoginStatus: $e");
       }
+      
+      // Log lỗi
+      sendErrorLog(
+        level: 3, 
+        message: "Unhandled Exception in AuthProvider: checkLoginStatus",
+        additionalInfo: "${e.toString()}\n${stackTrace.toString()}",
+      );
+      
+      // Xóa token để tránh tình trạng lỗi lặp lại
+      await _clearAllData();
     } finally {
-      // Kết thúc loading trong mọi trường hợp
+      // Kết thúc loading
       setLoading(false);
     }
   }
@@ -581,73 +647,238 @@ class AuthProvider extends BaseProvider {
         if (!loadingHidden) {
           LoadingOverlay.hide();
           loadingHidden = true;
+          if (kDebugMode) {
+            print("✅ Đã ẩn loading overlay");
+          }
+        }
+      }
+      
+      // Log để gỡ lỗi
+      if (kDebugMode) {
+        print("🔐 Bắt đầu đăng nhập social với ${registerType == 'gg' ? 'Google' : 'Facebook'}");
+        print("📧 Email: $identity");
+        print("👤 Tên: $displayName");
+        print("🖼️ Avatar: ${avatarImage.substring(0, min(30, avatarImage.length))}...");
+      }
+
+      // Thêm timeout để tránh treo vô hạn
+      final apiCallCompleter = Completer<ApiResponse>();
+      
+      // Set timeout cho API call
+      Timer(const Duration(seconds: 30), () {
+        if (!apiCallCompleter.isCompleted) {
+          apiCallCompleter.completeError(
+            TimeoutException("Đăng nhập mạng xã hội quá thời gian chờ (30s)")
+          );
+          
+          if (kDebugMode) {
+            print("⏱️ Timeout khi đăng nhập social");
+          }
+          
+          sendErrorLog(
+            level: 2,
+            message: "Timeout khi đăng nhập social",
+            additionalInfo: "identity: $identity, registerType: $registerType",
+          );
+          
+          // Đảm bảo ẩn loading và hiển thị thông báo cho người dùng
+          hideLoadingOnce();
+          setError("Đăng nhập mạng xã hội thất bại, vui lòng thử lại sau");
+        }
+      });
+      
+      // Thực hiện API call trong try-catch riêng
+      try {
+        final response = await _authRepository.loginSocial(
+            identity, password, displayName, registerType, avatarImage, context);
+        if (!apiCallCompleter.isCompleted) {
+          apiCallCompleter.complete(response);
+        }
+      } catch (apiError) {
+        if (!apiCallCompleter.isCompleted) {
+          apiCallCompleter.completeError(apiError);
         }
       }
 
       await executeApiCall(
-        apiCall: () => _authRepository.loginSocial(identity, password,
-            displayName, registerType, avatarImage, context),
+        apiCall: () => apiCallCompleter.future,
         context: context,
         onSuccess: () async {
+          if (kDebugMode) {
+            print("✅ Đăng nhập social thành công");
+          }
+          
+          // Kiểm tra user có tồn tại không
+          if (user == null) {
+            if (kDebugMode) {
+              print("❌ Lỗi: user là null sau khi đăng nhập thành công");
+            }
+            
+            hideLoadingOnce();
+            sendErrorLog(
+              level: 2,
+              message: "Đăng nhập social thành công nhưng user là null",
+              additionalInfo: "registerType: $registerType, identity: $identity",
+            );
+            
+            setError("Có lỗi khi nhận thông tin người dùng, vui lòng thử lại");
+            return;
+          }
+          
+          // Kiểm tra token và userId có tồn tại không
+          if (user!.token == null || user!.idUser == null) {
+            if (kDebugMode) {
+              print("❌ Lỗi: token hoặc idUser là null");
+              print("Token: ${user!.token}");
+              print("IdUser: ${user!.idUser}");
+            }
+            
+            hideLoadingOnce();
+            sendErrorLog(
+              level: 2,
+              message: "Đăng nhập social thành công nhưng token hoặc idUser là null",
+              additionalInfo: "registerType: $registerType, identity: $identity, token: ${user!.token}, idUser: ${user!.idUser}",
+            );
+            
+            setError("Thiếu thông tin xác thực, vui lòng thử lại");
+            return;
+          }
+          
           final token = user!.token!;
           final idUser = user!.idUser!;
 
-          if (kDebugMode) {
-            print("Token: $token");
-            print("IdUser: $idUser");
-            print("Password: $password");
-          }
+          try {
+            if (kDebugMode) {
+              print("🔑 Lưu token và userId");
+            }
+            
+            await _saveToken(token);
+            await _saveUserId(idUser);
 
-          await _saveToken(token);
-          await _saveUserId(idUser);
+            // Liên kết với OneSignal và Socket
+            if (kDebugMode) {
+              print("🔔 Đăng ký OneSignal và Socket");
+            }
+            
+            OneSignal.login(identity);
+            socketService.connect(idUser);
+            
+            if (kDebugMode) {
+              print("🔄 Bắt đầu tải dữ liệu người dùng");
+            }
 
-          // Tạo danh sách các Future để theo dõi
-          final futures = <Future>[];
-          if (!context.mounted) return;
-          // Thêm các tác vụ fetch dữ liệu vào danh sách
-          futures.add(Provider.of<UserProvider>(context, listen: false)
-              .fetchUser(context));
-          futures.add(Provider.of<ProductProvider>(context, listen: false)
-              .getListProduct(context));
+            // Tạo danh sách các Future để theo dõi
+            final futures = <Future>[];
+            if (!context.mounted) {
+              hideLoadingOnce();
+              if (kDebugMode) {
+                print("⚠️ Context không còn hợp lệ sau khi đăng nhập thành công");
+              }
+              return;
+            }
+            
+            try {
+              // Chỉ tải dữ liệu user và ẩn loading ngay
+              await Provider.of<UserProvider>(context, listen: false)
+                  .fetchUser(context)
+                  .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () {
+                  if (kDebugMode) {
+                    print("⏱️ Timeout khi tải dữ liệu người dùng");
+                  }
+                  return null;
+                },
+              );
+              
+              // Ẩn loading overlay sau khi tải dữ liệu người dùng, không đợi các dữ liệu khác
+              hideLoadingOnce();
+              
+              if (kDebugMode) {
+                print("🔄 Tải các dữ liệu khác trong nền");
+              }
+              
+              // Tải các dữ liệu khác trong nền, không đợi
+              Provider.of<ProductProvider>(context, listen: false)
+                  .getListProduct(context);
+                  
+              final postProvider =
+                  Provider.of<PostProvider>(context, listen: false);
+              final rankProvider =
+                  Provider.of<RankProvider>(context, listen: false);
 
-          final postProvider =
-              Provider.of<PostProvider>(context, listen: false);
-          final rankProvider =
-              Provider.of<RankProvider>(context, listen: false);
+              rankProvider.fetchRanksRevenue(context);
+              rankProvider.fetchRankBusiness(context);
+              postProvider.fetchPostsFeatured(context);
+              postProvider.fetchPostsByUser(context);
+            } catch (fetchError) {
+              if (kDebugMode) {
+                print("❌ Lỗi khi tải dữ liệu: $fetchError");
+              }
+              
+              // Vẫn ẩn loading nếu có lỗi
+              hideLoadingOnce();
+            }
 
-          futures.add(rankProvider.fetchRanksRevenue(context));
-          futures.add(rankProvider.fetchRankBusiness(context));
-
-          futures.add(postProvider.fetchPostsFeatured(context));
-          futures.add(postProvider.fetchPostsByUser(context));
-
-          // Chờ tất cả các tác vụ hoàn thành
-          await Future.wait(futures);
-
-          // Connect to socket
-          OneSignal.login(identity);
-          socketService.connect(idUser);
-
-          if (context.mounted) {
-            // Ẩn loading overlay
+            if (context.mounted) {
+              if (kDebugMode) {
+                print("🚀 Chuyển hướng về trang chủ");
+              }
+              context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+            } else {
+              if (kDebugMode) {
+                print("⚠️ Context không còn hợp lệ khi chuyển màn hình");
+              }
+            }
+          } catch (postLoginError) {
             hideLoadingOnce();
-            context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
-          } else {
-            // Ẩn loading overlay nếu context không còn hợp lệ
-            hideLoadingOnce();
-            developer.log('Context không còn hợp lệ', name: 'FB_LOGIN.ERROR');
+            if (kDebugMode) {
+              print("❌ Lỗi sau khi đăng nhập: $postLoginError");
+            }
+            
+            sendErrorLog(
+              level: 2,
+              message: "Lỗi sau khi đăng nhập social thành công",
+              additionalInfo: postLoginError.toString(),
+            );
+            
+            // Vẫn chuyển hướng về trang chủ nếu có token
+            if (context.mounted) {
+              context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+            }
           }
         },
       );
-
-      // Nếu có lỗi, đảm bảo ẩn loading
+      
+      // Xử lý nếu API call thất bại hoặc có lỗi
       if (errorMessage != null) {
         hideLoadingOnce();
+        
+        if (kDebugMode) {
+          print("❌ Lỗi đăng nhập social: $errorMessage");
+        }
+        
+        sendErrorLog(
+          level: 2,
+          message: "Lỗi khi đăng nhập social",
+          additionalInfo: errorMessage.toString(),
+        );
       }
     } catch (e) {
       // Đảm bảo ẩn loading trong mọi trường hợp lỗi
       LoadingOverlay.hide();
-      debugPrint("Lỗi đăng nhập social: $e");
+      
+      if (kDebugMode) {
+        print("❌ Lỗi ngoại lệ khi đăng nhập social: $e");
+      }
+      
+      sendErrorLog(
+        level: 3,
+        message: "Unhandled Exception in loginSocial",
+        additionalInfo: e.toString(),
+      );
+      
+      setError("Đăng nhập mạng xã hội thất bại: ${e.toString()}");
     }
   }
 }

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http_parser/http_parser.dart';
 import '../../providers/send_error_log.dart';
 import 'api_endpoints.dart';
@@ -11,7 +11,6 @@ import 'package:clbdoanhnhansg/widgets/alert_widget_noti.dart';
 
 class ApiClient {
   static final String baseUrl = ApiEndpoints.baseUrl;
-  final storage = FlutterSecureStorage();
 
   void _showErrorSnackbar(BuildContext context, String message) {
     CustomAlertNoti.show(
@@ -30,7 +29,10 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    String? token = await storage.read(key: 'auth_token');
+    
+    // Sử dụng SharedPreferences thay vì FlutterSecureStorage
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
 
     final headers = {
       'Accept': 'application/json',
@@ -153,7 +155,25 @@ class ApiClient {
             break;
           case 'GET':
             try {
-              response = await http.get(Uri.parse(url), headers: headers);
+              final client = http.Client();
+              var request = http.Request('GET', Uri.parse(url));
+              request.headers.addAll(headers);
+              request.followRedirects = false;
+              
+              final streamedResponse = await client.send(request);
+              if (streamedResponse.statusCode == 301 || streamedResponse.statusCode == 302) {
+                // Xử lý redirect thủ công
+                final location = streamedResponse.headers['location'];
+                if (location != null) {
+                  final redirectResponse = await http.get(Uri.parse(location), headers: headers);
+                  response = redirectResponse;
+                } else {
+                  throw Exception("Redirect URL không hợp lệ");
+                }
+              } else {
+                response = await http.Response.fromStream(streamedResponse);
+              }
+              client.close();
             } catch (e, stack) {
               sendErrorLog(
                 level: 2,
@@ -342,7 +362,10 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    String? token = await storage.read(key: 'auth_token');
+    
+    // Sử dụng SharedPreferences để lấy token
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
 
     final headers = {
       'Accept': 'application/json',
@@ -392,7 +415,10 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    String? token = await storage.read(key: 'auth_token');
+    
+    // Sử dụng SharedPreferences để lấy token
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
 
     final headers = {
       'Accept': 'application/json',
