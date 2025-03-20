@@ -21,6 +21,7 @@ class ChatProvider with ChangeNotifier {
   final SocketService _socketService = SocketService();
   bool _isLoading = false;
   bool _isLoadingMore = false;
+  bool _isLoadingMessages = false;
   List<Message> _messages = [];
   List<Contact> _contacts = [];
   String? _currentUserId;
@@ -36,6 +37,7 @@ class ChatProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
+  bool get isLoadingMessages => _isLoadingMessages;
   bool get hasMoreMessages => _hasMoreMessages;
   List<Message> get messages => _messages;
   List<Contact> get contacts => _contacts;
@@ -203,6 +205,8 @@ class ChatProvider with ChangeNotifier {
       _hasMoreMessages = true;
       _messages = [];
       _totalMessageCount = 0; // Reset biến đếm khi tải mới
+      _isLoadingMessages = true;
+      notifyListeners();
     }
 
     if (!_hasMoreMessages || _isLoadingMore) return;
@@ -256,7 +260,6 @@ class ChatProvider with ChangeNotifier {
         }
 
         _currentPage++;
-        notifyListeners();
       } else {
         print("❌ Lỗi khi tải tin nhắn: ${response.message}");
         _hasMoreMessages = false;
@@ -266,6 +269,7 @@ class ChatProvider with ChangeNotifier {
       _hasMoreMessages = false;
     } finally {
       _isLoadingMore = false;
+      _isLoadingMessages = false;
       notifyListeners();
     }
   }
@@ -289,11 +293,15 @@ class ChatProvider with ChangeNotifier {
     _currentPage = 1;
     _hasMoreMessages = true;
     _messages = [];
+    _isLoadingMessages = false;
+    _isLoadingMore = false;
   }
 
   /// **Xóa danh sách tin nhắn khi cần reset**
   void clearState() {
     _messages = [];
+    _isLoadingMessages = false;
+    _isLoadingMore = false;
     notifyListeners();
   }
 
