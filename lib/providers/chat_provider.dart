@@ -185,23 +185,37 @@ class ChatProvider with ChangeNotifier {
                   // Kiểm tra xem tin nhắn có thuộc về group hiện tại không
                   if (_currentGroupChatId != null && 
                       message.conversationId == _currentGroupChatId) {
-                    // Kiểm tra xem tin nhắn đã tồn tại chưa (dựa vào ID hoặc nội dung và thời gian)
-                    bool isDuplicate = _messages.any((m) {
-                      if (m.id == message.id) return true;
-                      
-                      // Kiểm tra nội dung và thời gian
-                      if (m.content == message.content) {
-                        final timeDiff = m.timestamp?.difference(message.timestamp ?? DateTime.now()).inSeconds.abs() ?? 0;
-                        return timeDiff < 1;
-                      }
-                      
-                      return false;
-                    });
+                    // Kiểm tra xem tin nhắn đã tồn tại chưa
+                    bool isDuplicate = false;
+                    
+                    // 1. Kiểm tra trùng ID
+                    if (_messages.any((m) => m.id == message.id)) {
+                      isDuplicate = true;
+                    }
+                    
+                    // 2. Kiểm tra trùng nội dung và thời gian (chỉ cho tin nhắn đang gửi)
+                    if (!isDuplicate) {
+                      isDuplicate = _messages.any((m) {
+                        // Chỉ kiểm tra trùng với tin nhắn đang gửi
+                        if (m.status == MessageStatus.sending) {
+                          // So sánh nội dung
+                          if (m.content == message.content) {
+                            // So sánh thời gian (trong khoảng 1 giây)
+                            final timeDiff = m.timestamp?.difference(message.timestamp ?? DateTime.now()).inSeconds.abs() ?? 0;
+                            return timeDiff < 1;
+                          }
+                        }
+                        return false;
+                      });
+                    }
 
                     // Chỉ thêm vào danh sách nếu chưa tồn tại
                     if (!isDuplicate) {
+                      print("📥 Thêm tin nhắn mới vào group: ${message.id}");
                       _messages.add(message);
                       notifyListeners();
+                    } else {
+                      print("⚠️ Bỏ qua tin nhắn trùng lặp: ${message.id}");
                     }
                   }
                 }
