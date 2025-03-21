@@ -27,12 +27,14 @@ class ApiResponse<T> {
           data: null,
         );
       }
-      
+
       // Kiểm tra nếu response có trường status
-      final bool success = json.containsKey('status') 
-          ? json['status'] == 'success' || json['status'] == true || json['status'] == 1
+      final bool success = json.containsKey('status')
+          ? json['status'] == 'success' ||
+              json['status'] == true ||
+              json['status'] == 1
           : false;
-      
+
       // Kiểm tra thông điệp lỗi
       String? message;
       if (json.containsKey('message')) {
@@ -40,7 +42,7 @@ class ApiResponse<T> {
       } else if (json.containsKey('error')) {
         message = json['error']?.toString();
       }
-      
+
       // Xử lý dữ liệu trả về
       dynamic data;
       if (json.containsKey('data')) {
@@ -53,22 +55,24 @@ class ApiResponse<T> {
         tempJson.remove('total');
         data = tempJson;
       }
-      
+
       // Xử lý total nếu có
       int? total;
       if (json.containsKey('total') && json['total'] != null) {
         total = int.tryParse(json['total'].toString()) ?? 0;
       }
-      
+
       // Lấy token và userID từ response nếu có
       String? token = json['token'];
       String? idUser = json['userID'] ?? json['idUser'];
-      
+
       if (success && kDebugMode) {
-        print("🔑 Đọc từ API Response - Token: ${token != null ? 'Có token' : 'Không có token'}");
-        print("🔑 Đọc từ API Response - UserID: ${idUser != null ? idUser : 'Không có userID'}");
+        print(
+            "🔑 Đọc từ API Response - Token: ${token != null ? 'Có token' : 'Không có token'}");
+        print(
+            "🔑 Đọc từ API Response - UserID: ${idUser != null ? idUser : 'Không có userID'}");
       }
-      
+
       return ApiResponse(
         isSuccess: success,
         message: message,
