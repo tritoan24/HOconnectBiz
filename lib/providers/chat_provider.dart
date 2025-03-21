@@ -278,39 +278,61 @@ class ChatProvider with ChangeNotifier {
             // Tạo lastMessage từ dữ liệu
             LastMessage lastMessage = LastMessage(
               content: item['lastMessage']?['content'] ?? '',
-              createdAt: item['lastMessage']?['createdAt'] ?? DateTime.now().toIso8601String(),
+              createdAt: item['lastMessage']?['createdAt'] ??
+                  DateTime.now().toIso8601String(),
             );
 
-            // Tạo Contact mới
-            return Contact(
-              id: item['_id'] ?? '',
-              displayName: item['displayName'] ?? 'No Name',
-              avatarImage: item['avatar_image'] ?? UrlImage.defaultContactImage,
-              username: item['username'] ?? '',
-              userId: item['user_id']?.toString() ?? '',
-              type: item['type'] ?? '',
-              lastMessage: lastMessage,
-            );
+            // Lấy thông tin từ sender
+            final sender = item['sender'] as Map<String, dynamic>;
+            final senderId = sender['_id'] ?? '';
+
+            // Kiểm tra xem sender đã tồn tại trong danh sách contacts chưa
+            int existingIndex = _contacts.indexWhere((contact) => contact.id == senderId);
+
+            if (existingIndex != -1) {
+              // Nếu sender đã tồn tại, chỉ cập nhật tin nhắn cuối
+              _contacts[existingIndex] = Contact(
+                id: _contacts[existingIndex].id,
+                displayName: _contacts[existingIndex].displayName,
+                avatarImage: _contacts[existingIndex].avatarImage,
+                username: _contacts[existingIndex].username,
+                userId: _contacts[existingIndex].userId,
+                type: _contacts[existingIndex].type,
+                lastMessage: lastMessage,
+              );
+              print("🔄 Đã cập nhật tin nhắn cuối cho sender: ${_contacts[existingIndex].displayName}");
+              return _contacts[existingIndex];
+            } else {
+              // Nếu là sender mới, tạo contact mới
+              return Contact(
+                id: senderId,
+                displayName: sender['displayName'] ?? 'No Name',
+                avatarImage: sender['avatar_image'] ?? UrlImage.defaultContactImage,
+                username: sender['username'] ?? '',
+                userId: sender['user_id']?.toString() ?? '',
+                type: sender['type'] ?? '',
+                lastMessage: lastMessage,
+              );
+            }
           }).toList();
 
-          // Lọc ra các contact mới (chưa tồn tại trong danh sách)
+          // Lọc ra các contact thực sự mới (chưa tồn tại trong _contacts)
           List<Contact> uniqueNewContacts = newContacts.where((newContact) {
-            return !_contacts.any((existingContact) => 
-              existingContact.id == newContact.id
-            );
+            return !_contacts.any((existingContact) => existingContact.id == newContact.id);
           }).toList();
 
           if (uniqueNewContacts.isNotEmpty) {
             // Thêm các contact mới vào đầu danh sách
             _contacts.insertAll(0, uniqueNewContacts);
-            
+
             // Cập nhật số lượng contact
             _cartItemCount = _contacts.length;
-            
+
             print("👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
             notifyListeners();
           } else {
-            print("ℹ️ Không có contact mới để thêm");
+            print("ℹ️ Chỉ cập nhật tin nhắn cuối, không có contact mới");
+            notifyListeners();
           }
         }
       }
