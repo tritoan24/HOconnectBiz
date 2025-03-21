@@ -34,6 +34,7 @@ class ChatProvider with ChangeNotifier {
   int _totalMessageCount = 0;
   static const int _limit = 10;
   final _storage = const FlutterSecureStorage();
+  String company_name = '';
 
   ChatProvider();
 
@@ -287,7 +288,8 @@ class ChatProvider with ChangeNotifier {
             final senderId = sender['_id'] ?? '';
 
             // Kiểm tra xem sender đã tồn tại trong danh sách contacts chưa
-            int existingIndex = _contacts.indexWhere((contact) => contact.id == senderId);
+            int existingIndex =
+                _contacts.indexWhere((contact) => contact.id == senderId);
 
             if (existingIndex != -1) {
               // Nếu sender đã tồn tại, chỉ cập nhật tin nhắn cuối
@@ -300,14 +302,16 @@ class ChatProvider with ChangeNotifier {
                 type: _contacts[existingIndex].type,
                 lastMessage: lastMessage,
               );
-              print("🔄 Đã cập nhật tin nhắn cuối cho sender: ${_contacts[existingIndex].displayName}");
+              print(
+                  "🔄 Đã cập nhật tin nhắn cuối cho sender: ${_contacts[existingIndex].displayName}");
               return _contacts[existingIndex];
             } else {
               // Nếu là sender mới, tạo contact mới
               return Contact(
                 id: senderId,
                 displayName: sender['displayName'] ?? 'No Name',
-                avatarImage: sender['avatar_image'] ?? UrlImage.defaultContactImage,
+                avatarImage:
+                    sender['avatar_image'] ?? UrlImage.defaultContactImage,
                 username: sender['username'] ?? '',
                 userId: sender['user_id']?.toString() ?? '',
                 type: sender['type'] ?? '',
@@ -318,7 +322,8 @@ class ChatProvider with ChangeNotifier {
 
           // Lọc ra các contact thực sự mới (chưa tồn tại trong _contacts)
           List<Contact> uniqueNewContacts = newContacts.where((newContact) {
-            return !_contacts.any((existingContact) => existingContact.id == newContact.id);
+            return !_contacts
+                .any((existingContact) => existingContact.id == newContact.id);
           }).toList();
 
           if (uniqueNewContacts.isNotEmpty) {
@@ -328,7 +333,8 @@ class ChatProvider with ChangeNotifier {
             // Cập nhật số lượng contact
             _cartItemCount = _contacts.length;
 
-            print("👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
+            print(
+                "👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
             notifyListeners();
           } else {
             print("ℹ️ Chỉ cập nhật tin nhắn cuối, không có contact mới");
@@ -457,6 +463,8 @@ class ChatProvider with ChangeNotifier {
         final newMessages = (response.data as List)
             .map((item) => Message.fromJson(item))
             .toList();
+
+        company_name = response.compayName ?? '';
 
         print("📥 Nhận được ${newMessages.length} tin nhắn mới");
 

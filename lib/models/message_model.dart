@@ -11,6 +11,7 @@ class Message {
   final OrderModel? data;
   final DateTime timestamp;
   final String? conversationId;
+  final String? type;
   MessageStatus status = MessageStatus.sent;
   String? errorMessage;
 
@@ -24,6 +25,7 @@ class Message {
     this.data,
     DateTime? timestamp,
     this.conversationId,
+    this.type,
   }) : this.timestamp = timestamp ?? DateTime.now();
 
   // Trong Message.fromJson
@@ -67,6 +69,7 @@ class Message {
       data: json['data'] != null ? OrderModel.fromJson(json['data']) : null,
       timestamp: parsedTimestamp,
       conversationId: json['conversationId']?.toString(),
+      type: json['type']?.toString(),
     );
   }
 
@@ -80,15 +83,17 @@ class Message {
   String getFormattedTime() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final messageDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+    final messageDate =
+        DateTime(timestamp.year, timestamp.month, timestamp.day);
 
     // Định dạng giờ:phút
-    String timeStr = "${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
-    
+    String timeStr =
+        "${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}";
+
     // Nếu là ngày hôm nay thì chỉ hiển thị giờ
     if (messageDate.isAtSameMomentAs(today)) {
       return timeStr;
-    } 
+    }
     // Nếu khác ngày thì hiển thị thêm ngày/tháng/năm
     else {
       return "$timeStr ${timestamp.day}/${timestamp.month}/${timestamp.year}";

@@ -85,27 +85,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
-  // void _connectToSpecificChatRoom() {
-  //   // Đăng ký lắng nghe tin nhắn mới
-  //   _socketService.on('new_message_group', (data) {
-  //     print("📱 Nhận tin nhắn mới từ socket: $data");
-  //     if (data != null && data is Map<String, dynamic>) {
-  //       // Kiểm tra widget còn mounted không trước khi sử dụng context
-  //       if (mounted) {
-  //         final chatProvider =
-  //             Provider.of<ChatProvider>(context, listen: false);
-  //         // Trực tiếp xử lý dữ liệu tin nhắn từ socket thay vì gọi lại API
-  //         chatProvider.handleNotificationData(data);
-  //
-  //         // Cuộn xuống khi nhận tin nhắn mới từ socket
-  //         _scrollToBottom();
-  //       } else {
-  //         print("⚠️ Widget đã unmounted, không thể xử lý tin nhắn");
-  //       }
-  //     }
-  //   });
-  // }
-
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -359,270 +338,360 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Widget _buildMessageBubble(Message message) {
     bool isMe = message.sender?.id == widget.currentUserId;
-
-    return Dismissible(
-      key: ObjectKey(message.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 50),
+    final chatProvider = Provider.of<ChatProvider>(context);
+    String companyName = chatProvider.company_name;
+    if (message.type == "remove") {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.all(3),
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(2, 2),
+          color: const Color(0xFFE9EBED),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              backgroundImage: (message.sender?.avatarImage != null &&
+                      message.sender!.avatarImage.isNotEmpty)
+                  ? NetworkImage(message.sender!.avatarImage)
+                  : null,
+              radius: 12,
+              child: (message.sender?.avatarImage == null ||
+                      message.sender!.avatarImage.isEmpty)
+                  ? const Icon(Icons.person, size: 14)
+                  : null,
+            ),
+            Text(
+              '${message.receiver?.displayName} đã bị xóa khỏi nhóm',
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1.5,
+                color: const Color(0xFF141415),
+              ),
             ),
           ],
         ),
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-          size: 30,
+      );
+    } else if (message.type == "add") {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.all(3),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE9EBED),
+          borderRadius: BorderRadius.circular(100),
         ),
-      ),
-      confirmDismiss: (direction) async {
-        return await showDialog<bool>(
-              context: context,
-              builder: (context) => CustomConfirmDialog(
-                content: "Bạn có chắc chắn muốn xóa tin nhắn này?",
-                titleButtonRight: "Xóa",
-                titleButtonLeft: "Hủy",
-                onConfirm: () {
-                  _deleteMessage(message.id!);
-                },
-              ),
-            ) ??
-            false;
-      },
-      child: Align(
-        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (!isMe)
-              Padding(
-                padding: const EdgeInsets.only(left: 8, bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: (message.sender?.avatarImage != null &&
-                              message.sender!.avatarImage.isNotEmpty)
-                          ? NetworkImage(message.sender!.avatarImage)
-                          : null,
-                      radius: 12,
-                      child: (message.sender?.avatarImage == null ||
-                              message.sender!.avatarImage.isEmpty)
-                          ? const Icon(Icons.person, size: 14)
-                          : null,
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(100),
+            CircleAvatar(
+              backgroundImage: (message.sender?.avatarImage != null &&
+                      message.sender!.avatarImage.isNotEmpty)
+                  ? NetworkImage(message.sender!.avatarImage)
+                  : null,
+              radius: 12,
+              child: (message.sender?.avatarImage == null ||
+                      message.sender!.avatarImage.isEmpty)
+                  ? const Icon(Icons.person, size: 14)
+                  : null,
+            ),
+            const SizedBox(width: 4),
+            RichText(
+              text: TextSpan(
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: const Color(0xFF141415),
+                ),
+                children: [
+                  TextSpan(
+                    text: '${message.sender?.displayName}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: ' được '),
+                  TextSpan(
+                    text: '$companyName ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: 'thêm vào nhóm'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Dismissible(
+        key: ObjectKey(message.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 50),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
+        confirmDismiss: (direction) async {
+          return await showDialog<bool>(
+                context: context,
+                builder: (context) => CustomConfirmDialog(
+                  content: "Bạn có chắc chắn muốn xóa tin nhắn này?",
+                  titleButtonRight: "Xóa",
+                  titleButtonLeft: "Hủy",
+                  onConfirm: () {
+                    _deleteMessage(message.id!);
+                  },
+                ),
+              ) ??
+              false;
+        },
+        child: Align(
+          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment:
+                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              if (!isMe)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: (message.sender?.avatarImage != null &&
+                                message.sender!.avatarImage.isNotEmpty)
+                            ? NetworkImage(message.sender!.avatarImage)
+                            : null,
+                        radius: 12,
+                        child: (message.sender?.avatarImage == null ||
+                                message.sender!.avatarImage.isEmpty)
+                            ? const Icon(Icons.person, size: 14)
+                            : null,
                       ),
-                      child: Text(
-                        message.sender?.displayName ?? "Người dùng",
-                        textAlign: TextAlign.justify,
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          height: 1.333,
-                          color: Colors.black,
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          message.sender?.displayName ?? "Người dùng",
+                          textAlign: TextAlign.justify,
+                          style: GoogleFonts.roboto(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            height: 1.333,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.all(10),
+                width: 290,
+                decoration: BoxDecoration(
+                  color:
+                      isMe ? const Color(0xFFD6E9FF) : const Color(0xFFE9EBED),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isMe
+                        ? const Color(0xFFD6D9DC)
+                        : const Color(0xFF006AF5),
+                    width: 0.5,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.content ?? "",
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        color: const Color(0xFF141415),
+                      ),
+                    ),
+                    if (message.album != null &&
+                        message.album!.isNotEmpty &&
+                        message.album!.first.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            // Không mở xem ảnh khi đang gửi
+                            if (message.status != MessageStatus.sending) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => GalleryPhotoViewWrapper(
+                                    galleryItems: message.album!,
+                                    initialIndex: 0,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: Hero(
+                            tag: message.album!.first,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: _buildImageWidget(message),
+                                ),
+                                if (message.album!.length > 1)
+                                  Container(
+                                    width: double.infinity,
+                                    height: 200,
+                                    color: Colors.black.withOpacity(0.5),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "+${message.album!.length - 1}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    )
+                    if (message.status == MessageStatus.sending && isMe)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.grey),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Đang gửi...",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (message.status == MessageStatus.error && isMe)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.error_outline,
+                                size: 12, color: Colors.red),
+                            const SizedBox(width: 4),
+                            Text(
+                              message.errorMessage ?? "Không gửi được",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                _retryMessage(message);
+                              },
+                              child: Text(
+                                "Thử lại",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              padding: const EdgeInsets.all(10),
-              width: 290,
-              decoration: BoxDecoration(
-                color: isMe ? const Color(0xFFD6E9FF) : const Color(0xFFE9EBED),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color:
-                      isMe ? const Color(0xFFD6D9DC) : const Color(0xFF006AF5),
-                  width: 0.5,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message.content?.toString() ?? "",
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      color: const Color(0xFF141415),
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      () {
+                        try {
+                          return message.getFormattedTime();
+                        } catch (e) {
+                          return _getFormattedTime(message);
+                        }
+                      }(),
+                      style: GoogleFonts.roboto(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        color: const Color(0xFF767A7F),
+                      ),
                     ),
-                  ),
-                  if (message.album != null &&
-                      message.album!.isNotEmpty &&
-                      message.album!.first.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: GestureDetector(
-                        onTap: () {
-                          // Không mở xem ảnh khi đang gửi
-                          if (message.status != MessageStatus.sending) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GalleryPhotoViewWrapper(
-                                  galleryItems: message.album!,
-                                  initialIndex: 0,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        child: Hero(
-                          tag: message.album!.first,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8.0),
-                                child: _buildImageWidget(message),
-                              ),
-                              if (message.album!.length > 1)
-                                Container(
-                                  width: double.infinity,
-                                  height: 200,
-                                  color: Colors.black.withOpacity(0.5),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "+${message.album!.length - 1}",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                    if (isMe && message.read == true)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.done_all,
+                          size: 14,
+                          color: Colors.blue,
                         ),
                       ),
-                    ),
-                  if (message.status == MessageStatus.sending && isMe)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.grey),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "Đang gửi...",
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                    if (isMe && message.read != true)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.done,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                  if (message.status == MessageStatus.error && isMe)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.error_outline,
-                              size: 12, color: Colors.red),
-                          const SizedBox(width: 4),
-                          Text(
-                            message.errorMessage ?? "Không gửi được",
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.red,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              _retryMessage(message);
-                            },
-                            child: Text(
-                              "Thử lại",
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    () {
-                      try {
-                        return message.getFormattedTime();
-                      } catch (e) {
-                        return _getFormattedTime(message);
-                      }
-                    }(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      color: const Color(0xFF767A7F),
-                    ),
-                  ),
-                  if (isMe && message.read == true)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Icon(
-                        Icons.done_all,
-                        size: 14,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  if (isMe && message.read != true)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Icon(
-                        Icons.done,
-                        size: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _retryMessage(Message message) {

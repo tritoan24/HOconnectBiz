@@ -7,6 +7,7 @@ class ApiResponse<T> {
   final T? data;
   final int? total;
   final String? idUser;
+  final String? compayName;
 
   ApiResponse({
     this.token,
@@ -15,6 +16,7 @@ class ApiResponse<T> {
     this.data,
     this.total,
     this.idUser,
+    this.compayName,
   });
 
   factory ApiResponse.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,7 @@ class ApiResponse<T> {
       if (json.containsKey('total') && json['total'] != null) {
         total = int.tryParse(json['total'].toString()) ?? 0;
       }
+      String? compayName = json['company_name'];
 
       // Lấy token và userID từ response nếu có
       String? token = json['token'];
@@ -80,6 +83,7 @@ class ApiResponse<T> {
         total: total,
         token: token,
         idUser: idUser,
+        compayName: compayName,
       );
     } catch (e) {
       print("Lỗi khi xử lý API response: $e");
