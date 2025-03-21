@@ -112,6 +112,8 @@ class PostProvider extends BaseProvider {
   List<Posts> _searchResults = [];
   List<Posts> get searchResults => _searchResults;
 
+  bool _isLoadingPage = false; // Thêm biến kiểm soát request đang chạy
+
   Future<void> createPostAD(Map<String, dynamic> postData, BuildContext context,
       {List<File>? files}) async {
     LoadingOverlay.show(context);
@@ -138,9 +140,12 @@ class PostProvider extends BaseProvider {
   }
 
   Future<void> fetchPosts(BuildContext context) async {
+    if (_isLoading) return; // Thêm kiểm tra nếu đang loading thì return
+    
     resetPagination();
     _isLoading = true;
     notifyListeners();
+    
     try {
       await _loadPostsPage(context);
     } catch (e) {
@@ -152,9 +157,8 @@ class PostProvider extends BaseProvider {
     notifyListeners();
   }
 
-  // Load more posts when scrolling
   Future<void> loadMorePosts(BuildContext context) async {
-    if (_isLoadingMore || !_hasMorePosts) return;
+    if (_isLoadingMore || !_hasMorePosts || _isLoadingPage) return;
 
     _isLoadingMore = true;
     notifyListeners();
@@ -170,42 +174,51 @@ class PostProvider extends BaseProvider {
     notifyListeners();
   }
 
-// Internal method to load a page of posts
   Future<void> _loadPostsPage(BuildContext context) async {
-    Map<String, dynamic> body = {"page": _currentPage, "limit": _pageSize};
+    if (_isLoadingPage) return; // Kiểm tra nếu đang có request thì return
+    _isLoadingPage = true;
 
-    final response = await ApiClient().postRequest(
-      ApiEndpoints.postNew,
-      body,
-      context,
-    );
+    try {
+      Map<String, dynamic> body = {"page": _currentPage, "limit": _pageSize};
 
-    if (response != null && response.containsKey('posts')) {
-      List postsData = response['posts'];
+      final response = await ApiClient().postRequest(
+        ApiEndpoints.postNew,
+        body,
+        context,
+      );
 
-      if (postsData.isEmpty) {
-        _hasMorePosts = false;
-      } else {
-        List<Posts> newPosts =
-            postsData.map((post) => Posts.fromJson(post)).toList();
+      if (response != null && response.containsKey('posts')) {
+        List postsData = response['posts'];
 
-        if (_currentPage == 1) {
-          _posts = newPosts;
+        if (postsData.isEmpty) {
+          _hasMorePosts = false;
         } else {
-          _posts.addAll(newPosts);
+          List<Posts> newPosts = postsData.map((post) => Posts.fromJson(post)).toList();
+
+          // Kiểm tra trùng lặp trước khi thêm vào danh sách
+          if (_currentPage == 1) {
+            _posts = newPosts;
+          } else {
+            // Lọc ra những bài post chưa có trong danh sách hiện tại
+            final existingIds = _posts.map((p) => p.id).toSet();
+            final uniqueNewPosts = newPosts.where((p) => !existingIds.contains(p.id)).toList();
+            _posts.addAll(uniqueNewPosts);
+          }
+
+          _currentPage++;
         }
 
-        _currentPage++;
+        // Cập nhật số lượng thông báo mới và tin nhắn mới
+        _newNotificationsCount = response['newNotificationsCount'] ?? 0;
+        _newMessagesCount = response['newMessagesCount'] ?? 0;
+
+        debugPrint("Số thông báo mới: $_newNotificationsCount");
+        debugPrint("Số tin nhắn mới: $_newMessagesCount");
+      } else {
+        _hasMorePosts = false;
       }
-
-      // Cập nhật số lượng thông báo mới và tin nhắn mới
-      _newNotificationsCount = response['newNotificationsCount'] ?? 0;
-      _newMessagesCount = response['newMessagesCount'] ?? 0;
-
-      print("Số thông báo mới: $_newNotificationsCount");
-      print("Số tin nhắn mới: $_newMessagesCount");
-    } else {
-      _hasMorePosts = false;
+    } finally {
+      _isLoadingPage = false;
     }
   }
 
