@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../../providers/StatisticalProvider.dart';
 import '../../widgets/text_styles.dart';
 import '../../utils/Color/app_color.dart';
@@ -60,276 +61,232 @@ class _MemberStatisticsState extends State<MemberStatistics> {
       body: Consumer<StatisticalProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Lottie.asset(
+                'assets/lottie/loading.json',
+                width: 70,
+                height: 70,
+                fit: BoxFit.contain,
+              ),
+            );
           }
-
-          // if (provider.isLoad) {
-          //   return Center(child: Text("có lỗi xảy ra"));
-          // }
 
           final data = provider.statistics;
           final currentPage = provider.currentPage;
           final totalMembers = provider.totalMembers;
           final totalPages = (totalMembers / provider.limit).ceil();
 
-          return Column(
+          return Stack(
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 100,
-                        color: Colors.blue[50],
-                        child: Row(
-                          children: [
-                            // Left fixed section (Rank and Company)
-                            SizedBox(
-                              width: 230,
-                              height: 100,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 50,
-                                    height: 100,
-                                    padding: const EdgeInsets.only(left: 8),
-                                    decoration: headerCellDecoration,
-                                    child: Center(
-                                        child: Text('Thứ hạng',
-                                            style: TextStyles
-                                                .titleStyleColumnW600)),
-                                  ),
-                                  Container(
-                                    width: 180,
-                                    height: 100,
-                                    decoration: headerCellDecoration,
-                                    child: Center(
-                                        child: Text('Doanh nghiệp',
-                                            style: TextStyles
-                                                .titleStyleColumnW600)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Right scrollable header
-                            Expanded(
-                              child: SingleChildScrollView(
-                                controller: _headerScrollController,
-                                scrollDirection: Axis.horizontal,
-                                physics: const NeverScrollableScrollPhysics(),
-                                child: Container(
-                                  width: 300,
+              Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 100,
+                            color: Colors.blue[50],
+                            child: Row(
+                              children: [
+                                // Left fixed section (Rank and Company)
+                                SizedBox(
+                                  width: 230,
                                   height: 100,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                  child: Row(
                                     children: [
                                       Container(
-                                        height: 50,
+                                        width: 50,
+                                        height: 100,
+                                        padding: const EdgeInsets.only(left: 8),
                                         decoration: headerCellDecoration,
                                         child: Center(
-                                          child: Text('Số cơ hội kinh doanh',
-                                              style: TextStyles
-                                                  .titleStyleColumnW600),
-                                        ),
+                                            child: Text('Thứ hạng',
+                                                style: TextStyles
+                                                    .titleStyleColumnW600)),
                                       ),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            width: 100,
-                                            height: 50,
-                                            decoration: headerCellDecoration,
-                                            child: Center(
-                                                child: Text('Đã tạo ra',
-                                                    style: TextStyles
-                                                        .titleStyleColumnW600)),
-                                          ),
-                                          Container(
-                                            width: 100,
-                                            height: 50,
-                                            decoration: headerCellDecoration,
-                                            child: Center(
-                                                child: Text('Tham gia',
-                                                    style: TextStyles
-                                                        .titleStyleColumnW600)),
-                                          ),
-                                          Container(
-                                            width: 100,
-                                            height: 50,
-                                            decoration: headerCellDecoration,
-                                            child: Center(
-                                                child: Text('Đã đóng góp',
-                                                    style: TextStyles
-                                                        .titleStyleColumnW600)),
-                                          ),
-                                        ],
+                                      Container(
+                                        width: 180,
+                                        height: 100,
+                                        decoration: headerCellDecoration,
+                                        child: Center(
+                                            child: Text('Doanh nghiệp',
+                                                style: TextStyles
+                                                    .titleStyleColumnW600)),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Data rows
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Left fixed section
-                              SizedBox(
-                                width: 230,
-                                child: Column(
-                                  children: data
-                                      .map((item) => Container(
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 50,
-                                                  height: 70,
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        const Color(0xffEBF4FF),
-                                                    border: Border.all(
-                                                      color:
-                                                          AppColor.borderGrey,
-                                                      width: 0.5,
-                                                    ),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      item.rank.toString(),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: 180,
-                                                  height: 70,
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 8),
-                                                  decoration: cellDecoration,
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Container(
-                                                        width: 24,
-                                                        height: 24,
-                                                        margin: const EdgeInsets
-                                                            .only(right: 8),
-                                                        child: item.avatarImage
-                                                                .isNotEmpty
-                                                            ? Image.network(
-                                                                item.avatarImage,
-                                                                fit: BoxFit
-                                                                    .contain,
-                                                                errorBuilder:
-                                                                    (context,
-                                                                        error,
-                                                                        stackTrace) {
-                                                                  return const Icon(
-                                                                      Icons
-                                                                          .business,
-                                                                      size: 24,
-                                                                      color: Colors
-                                                                          .grey);
-                                                                },
-                                                              )
-                                                            : const Icon(
-                                                                Icons.business,
-                                                                size: 24,
-                                                                color: Colors
-                                                                    .grey),
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          (item.companyName !=
-                                                                  null)
-                                                              ? item.companyName
-                                                                      .isNotEmpty
-                                                                  ? item
-                                                                      .companyName
-                                                                  : "Chưa cập nhật"
-                                                              : "Chưa cập nhật",
-                                                          maxLines: 2,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: GoogleFonts
-                                                              .roboto(
-                                                            fontSize: 14,
-                                                            height: 1.2,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
+                                // Right scrollable header
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    controller: _headerScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    child: Container(
+                                      width: 300,
+                                      height: 100,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            height: 50,
+                                            decoration: headerCellDecoration,
+                                            child: Center(
+                                              child: Text('Số cơ hội kinh doanh',
+                                                  style: TextStyles
+                                                      .titleStyleColumnW600),
                                             ),
-                                          ))
-                                      .toList(),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 100,
+                                                height: 50,
+                                                decoration: headerCellDecoration,
+                                                child: Center(
+                                                    child: Text('Đã tạo ra',
+                                                        style: TextStyles
+                                                            .titleStyleColumnW600)),
+                                              ),
+                                              Container(
+                                                width: 100,
+                                                height: 50,
+                                                decoration: headerCellDecoration,
+                                                child: Center(
+                                                    child: Text('Tham gia',
+                                                        style: TextStyles
+                                                            .titleStyleColumnW600)),
+                                              ),
+                                              Container(
+                                                width: 100,
+                                                height: 50,
+                                                decoration: headerCellDecoration,
+                                                child: Center(
+                                                    child: Text('Đã đóng góp',
+                                                        style: TextStyles
+                                                            .titleStyleColumnW600)),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              // Right scrollable section
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  controller: _scrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: SizedBox(
-                                    width: 300,
+                              ],
+                            ),
+                          ),
+                          // Data rows
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Left fixed section
+                                  SizedBox(
+                                    width: 230,
                                     child: Column(
                                       children: data
                                           .map((item) => Container(
                                                 child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
                                                   children: [
                                                     Container(
-                                                      width: 100,
+                                                      width: 50,
                                                       height: 70,
-                                                      decoration:
-                                                          cellDecoration2,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            const Color(0xffEBF4FF),
+                                                        border: Border.all(
+                                                          color:
+                                                              AppColor.borderGrey,
+                                                          width: 0.5,
+                                                        ),
+                                                      ),
                                                       child: Center(
                                                         child: Text(
-                                                          item.create
-                                                              .toString(),
+                                                          item.rank.toString(),
                                                           textAlign:
                                                               TextAlign.center,
                                                         ),
                                                       ),
                                                     ),
                                                     Container(
-                                                      width: 100,
+                                                      width: 180,
                                                       height: 70,
-                                                      decoration:
-                                                          cellDecoration2,
-                                                      child: Center(
-                                                        child: Text(
-                                                          item.join.toString(),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: 100,
-                                                      height: 70,
-                                                      decoration:
-                                                          cellDecoration2,
-                                                      child: Center(
-                                                        child: Text(
-                                                          item.total.toString(),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(horizontal: 8),
+                                                      decoration: cellDecoration,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            width: 24,
+                                                            height: 24,
+                                                            margin: const EdgeInsets
+                                                                .only(right: 8),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              shape:
+                                                                  BoxShape.circle,
+                                                              color: Colors.grey
+                                                                  .withOpacity(0.2),
+                                                            ),
+                                                            clipBehavior:
+                                                                Clip.antiAlias,
+                                                            child: item.avatarImage
+                                                                    .isNotEmpty
+                                                                ? Image.network(
+                                                                    item.avatarImage,
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                    errorBuilder:
+                                                                        (context,
+                                                                            error,
+                                                                            stackTrace) {
+                                                                      return const Icon(
+                                                                        Icons
+                                                                            .business,
+                                                                        size: 20,
+                                                                        color: Colors
+                                                                            .grey,
+                                                                      );
+                                                                    },
+                                                                  )
+                                                                : const Icon(
+                                                                    Icons.business,
+                                                                    size: 20,
+                                                                    color:
+                                                                        Colors.grey,
+                                                                  ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              (item.companyName !=
+                                                                      null)
+                                                                  ? item.companyName
+                                                                          .isNotEmpty
+                                                                      ? item
+                                                                          .companyName
+                                                                      : "Chưa cập nhật"
+                                                                  : "Chưa cập nhật",
+                                                              maxLines: 2,
+                                                              overflow: TextOverflow
+                                                                  .ellipsis,
+                                                              style: GoogleFonts
+                                                                  .roboto(
+                                                                fontSize: 14,
+                                                                height: 1.2,
+                                                                fontWeight:
+                                                                    FontWeight.w700,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ],
@@ -338,83 +295,157 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                           .toList(),
                                     ),
                                   ),
-                                ),
+                                  // Right scrollable section
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      controller: _scrollController,
+                                      scrollDirection: Axis.horizontal,
+                                      child: SizedBox(
+                                        width: 300,
+                                        child: Column(
+                                          children: data
+                                              .map((item) => Container(
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.center,
+                                                      children: [
+                                                        Container(
+                                                          width: 100,
+                                                          height: 70,
+                                                          decoration:
+                                                              cellDecoration2,
+                                                          child: Center(
+                                                            child: Text(
+                                                              item.create
+                                                                  .toString(),
+                                                              textAlign:
+                                                                  TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          width: 100,
+                                                          height: 70,
+                                                          decoration:
+                                                              cellDecoration2,
+                                                          child: Center(
+                                                            child: Text(
+                                                              item.join.toString(),
+                                                              textAlign:
+                                                                  TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          width: 100,
+                                                          height: 70,
+                                                          decoration:
+                                                              cellDecoration2,
+                                                          child: Center(
+                                                            child: Text(
+                                                              item.total.toString(),
+                                                              textAlign:
+                                                                  TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ))
+                                              .toList(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              // Pagination
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 3,
-                      offset: const Offset(0, -1),
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          onPressed: currentPage > 1
-                              ? () => provider.fetchStatistics(context,
-                                  page: currentPage - 1)
-                              : null,
-                        ),
-                        for (int i = 1; i <= totalPages; i++)
-                          if (i == 1 ||
-                              i == totalPages ||
-                              (i >= currentPage - 1 && i <= currentPage + 1))
-                            PaginationNumber(
-                              number: i,
-                              isSelected: i == currentPage,
-                              onTap: () =>
-                                  provider.fetchStatistics(context, page: i),
-                            )
-                          else if (i == currentPage - 2 || i == currentPage + 2)
-                            const Text('...', style: TextStyle(fontSize: 16)),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: currentPage < totalPages
-                              ? () => provider.fetchStatistics(context,
-                                  page: currentPage + 1)
-                              : null,
+                  ),
+                  // Pagination
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, -1),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.chevron_left),
+                              onPressed: currentPage > 1
+                                  ? () => provider.fetchStatistics(context,
+                                      page: currentPage - 1)
+                                  : null,
+                            ),
+                            for (int i = 1; i <= totalPages; i++)
+                              if (i == 1 ||
+                                  i == totalPages ||
+                                  (i >= currentPage - 1 && i <= currentPage + 1))
+                                PaginationNumber(
+                                  number: i,
+                                  isSelected: i == currentPage,
+                                  onTap: () =>
+                                      provider.fetchStatistics(context, page: i),
+                                )
+                              else if (i == currentPage - 2 || i == currentPage + 2)
+                                const Text('...', style: TextStyle(fontSize: 16)),
+                            IconButton(
+                              icon: const Icon(Icons.chevron_right),
+                              onPressed: currentPage < totalPages
+                                  ? () => provider.fetchStatistics(context,
+                                      page: currentPage + 1)
+                                  : null,
+                            ),
+                          ],
                         ),
-                        children: [
-                          const TextSpan(text: 'Tổng số '),
-                          TextSpan(
-                            text: '$totalMembers',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        const SizedBox(height: 8),
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                            children: [
+                              const TextSpan(text: 'Tổng số '),
+                              TextSpan(
+                                text: '$totalMembers',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const TextSpan(text: ' thành viên CLB'),
+                            ],
                           ),
-                          const TextSpan(text: ' thành viên CLB'),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
               ),
+              if (provider.isPageLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.1),
+                  child: Center(
+                    child: Lottie.asset(
+                      'assets/lottie/loading.json',
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
             ],
           );
         },

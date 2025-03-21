@@ -13,11 +13,28 @@ class StatisticalProvider extends BaseProvider {
   final int limit = 10;
   int _retryCount = 0;
   final int _maxRetry = 3;
+  bool _isPageLoading = false;
+  String? _error;
 
   List<StatisticalModel> get statistics => _statistics;
+  bool get isPageLoading => _isPageLoading;
+  bool get hasError => _error != null;
+
+  @override
+  void setError(String? error) {
+    _error = error;
+    notifyListeners();
+  }
 
   Future<void> fetchStatistics(BuildContext context, {int page = 1}) async {
-    setLoading(true);
+    // Chỉ set loading toàn trang khi lần đầu load hoặc có lỗi
+    if (page == 1 || hasError) {
+      setLoading(true);
+    } else {
+      _isPageLoading = true;
+      notifyListeners();
+    }
+
     try {
       debugPrint("⏳ StatisticalProvider: Đang tải dữ liệu thống kê (trang $page)...");
       final response =
@@ -70,6 +87,8 @@ class StatisticalProvider extends BaseProvider {
       }
     } finally {
       setLoading(false);
+      _isPageLoading = false;
+      notifyListeners();
     }
   }
 }
