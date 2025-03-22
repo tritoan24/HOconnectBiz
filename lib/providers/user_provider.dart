@@ -1,11 +1,16 @@
 import 'dart:io';
 
+import 'package:clbdoanhnhansg/providers/auth_provider.dart';
+import 'package:clbdoanhnhansg/screens/account/login.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/base/base_provider.dart';
 import '../models/auth_model.dart';
 import '../models/business_model.dart';
 import '../repository/user_repository.dart';
+import '../utils/router/router.name.dart';
 
 class UserProvider extends BaseProvider {
   final UserRepository _userRepository = UserRepository();
@@ -58,18 +63,27 @@ class UserProvider extends BaseProvider {
     List<File>? coverFiles,
     bool showLoading = true,
   }) async {
-    await executeApiCall<Author>(
-      apiCall: () => _userRepository.updateUser(context, body,
-          avatarFiles: avatarFiles, coverFiles: coverFiles),
-      context: context,
-      onSuccess: () async {
-        await fetchUser(context, showLoading: false);
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-      },
-      successMessage: 'Cập nhật thông tin người dùng thành công',
-    );
+    try {
+      await executeApiCall<Author>(
+        apiCall: () => _userRepository.updateUser(context, body,
+            avatarFiles: avatarFiles, coverFiles: coverFiles),
+        context: context,
+        onSuccess: () async {
+          await fetchUser(context, showLoading: false);
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        },
+        successMessage: 'Cập nhật thông tin người dùng thành công',
+      );
+    } catch (e) {
+      print('Error in updateUser: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xảy ra lỗi: $e')),
+        );
+      }
+    }
   }
 
   Future<void> fetchUserByID(BuildContext context, String idUser,
@@ -92,5 +106,35 @@ class UserProvider extends BaseProvider {
 
     _isLoadingByID = false;
     notifyListeners();
+  }
+
+  Future<void> deleteAccount(
+    BuildContext context, {
+    required Map<String, dynamic> body,
+    List<File>? avatarFiles,
+    List<File>? coverFiles,
+    bool showLoading = true,
+  }) async {
+    try {
+      await executeApiCall<Author>(
+        apiCall: () => _userRepository.updateUser(context, body,
+            avatarFiles: avatarFiles, coverFiles: coverFiles),
+        context: context,
+        onSuccess: () async {
+          // final prefs = await SharedPreferences.getInstance();
+          // await prefs.remove('auth_token');
+          // await prefs.remove('user_id');
+          AuthProvider().logout(context);
+        },
+        successMessage: 'xóa tài khoản thành công',
+      );
+    } catch (e) {
+      print('Error in updateUser: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xảy ra lỗi: $e')),
+        );
+      }
+    }
   }
 }

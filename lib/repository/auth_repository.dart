@@ -91,20 +91,30 @@ class AuthRepository {
 
     return ApiResponse.fromJson(response);
   }
+
   // 🔹 **Cập nhật mật khẩu mới- đổi mật khẩu**
   Future<ApiResponse> changepassword(
       String password, newpassword, repassword, BuildContext context) async {
     final response = await _apiClient.postRequest(
         ApiEndpoints.changePassword,
-        {"password": password, "newpassword": newpassword, "repassword": repassword},
+        {
+          "password": password,
+          "newpassword": newpassword,
+          "repassword": repassword
+        },
         context);
 
     return ApiResponse.fromJson(response);
   }
 
   // 🔹 **Đăng nhập với mạng xã hội **
-  Future<ApiResponse> loginSocial(String identity, String password,
-      String displayName, String registerType,String avatarImage, BuildContext context) async {
+  Future<ApiResponse> loginSocial(
+      String identity,
+      String password,
+      String displayName,
+      String registerType,
+      String avatarImage,
+      BuildContext context) async {
     const String tag = 'LOGINSOCIAL_REPO';
     developer.log('identity: $identity', name: tag);
     developer.log('password: $password', name: tag);
@@ -126,4 +136,3 @@ class AuthRepository {
     return ApiResponse.fromJson(response);
   }
 }
-

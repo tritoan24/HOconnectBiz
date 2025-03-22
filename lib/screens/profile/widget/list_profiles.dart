@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/screens/account/login.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -113,6 +114,146 @@ class _ListProfileState extends State<ListProfile> {
                   child: const Text(
                     'Đăng xuất',
                     style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Show confirmation dialog
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Text(
+                            'Xác nhận xóa tài khoản',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.red,
+                                size: 64,
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Bạn có chắc chắn muốn xóa tài khoản của mình?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị mất.',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                          actionsPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          actions: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      side:
+                                          const BorderSide(color: Colors.grey),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Hủy',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      // Đóng dialog trước
+                                      final parentContext = context;
+                                      // Navigator.of(context).pop();
+
+                                      final userProvider =
+                                          Provider.of<UserProvider>(
+                                              parentContext,
+                                              listen: false);
+                                      final body = {'status': 'delete'};
+
+                                      await userProvider.deleteAccount(
+                                        parentContext,
+                                        body: body,
+                                        avatarFiles: null,
+                                        coverFiles: null,
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Xóa tài khoản',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.borderLightGrey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    'Xóa tài khoản',
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500),
                   ),
                 ),
               ),

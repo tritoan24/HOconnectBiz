@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 import '../core/base/base_provider.dart';
+import '../core/network/api_endpoints.dart';
 import '../core/services/socket_service.dart';
 import '../models/apiresponse.dart';
 import '../repository/auth_repository.dart';
