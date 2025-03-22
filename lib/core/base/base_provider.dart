@@ -30,15 +30,6 @@ abstract class BaseProvider extends ChangeNotifier {
     errorMessage = message;
     print("Error: $message");
     notifyListeners();
-
-    // // Ghi nhận lỗi nghiêm trọng từ API response
-    // if (message != null && message.isNotEmpty) {
-    //   sendErrorLog(
-    //     level: 1,
-    //     message: "Lỗi Provider $_providerName",
-    //     additionalInfo: message,
-    //   );
-    // }
   }
 
   void setSuccess(String? message) {

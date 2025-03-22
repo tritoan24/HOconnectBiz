@@ -233,6 +233,7 @@ class _MessageInputScreenState extends State<MessageInputScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
