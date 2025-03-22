@@ -2,6 +2,7 @@ import 'package:clbdoanhnhansg/models/bo_model.dart';
 import 'package:clbdoanhnhansg/screens/business_opportunity_management/widget/details_post_business.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/date_time_utils.dart';
 import '../../../utils/router/router.name.dart';
 
 class ItemPostBussiness extends StatelessWidget {
@@ -10,11 +11,6 @@ class ItemPostBussiness extends StatelessWidget {
 
   const ItemPostBussiness(
       {super.key, required this.bo, this.isInBusiness = true});
-
-  String formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return '';
-    return DateFormat('HH:mm dd/MM/yyyy').format(dateTime);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +70,9 @@ class ItemPostBussiness extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                formatDateTime(bo.createdAt),
+                DateTimeUtils.formatDateTime(
+                    DateTimeUtils.toLocalTime(bo.createdAt!),
+                    format: 'dd/MM/yyyy HH:mm'),
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,
@@ -131,4 +129,3 @@ class ItemPostBussiness extends StatelessWidget {
     );
   }
 }
-

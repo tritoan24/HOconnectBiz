@@ -20,6 +20,7 @@ import '../../../business_information/business_information.dart';
 import '../../../comment/comments_screen.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
+import 'package:clbdoanhnhansg/core/utils/date_time_utils.dart';
 
 // Constants
 const double _kPadding = 12.0;
@@ -198,11 +199,23 @@ class _PostItemState extends State<PostItem> {
 
   DateTime _parseCustomDateTime(String dateTime) {
     try {
-      return DateFormat("dd/MM/yyyy HH:mm").parse(dateTime);
+      final parsedDate = DateFormat("dd/MM/yyyy HH:mm").parse(dateTime);
+      return DateTimeUtils.toLocalTime(parsedDate);
     } catch (e) {
       debugPrint("Error parsing date: $e");
-      return DateTime.now();
+      return DateTimeUtils.getCurrentTime();
     }
+  }
+
+  Widget _buildDateTime() {
+    final dateTime = _parseCustomDateTime(widget.dateTime);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
+      child: Text(
+        DateTimeUtils.formatDateTime(dateTime, format: 'HH:mm, dd/MM/yyyy'),
+        style: kDateTimeStyle,
+      ),
+    );
   }
 
   // Hàm chuyển sang màn chi tiết bài đăng
@@ -316,20 +329,6 @@ class _PostItemState extends State<PostItem> {
             _buildActions(context, isLiked),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDateTime() {
-    final dateTime = _parseCustomDateTime(widget.dateTime);
-    final time = DateFormat("HH:mm").format(dateTime);
-    final date = DateFormat("dd/MM/yyyy").format(dateTime);
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
-      child: Text(
-        "$time, $date",
-        style: kDateTimeStyle,
       ),
     );
   }

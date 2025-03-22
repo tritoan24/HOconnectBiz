@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../widgets/galleryphotoview.dart';
 import '../comments_screen.dart';
+import 'package:clbdoanhnhansg/core/utils/date_time_utils.dart';
 
 class BinhLuanItem extends StatelessWidget {
   final CommentModel binhLuan;
@@ -175,8 +176,10 @@ class BinhLuanItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   binhLuan.createdAt != null
-                      ? DateFormat('dd/MM/yyyy HH:mm')
-                          .format(binhLuan.createdAt!)
+                      ? DateTimeUtils.formatDateTime(
+                          DateTimeUtils.toLocalTime(binhLuan.createdAt!),
+                          format: 'dd/MM/yyyy HH:mm'
+                        )
                       : 'No date',
                   style: const TextStyle(
                     color: Colors.grey,

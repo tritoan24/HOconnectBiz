@@ -753,7 +753,7 @@ String _generateRandomPassword() {
   const String upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const String lowerCase = 'abcdefghijklmnopqrstuvwxyz';
   const String numbers = '0123456789';
-  const String specialChars = '@&#';
+  const String specialChars = '@';
   const int minLength = 8;
 
   final Random random = Random();

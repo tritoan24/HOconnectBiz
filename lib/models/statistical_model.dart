@@ -31,10 +31,10 @@ class StatisticalModel {
       avatarImage: json['avatar_image'] ?? '',
       coverImage: json['cover_image'] ?? '',
       companyName: json['company_name'],
-      rank: json['rank'],
-      create: json['create'],
-      join: json['join'],
-      total: json['total'],
+      rank: json['rank'] ?? 0,
+      create: json['create'] ?? 0,
+      join: json['join'] ?? 0,
+      total: json['total'] ?? 0,
     );
   }
 
