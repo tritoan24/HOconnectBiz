@@ -1,10 +1,9 @@
-import 'dart:math';
-
 import 'package:clbdoanhnhansg/models/contact.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
@@ -15,13 +14,16 @@ import 'details_chat.dart';
 import '../../providers/post_provider.dart';
 
 class ChatListScreen extends StatefulWidget {
+  final Map<String, String>? notificationId;
+
+  const ChatListScreen({super.key, this.notificationId});
+
   @override
   _ChatListScreenState createState() => _ChatListScreenState();
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
   late String currentUserId = "";
-  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -31,6 +33,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+      chatProvider.changeNotificationId(value: widget.notificationId?["id"]);
 
       // Reset số lượng tin nhắn mới
       try {
@@ -47,7 +51,44 @@ class _ChatListScreenState extends State<ChatListScreen> {
       await chatProvider.initializeContactSocket(context, currentUserId);
 
       // Tải danh sách liên hệ
-      chatProvider.getContacts(context);
+      chatProvider.getContacts(context, onSuccess: (contacts) {
+        if (widget.notificationId != null) {
+          Future.delayed(Duration.zero, () {
+            for (var action in contacts) {
+              if (action.id == widget.notificationId!['id']) {
+                if (action.type == "Group") {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatDetailScreen(
+                        currentUserId: currentUserId,
+                        idMessage: action.id,
+                        groupId: action.id,
+                        groupName: action.displayName,
+                        quantityMember: action.avatarImage.length,
+                      ),
+                    ),
+                  );
+                } else {
+                  // Navigate to business/individual chat screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DeltailsSalesArticle(
+                        currentUserId: currentUserId,
+                        idMessage: action.id,
+                        idReceiver: action.id,
+                        avatarImage: action.avatarImage,
+                        displayName: action.displayName,
+                      ),
+                    ),
+                  );
+                }
+              }
+            }
+          });
+        }
+      });
     });
   }
 
@@ -65,7 +106,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
         leading: IconButton(
           icon: AppIcons.arrowBackIos,
           onPressed: () {
-            Navigator.pop(context);
+            if (widget.notificationId != null) {
+              GoRouter.of(context).go(AppRoutes.trangChu);
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
         actions: [

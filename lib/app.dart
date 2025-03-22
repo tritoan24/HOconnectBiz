@@ -60,8 +60,20 @@ class _MyAppState extends State<MyApp> {
 
     OneSignal.Notifications.addClickListener((event) {
       if (event.notification.jsonRepresentation().isNotEmpty) {
-        final data = event.notification.additionalData;
-        appRouter.go(AppRoutes.thongBao, extra: data);
+        Map<String, dynamic>? data = event.notification.additionalData;
+        if (data != null) {
+          if (data['type'] == 'inbox') {
+            Map<String, String>? stringMap = data.map((key, value) {
+              if (value is! String) {
+                throw Exception("Value is not a String");
+              }
+              return MapEntry(key, value);
+            });
+            appRouter.go(AppRoutes.tinNhan, extra: stringMap);
+          }
+        } else {
+          appRouter.go(AppRoutes.thongBao);
+        }
       }
     });
 

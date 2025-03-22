@@ -39,13 +39,29 @@ class ChatProvider with ChangeNotifier {
   ChatProvider();
 
   bool get isLoading => _isLoading;
+
   bool get isLoadingMore => _isLoadingMore;
+
   bool get isLoadingMessages => _isLoadingMessages;
+
   bool get hasMoreMessages => _hasMoreMessages;
+
   List<Message> get messages => _messages;
+
   List<Contact> get contacts => _contacts;
+
   bool get isSocketConnected => _socketService.isConnected;
+
   int get cartItemCount => _cartItemCount;
+
+  String? _notificationId = "";
+
+  String? get notificationId => _notificationId;
+
+  changeNotificationId({String? value}) {
+    _notificationId = value;
+    notifyListeners();
+  }
 
   /// Khởi tạo socket cho màn hình chat
   Future<void> initializeSocket(
@@ -542,8 +558,7 @@ class ChatProvider with ChangeNotifier {
   }
 
   /// lay danh sach tin nhan
-  Future<void> getContacts(BuildContext context,
-      [String? userId = null]) async {
+  Future<void> getContacts(BuildContext context, {Function? onSuccess}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -566,6 +581,7 @@ class ChatProvider with ChangeNotifier {
         _socketService.connectToContact(_currentUserId!);
         // _setupContactSocketListeners();
       }
+      if (onSuccess != null) onSuccess(_contacts);
     } catch (e) {
       print("Error fetching contacts: $e");
     }
@@ -839,32 +855,32 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // // Đánh dấu tất cả tin nhắn là đã đọc
-  // Future<void> markAllMessagesAsRead(String conversationId, BuildContext context) async {
-  //   try {
-  //     final token = await _storage.read(key: 'token');
-  //     if (token == null) {
-  //       throw Exception('Token không tồn tại');
-  //     }
-  //
-  //     final url = Uri.parse('$baseUrl/api/mark-messages-read/$conversationId');
-  //     final response = await http.put(
-  //       url,
-  //       headers: {
-  //         'Authorization': 'Bearer $token',
-  //         'Content-Type': 'application/json',
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       notifyListeners();
-  //       print('📖 Đã đánh dấu tất cả tin nhắn là đã đọc');
-  //     } else {
-  //       print('❌ Lỗi đánh dấu tin nhắn đã đọc: ${response.statusCode}');
-  //       print('Body: ${response.body}');
-  //     }
-  //   } catch (e) {
-  //     print('❌ Lỗi đánh dấu tin nhắn đã đọc: $e');
-  //   }
-  // }
+// // Đánh dấu tất cả tin nhắn là đã đọc
+// Future<void> markAllMessagesAsRead(String conversationId, BuildContext context) async {
+//   try {
+//     final token = await _storage.read(key: 'token');
+//     if (token == null) {
+//       throw Exception('Token không tồn tại');
+//     }
+//
+//     final url = Uri.parse('$baseUrl/api/mark-messages-read/$conversationId');
+//     final response = await http.put(
+//       url,
+//       headers: {
+//         'Authorization': 'Bearer $token',
+//         'Content-Type': 'application/json',
+//       },
+//     );
+//
+//     if (response.statusCode == 200) {
+//       notifyListeners();
+//       print('📖 Đã đánh dấu tất cả tin nhắn là đã đọc');
+//     } else {
+//       print('❌ Lỗi đánh dấu tin nhắn đã đọc: ${response.statusCode}');
+//       print('Body: ${response.body}');
+//     }
+//   } catch (e) {
+//     print('❌ Lỗi đánh dấu tin nhắn đã đọc: $e');
+//   }
+// }
 }

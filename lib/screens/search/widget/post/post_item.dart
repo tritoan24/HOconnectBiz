@@ -111,23 +111,23 @@ class _PostItemState extends State<PostItem> {
     super.didUpdateWidget(oldWidget);
 
     // Nếu danh sách likes hoặc comments thay đổi, cập nhật lại trạng thái
-    if (oldWidget.likes.length != widget.likes.length || 
+    if (oldWidget.likes.length != widget.likes.length ||
         oldWidget.comments != widget.comments) {
       setState(() {
         likeCount = widget.likes.length;
         commentCount = widget.comments;
-        
+
         // Chỉ cập nhật isLiked nếu đã có idUserID
         if (idUserID != null && idUserID!.isNotEmpty) {
           isLiked = widget.likes.contains(idUserID);
         }
       });
-      
+
       if (oldWidget.comments != widget.comments) {
         debugPrint(
             "🔍 DEBUG PostItem: Cập nhật từ didUpdateWidget - commentCount từ ${oldWidget.comments} thành ${widget.comments}");
       }
-      
+
       if (oldWidget.likes.length != widget.likes.length) {
         debugPrint(
             "🔍 DEBUG PostItem: Cập nhật từ didUpdateWidget - likeCount=$likeCount, isLiked=$isLiked");
@@ -154,7 +154,9 @@ class _PostItemState extends State<PostItem> {
       idUserID = userId ?? "";
       debugPrint("🔑 id user: $idUserID");
       debugPrint("🔑 list user Join: ${widget.isJoin}");
-      isJoind = widget.isJoin!.any((join) => join.user?.id == idUserID);
+      if (widget.isJoin != null) {
+        isJoind = widget.isJoin!.any((join) => join.user?.id == idUserID);
+      }
     });
   }
 
@@ -179,7 +181,8 @@ class _PostItemState extends State<PostItem> {
         "🔍 DEBUG PostItem: Số lượng like thay đổi từ $oldLikeCount thành $likeCount");
 
     // Phát ra thông báo để cập nhật các màn hình khác
-    PostItemChangedNotification(widget.postId, isLiked, isJoined: isJoind).dispatch(context);
+    PostItemChangedNotification(widget.postId, isLiked, isJoined: isJoind)
+        .dispatch(context);
 
     // Gọi API để cập nhật trạng thái like trên server nhưng đánh dấu là không cập nhật UI
     postProvider.toggleLikeWithoutNotify(widget.postId, context).then((_) {
@@ -343,7 +346,7 @@ class _PostItemState extends State<PostItem> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              widget.title, 
+              widget.title,
               style: TextStyles.textStyleNormal14W700,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -353,7 +356,8 @@ class _PostItemState extends State<PostItem> {
               widget.content,
               style: kContentTextStyle,
               maxLines: widget.isF ? 2 : 100,
-              overflow: widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
+              overflow:
+                  widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
             ),
           ],
         ),
@@ -897,18 +901,21 @@ class _PostItemState extends State<PostItem> {
                     setState(() {
                       isJoind = true;
                     });
-                    
+
                     // Gọi API để đăng ký tham gia
                     businessProvider.joinBusiness(widget.postId, context);
-                    
+
                     // Phát ra thông báo để cập nhật các màn hình khác
-                    PostItemChangedNotification(widget.postId, isLiked, isJoined: true).dispatch(context);
-                    
+                    PostItemChangedNotification(widget.postId, isLiked,
+                            isJoined: true)
+                        .dispatch(context);
+
                     // Cập nhật trạng thái isJoin trong post provider
                     Provider.of<PostProvider>(context, listen: false)
                         .updatePostJoinStatus(widget.postId, context);
-                        
-                    debugPrint("🔍 DEBUG PostItem: Đã đăng ký tham gia và cập nhật UI với isJoind = $isJoind");
+
+                    debugPrint(
+                        "🔍 DEBUG PostItem: Đã đăng ký tham gia và cập nhật UI với isJoind = $isJoind");
                   },
                   child: Container(
                     height: 36,
@@ -1123,27 +1130,27 @@ class _PostItemState extends State<PostItem> {
         // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
         likeCount = updatedPost.like?.length ?? 0;
         commentCount = updatedPost.totalComment ?? 0;
-        
+
         // Cập nhật trạng thái isLiked nếu có idUserID
         if (idUserID != null && idUserID!.isNotEmpty) {
           isLiked = updatedPost.like?.contains(idUserID) ?? false;
         }
-        
+
         // Cập nhật trạng thái isJoind
         if (updatedPost.isJoin != null) {
-          isJoind = updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
-          debugPrint("🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
+          isJoind =
+              updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
+          debugPrint(
+              "🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
         }
-        
+
         debugPrint(
             "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
       });
     } else {
-      debugPrint(
-          "⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+      debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
       // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
-      final authProvider =
-          Provider.of<AuthProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       _loadUserIdandStatusLikePost(authProvider);
       _loadUserStatusJoinBusiness(authProvider);
     }

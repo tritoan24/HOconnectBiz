@@ -54,7 +54,8 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             return const PostScreen();
           },
-        ),GoRoute(
+        ),
+        GoRoute(
           path: AppRoutes.shopping,
           builder: (context, state) {
             return const Shopping();
@@ -80,13 +81,19 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             final product = state.extra as ProductModel;
             return BuyProduct(
-                product: product,idUser: '', avatar_image: '', displayName: '');
+                product: product,
+                idUser: '',
+                avatar_image: '',
+                displayName: '');
           },
         ),
         GoRoute(
           path: AppRoutes.tinNhan,
           builder: (context, state) {
-            return ChatListScreen();
+            final notificationId = state.extra as Map<String, String>?;
+            return ChatListScreen(
+              notificationId: notificationId,
+            );
           },
         ),
         GoRoute(
