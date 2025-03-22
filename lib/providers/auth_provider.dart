@@ -250,6 +250,7 @@ class AuthProvider extends BaseProvider {
       // Đảm bảo ẩn loading trong mọi trường hợp lỗi
       LoadingOverlay.hide();
       debugPrint("Lỗi đăng nhập: $e");
+
       // Set error message từ exception
       setError(e.toString());
     }

@@ -6,6 +6,7 @@ import '../../models/apiresponse.dart';
 import '../../models/auth_model.dart';
 import '../../providers/send_error_log.dart';
 import 'dart:convert';
+import '../network/api_client.dart'; // Import ApiErrorException
 
 abstract class BaseProvider extends ChangeNotifier {
   ApiResponse? _response;
@@ -27,16 +28,17 @@ abstract class BaseProvider extends ChangeNotifier {
 
   void setError(String? message) {
     errorMessage = message;
+    print("Error: $message");
     notifyListeners();
-    
-    // Ghi nhận lỗi nghiêm trọng từ API response
-    if (message != null && message.isNotEmpty) {
-      sendErrorLog(
-        level: 1,
-        message: "Lỗi Provider $_providerName",
-        additionalInfo: message,
-      );
-    }
+
+    // // Ghi nhận lỗi nghiêm trọng từ API response
+    // if (message != null && message.isNotEmpty) {
+    //   sendErrorLog(
+    //     level: 1,
+    //     message: "Lỗi Provider $_providerName",
+    //     additionalInfo: message,
+    //   );
+    // }
   }
 
   void setSuccess(String? message) {
@@ -53,7 +55,7 @@ abstract class BaseProvider extends ChangeNotifier {
   }) async {
     final operation = operationName ?? 'API Call';
     final Stopwatch stopwatch = Stopwatch()..start();
-    
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -71,7 +73,7 @@ abstract class BaseProvider extends ChangeNotifier {
         }
       } else {
         setError(response.message);
-        
+
         // Báo cáo lỗi từ API response
         sendErrorLog(
           level: 2,
@@ -79,10 +81,33 @@ abstract class BaseProvider extends ChangeNotifier {
           additionalInfo: "Message: ${response.message}",
         );
       }
+    } on ApiErrorException catch (e, stackTrace) {
+      // Xử lý lỗi ApiErrorException (tùy chỉnh)
+      try {
+        // Parse JSON response body
+        Map<String, dynamic> errorMap = jsonDecode(e.responseBody);
+
+        // Lấy message từ JSON response
+        final errorMsg =
+            errorMap['message'] as String? ?? "Lỗi phản hồi từ máy chủ";
+        setError(errorMsg);
+
+        debugPrint("📛 API Error: Status ${e.statusCode}, Message: $errorMsg");
+      } catch (parseError) {
+        debugPrint("⚠️ Error parsing API response: $parseError");
+        // Nếu không parse được JSON, sử dụng response body gốc
+        setError("Lỗi máy chủ (${e.statusCode})");
+      }
+
+      sendErrorLog(
+        level: 2,
+        message: "API Error in $_providerName: $operation",
+        additionalInfo: "Status: ${e.statusCode}, Body: ${e.responseBody}",
+      );
     } on SocketException catch (e, stackTrace) {
       final errorMsg = "Không thể kết nối đến máy chủ. Kiểm tra Internet!";
       setError(errorMsg);
-      
+
       sendErrorLog(
         level: 2,
         message: "SocketException in $_providerName: $operation",
@@ -91,17 +116,25 @@ abstract class BaseProvider extends ChangeNotifier {
     } on HttpException catch (e, stackTrace) {
       // Parse error message từ response
       try {
+        // Get the error string
         final errorData = e.toString();
-        // Chuyển string thành Map
-        final Map<String, dynamic> errorMap = Map<String, dynamic>.from(
-          jsonDecode(errorData.replaceAll('HttpException: ', '')),
-        );
-        final errorMsg = errorMap['message'] as String? ?? "Lỗi phản hồi từ máy chủ";
+        // Remove 'HttpException: ' prefix if it exists
+        final jsonString = errorData.startsWith('HttpException:')
+            ? errorData.substring('HttpException: '.length)
+            : errorData;
+
+        // Try to parse the JSON
+        Map<String, dynamic> errorMap = jsonDecode(jsonString);
+
+        // Get the message from the parsed JSON
+        final errorMsg =
+            errorMap['message'] as String? ?? "Lỗi phản hồi từ máy chủ";
         setError(errorMsg);
       } catch (parseError) {
+        debugPrint("⚠️ Error parsing HttpException response: $parseError");
         setError("Lỗi phản hồi từ máy chủ. Vui lòng thử lại.");
       }
-      
+
       sendErrorLog(
         level: 2,
         message: "HttpException in $_providerName: $operation",
@@ -110,7 +143,7 @@ abstract class BaseProvider extends ChangeNotifier {
     } on TimeoutException catch (e, stackTrace) {
       final errorMsg = "Yêu cầu hết thời gian. Vui lòng thử lại sau.";
       setError(errorMsg);
-      
+
       sendErrorLog(
         level: 2,
         message: "TimeoutException in $_providerName: $operation",
@@ -119,7 +152,7 @@ abstract class BaseProvider extends ChangeNotifier {
     } on FormatException catch (e, stackTrace) {
       final errorMsg = "Lỗi định dạng dữ liệu. Vui lòng liên hệ hỗ trợ.";
       setError(errorMsg);
-      
+
       sendErrorLog(
         level: 3, // Nghiêm trọng
         message: "FormatException in $_providerName: $operation",
@@ -127,8 +160,8 @@ abstract class BaseProvider extends ChangeNotifier {
       );
     } catch (e, stackTrace) {
       final errorMsg = "Đã xảy ra lỗi không xác định.";
-      setError(errorMsg);
-      
+      setError(e.toString());
+
       sendErrorLog(
         level: 3,
         message: "Unhandled Exception in $_providerName: $operation",
@@ -136,7 +169,7 @@ abstract class BaseProvider extends ChangeNotifier {
       );
     } finally {
       stopwatch.stop();
-      
+
       // Log nếu API call quá lâu (hơn 5 giây)
       if (stopwatch.elapsedMilliseconds > 5000) {
         sendErrorLog(
@@ -145,7 +178,7 @@ abstract class BaseProvider extends ChangeNotifier {
           additionalInfo: "Duration: ${stopwatch.elapsedMilliseconds}ms",
         );
       }
-      
+
       setLoading(false);
     }
   }

@@ -29,11 +29,11 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    
+
     // Lấy token từ SharedPreferences và kiểm tra token
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
-    
+
     if (token != null && token.isEmpty) {
       debugPrint("⚠️ Token rỗng được phát hiện, xóa token");
       await prefs.remove('auth_token');
@@ -54,7 +54,7 @@ class ApiClient {
     // Số lần thử lại tối đa khi gặp lỗi mạng
     const int maxRetries = 2;
     int retryCount = 0;
-    
+
     while (true) {
       try {
         late http.Response response;
@@ -65,7 +65,7 @@ class ApiClient {
           // Tạo multipart request
           var request = http.MultipartRequest(method, Uri.parse(url));
           request.headers.addAll(headers);
-          
+
           // Thêm các trường dữ liệu
           if (body != null) {
             // Chuyển đổi giá trị numerics thành chuỗi
@@ -115,7 +115,8 @@ class ApiClient {
                 sendErrorLog(
                   level: 2,
                   message: "Lỗi khi gửi POST request: $url",
-                  additionalInfo: "${e.toString()} - Stack: $stack - Body: $body",
+                  additionalInfo:
+                      "${e.toString()} - Stack: $stack - Body: $body",
                 );
                 rethrow;
               }
@@ -126,14 +127,16 @@ class ApiClient {
                 var request = http.Request('GET', Uri.parse(url));
                 request.headers.addAll(headers);
                 request.followRedirects = false;
-                
+
                 final streamedResponse = await client.send(request);
-                if (streamedResponse.statusCode == 301 || streamedResponse.statusCode == 302) {
+                if (streamedResponse.statusCode == 301 ||
+                    streamedResponse.statusCode == 302) {
                   // Xử lý redirect thủ công
                   final location = streamedResponse.headers['location'];
                   if (location != null) {
                     debugPrint("🔄 Đang xử lý chuyển hướng đến: $location");
-                    final redirectResponse = await http.get(Uri.parse(location), headers: headers);
+                    final redirectResponse =
+                        await http.get(Uri.parse(location), headers: headers);
                     response = redirectResponse;
                   } else {
                     throw Exception("Redirect URL không hợp lệ");
@@ -191,16 +194,17 @@ class ApiClient {
         stopwatch.stop();
         debugPrint("⏱️ Thời gian request: ${stopwatch.elapsedMilliseconds}ms");
         debugPrint("📊 [API RESPONSE] Status Code: ${response.statusCode}");
-        
+
         // Kiểm tra xem response body có phải là JSON hợp lệ không
         if (response.body.isNotEmpty) {
           try {
             final jsonBody = jsonDecode(response.body);
             debugPrint("📄 Response Body: $jsonBody");
-            
+
             if (response.statusCode >= 200 && response.statusCode < 300) {
               return jsonBody;
-            } else if (response.statusCode >= 400 && response.statusCode < 500) {
+            } else if (response.statusCode >= 400 &&
+                response.statusCode < 500) {
               // Lỗi phía client (400-499)
               sendErrorLog(
                 level: 2,
@@ -208,7 +212,12 @@ class ApiClient {
                 additionalInfo:
                     "Status: ${response.statusCode}, Body: ${response.body}",
               );
-              throw HttpException(response.body);
+
+              // Tạo một ApiErrorException tùy chỉnh với cả status code và body
+              throw ApiErrorException(
+                response.statusCode,
+                response.body,
+              );
             } else if (response.statusCode >= 500) {
               // Lỗi phía server (500+)
               sendErrorLog(
@@ -217,11 +226,22 @@ class ApiClient {
                 additionalInfo:
                     "Status: ${response.statusCode}, Body: ${response.body}",
               );
-              throw HttpException(response.body);
+              throw ApiErrorException(
+                response.statusCode,
+                response.body,
+              );
             } else {
-              throw HttpException(response.body);
+              throw ApiErrorException(
+                response.statusCode,
+                response.body,
+              );
             }
           } catch (e) {
+            if (e is ApiErrorException) {
+              // Nếu là ApiErrorException, throw lại
+              rethrow;
+            }
+
             debugPrint("⚠️ Lỗi xử lý JSON response: $e");
             throw Exception("Lỗi xử lý dữ liệu từ server: ${response.body}");
           }
@@ -231,7 +251,10 @@ class ApiClient {
             // Trả về đối tượng trống nếu body rỗng nhưng status code OK
             return {};
           } else {
-            throw Exception("Server trả về dữ liệu rỗng với mã ${response.statusCode}");
+            throw ApiErrorException(
+              response.statusCode,
+              "Server trả về dữ liệu rỗng với mã ${response.statusCode}",
+            );
           }
         }
       } catch (e, stackTrace) {
@@ -243,14 +266,8 @@ class ApiClient {
           await Future.delayed(Duration(seconds: 1 * retryCount));
           continue; // Tiếp tục vòng lặp để thử lại
         }
-        
-        debugPrint("❌ [API ERROR] Lỗi khi gọi API: $e");
-        _showErrorSnackbar(context, "Lỗi kết nối đến máy chủ!");
-        sendErrorLog(
-          level: 1,
-          message: "Doanh Nghiệp Lỗi: Lỗi khi gọi API: " + e.toString(),
-          additionalInfo: "${e.toString()}\n${stackTrace.toString()}",
-        );
+
+        // Cho phép exception truyền ra để BaseProvider xử lý
         rethrow;
       }
     }
@@ -297,7 +314,7 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    
+
     // Sử dụng SharedPreferences để lấy token
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -326,10 +343,13 @@ class ApiClient {
       debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
       debugPrint(" Response Body: ${response.body}");
 
-      if (response.statusCode >= 200 && response.statusCode < 500) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return jsonDecode(response.body);
       } else {
-        throw HttpException(response.body);
+        throw ApiErrorException(
+          response.statusCode,
+          response.body,
+        );
       }
     } catch (e) {
       debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
@@ -350,7 +370,7 @@ class ApiClient {
   }) async {
     final String url =
         endpoint.startsWith('/') ? baseUrl + endpoint : '$baseUrl/$endpoint';
-    
+
     // Sử dụng SharedPreferences để lấy token
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -379,10 +399,13 @@ class ApiClient {
       debugPrint(" [API RESPONSE] Status Code: ${response.statusCode}");
       debugPrint(" Response Body: ${response.body}");
 
-      if (response.statusCode >= 200 && response.statusCode < 500) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return jsonDecode(response.body);
       } else {
-        throw HttpException(response.body);
+        throw ApiErrorException(
+          response.statusCode,
+          response.body,
+        );
       }
     } catch (e) {
       debugPrint(" [API ERROR] Lỗi khi gọi API: $e");
@@ -428,6 +451,19 @@ class ApiClient {
 class Tuple<T1, T2> {
   final T1 item1;
   final T2 item2;
-  
+
   Tuple(this.item1, this.item2);
+}
+
+// Custom exception để xử lý lỗi API tốt hơn
+class ApiErrorException implements Exception {
+  final int statusCode;
+  final String responseBody;
+
+  ApiErrorException(this.statusCode, this.responseBody);
+
+  @override
+  String toString() {
+    return 'ApiErrorException: $statusCode - $responseBody';
+  }
 }
