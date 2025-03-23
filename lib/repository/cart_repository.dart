@@ -120,4 +120,17 @@ class CartRepository {
 
     return apiResponse;
   }
+
+  Future<ApiResponse> getOrderDetail(
+      BuildContext context, String orderId) async {
+    final response = await _apiClient.getRequest(
+      '${ApiEndpoints.oderDetail}/$orderId',
+      context,
+    );
+    print(response);
+
+    final apiResponse = ApiResponse.fromJson(response);
+
+    return apiResponse;
+  }
 }

@@ -50,5 +50,6 @@ class ApiEndpoints {
   static const String orderSale = "/order/sell";
   static const String orderBuy = "/order/buy";
   static const String updateStatusCart = "/order";
+  static const String oderDetail = "/order";
   static const String company = "/company";
 }

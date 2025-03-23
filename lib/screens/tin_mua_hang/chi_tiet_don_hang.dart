@@ -1,4 +1,5 @@
 import 'package:clbdoanhnhansg/models/order_model.dart';
+import 'package:clbdoanhnhansg/providers/cart_provider.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/button.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/status_cho_xac_nhan_don_mua.dart';
@@ -9,15 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
+import 'package:provider/provider.dart';
 
 final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
-double _calculatePriceAfterDiscount(double tamTinh, double chietKhau) {
-  double total = tamTinh - chietKhau;
-  return total;
-}
+// double _calculatePriceAfterDiscount(double tamTinh, double chietKhau) {
+//   double total = tamTinh - chietKhau;
+//   return total;
+// }
 
-class ChiTietDonHang extends StatelessWidget {
+class ChiTietDonHang extends StatefulWidget {
   final OrderModel donHang;
   final String status;
   final bool hideButtons;
@@ -48,6 +50,21 @@ class ChiTietDonHang extends StatelessWidget {
   }
 
   @override
+  State<ChiTietDonHang> createState() => _ChiTietDonHangState();
+}
+
+class _ChiTietDonHangState extends State<ChiTietDonHang> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+      cartProvider.fetcOrderDetail(context, widget.donHang.id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -74,7 +91,7 @@ class ChiTietDonHang extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             children: [
-              _buildOrderDetailRow('Đơn hàng -', donHang.id),
+              _buildOrderDetailRow('Đơn hàng -', widget.donHang.id),
             ],
           ),
         ),
@@ -89,9 +106,9 @@ class ChiTietDonHang extends StatelessWidget {
               child: ListView.builder(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(16),
-                itemCount: donHang.products.length,
+                itemCount: widget.donHang.products.length,
                 itemBuilder: (context, index) {
-                  final sp = donHang.products[index];
+                  final sp = widget.donHang.products[index];
                   return _buildProductDetailCard(
                       image: sp.product.album[0],
                       productName: sp.product.title,
@@ -118,18 +135,24 @@ class ChiTietDonHang extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
-                _buildTotalRow('Tạm tính',
-                    formatCurrency.format(donHang.provisional.toDouble())),
+                _buildTotalRow(
+                    'Tạm tính',
+                    formatCurrency
+                        .format(widget.donHang.provisional.toDouble())),
                 _buildTotalRow('Tổng số lượng sản phẩm',
-                    ((donHang.totalProduct).toString())),
-                _buildTotalRow('Chiết khấu',
-                    formatCurrency.format(-donHang.totalDiscount.toDouble()),
+                    ((widget.donHang.totalProduct).toString())),
+                _buildTotalRow(
+                    'Chiết khấu',
+                    formatCurrency
+                        .format(-widget.donHang.totalDiscount.toDouble()),
                     isDiscount: true),
-                _buildTotalRow('Giá sau chiết khấu',
-                    formatCurrency.format(donHang.totalPayAfterDiscount)),
+                _buildTotalRow(
+                    'Giá sau chiết khấu',
+                    formatCurrency
+                        .format(widget.donHang.totalPayAfterDiscount)),
                 const HorizontalDivider(),
                 _buildTotalRow('Giá trị thanh toán',
-                    formatCurrency.format(donHang.totalPay),
+                    formatCurrency.format(widget.donHang.totalPay),
                     isTotal: true),
               ]),
             ),
@@ -140,7 +163,27 @@ class ChiTietDonHang extends StatelessWidget {
           ],
         ),
         // kiểm tra các trạng thái và dựa vào đó để hiển thị ra giao diện
-        _buildStatusWidget(status, donHang.id, hideButtons, context),
+        Consumer<CartProvider>(builder: (context, cartProvider, ___) {
+          String statusText;
+          switch (cartProvider.orderModel?.status) {
+            case 0:
+              statusText = "Chờ xác nhận";
+              break;
+            case 1:
+              statusText = "Đang xử lý";
+              break;
+            case 2:
+              statusText = "Đang vận chuyển";
+              break;
+            case 3:
+              statusText = "Thành công";
+              break;
+            default:
+              statusText = "Chờ xác nhận";
+          }
+          return _buildStatusWidget(
+              statusText, widget.donHang.id, widget.hideButtons, context);
+        }),
       ]),
     );
   }
@@ -234,7 +277,7 @@ Widget _buildProductDetailCard({
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '${formatCurrency.format(price)}',
+                  formatCurrency.format(price),
                   style: GoogleFonts.roboto(
                     fontSize: 14,
                     color: AppColor.errorRed,
@@ -322,40 +365,39 @@ Widget _buildStatusWidget(
                   Icon(Icons.arrow_forward_ios_rounded),
                 ],
               )));
-    } else
-      return Container(
-        child: ListTile(
-          title: Container(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Đang chờ khách hàng xác nhận',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
+    } else {
+      return ListTile(
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
           ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-            size: 34,
+          child: const Text(
+            'Đang chờ khách hàng xác nhận',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16),
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Cart(initialTab: CartTab.SaleOrder),
-                ));
-          },
         ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Colors.grey,
+          size: 34,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+              ));
+        },
       );
+    }
   }
 
   // Kiểm tra nếu status là "1"
