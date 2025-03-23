@@ -86,23 +86,93 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     super.dispose();
   }
 
+  void _scrollToBottom() {
+    // Đợi đến frame tiếp theo để đảm bảo layout đã được tính toán
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients && mounted) {
+        try {
+          // Sử dụng animateTo với maxScrollExtent
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        } catch (e) {
+          print('Lỗi khi scroll xuống cuối: $e');
+        }
+      }
+    });
+  }
+
+  void _scrollToBottomWithInput() {
+    // Sử dụng biến local để lưu context
+    final BuildContext currentContext = context;
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients && mounted) {
+        try {
+          // Lấy chiều cao của bàn phím một cách an toàn
+          final keyboardHeight =
+              MediaQuery.of(currentContext).viewInsets.bottom;
+          // Số pixel padding thêm vào, tỷ lệ với chiều cao bàn phím
+          final extraPadding = keyboardHeight > 0 ? 24.0 : 0.0;
+
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent + extraPadding,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+          );
+        } catch (e) {
+          print('Lỗi khi scroll xuống cuối với bàn phím: $e');
+        }
+      }
+    });
+  }
+
   void _onScroll() {
-    // Nếu vị trí cuộn ở trên đầu danh sách (trong khoảng 50 pixel đầu tiên)
-    // và đã qua ít nhất 500ms kể từ lần tải tin nhắn cuối cùng để tránh tải nhiều lần
-    if (_scrollController.position.pixels <= 5.0 &&
+    // Kiểm tra điều kiện scroll
+    if (!_scrollController.hasClients) return;
+
+    final double scrollPosition = _scrollController.position.pixels;
+    final double timeThreshold = 500; // Milliseconds
+
+    // Kiểm tra vị trí scroll và thời gian
+    if (scrollPosition <= 5.0 &&
         !_isLoadingAtTop &&
-        DateTime.now().difference(_lastLoadTime).inMilliseconds > 500) {
+        DateTime.now().difference(_lastLoadTime).inMilliseconds >
+            timeThreshold) {
       final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
       if (chatProvider.hasMoreMessages && !chatProvider.isLoadingMore) {
-        _isLoadingAtTop = true; // Đánh dấu đang tải
-        _lastLoadTime = DateTime.now(); // Cập nhật thời điểm tải
+        _isLoadingAtTop = true;
+        _lastLoadTime = DateTime.now();
+
+        // Lưu lại vị trí scroll hiện tại
+        final double currentOffset = scrollPosition;
+        final int currentItemCount = chatProvider.messages.length;
 
         chatProvider.loadMoreMessages(context).then((_) {
-          // Đảm bảo vị trí cuộn không bị nhảy khi tải thêm tin nhắn
-          if (_scrollController.hasClients) {
-            _scrollController.jumpTo(10.0);
+          // Sau khi load xong, tính toán vị trí mới dựa trên số lượng item đã thêm vào
+          if (_scrollController.hasClients && mounted) {
+            // Tính vị trí mới cần scroll dựa vào số lượng tin nhắn được thêm vào
+            final int newItemCount = chatProvider.messages.length;
+            final int addedItemCount = newItemCount - currentItemCount;
+
+            if (addedItemCount > 0) {
+              // Ước tính chiều cao trung bình của một tin nhắn (có thể điều chỉnh giá trị này)
+              final double avgMessageHeight = 70.0;
+              final double newPosition =
+                  currentOffset + (addedItemCount * avgMessageHeight);
+
+              // Giữ nguyên vị trí tương đối, không gây nhảy scroll
+              _scrollController.jumpTo(newPosition);
+            }
+
+            _isLoadingAtTop = false;
           }
-          _isLoadingAtTop = false; // Đánh dấu đã hoàn thành tải
+        }).catchError((error) {
+          print("Lỗi khi tải thêm tin nhắn: $error");
+          _isLoadingAtTop = false;
         });
 
         print("📜 Tải thêm tin nhắn cũ...");
@@ -140,31 +210,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
       if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
         // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
         print('🔄 Tin nhắn mới được cập nhật');
-      }
-    });
-  }
-
-  void _scrollToBottom() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 100, // Thêm padding
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  void _scrollToBottomWithInput() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent +
-              500, // Tăng padding lên cao hơn nữa
-          duration: const Duration(milliseconds: 50),
-          curve: Curves.easeOut,
-        );
       }
     });
   }
