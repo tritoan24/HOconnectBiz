@@ -189,7 +189,7 @@ class _CompanyListState extends State<_CompanyList> {
                               ),
                             ),
                             title: Text(
-                              join.user?.companyName ?? 'Không có tên',
+                              join.user?.displayName ?? 'Không có tên',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
