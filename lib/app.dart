@@ -127,7 +127,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
                 routerConfig: appRouter,
-                title: 'GoRouter Flutter Example',
+                title: 'CLB DNSG',
                 builder: (context, child) {
                   return Directionality(
                     textDirection: TextDirection.ltr,
