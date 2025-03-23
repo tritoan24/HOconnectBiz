@@ -275,108 +275,114 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          Expanded(
-            child: Consumer<ChatProvider>(
-              builder: (context, chatProvider, child) {
-                final messages = chatProvider.messages;
-                if (chatProvider.isLoadingMessages) {
-                  return Center(
-                    child: Lottie.asset(
-                      'assets/lottie/loading.json',
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.contain,
-                    ),
-                  );
-                }
-                if (messages.isEmpty) {
-                  return const Center(child: Text("Chưa có tin nhắn nào"));
-                }
-
-                return Stack(
-                  children: [
-                    ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(
-                        top: 16,
-                        left: 16,
-                        right: 16,
-                        bottom: 100,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: Column(
+          children: [
+            Expanded(
+              child: Consumer<ChatProvider>(
+                builder: (context, chatProvider, child) {
+                  final messages = chatProvider.messages;
+                  if (chatProvider.isLoadingMessages) {
+                    return Center(
+                      child: Lottie.asset(
+                        'assets/lottie/loading.json',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.contain,
                       ),
-                      itemCount: messages.length +
-                          (chatProvider.isLoadingMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == 0 && chatProvider.isLoadingMore) {
-                          return Center(
-                            child: Lottie.asset(
-                              'assets/lottie/loading.json',
-                              width: 70,
-                              height: 70,
-                              fit: BoxFit.contain,
-                            ),
-                          );
-                        }
+                    );
+                  }
+                  if (messages.isEmpty) {
+                    return const Center(child: Text("Chưa có tin nhắn nào"));
+                  }
 
-                        final actualIndex =
-                            chatProvider.isLoadingMore ? index - 1 : index;
-                        if (actualIndex < 0 || actualIndex >= messages.length) {
-                          return const SizedBox.shrink();
-                        }
-
-                        final message = messages[actualIndex];
-                        return _buildMessageBubble(message);
-                      },
-                    ),
-                    // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
-                    if (_scrollController.hasClients &&
-                        _scrollController.position.pixels <= 0 &&
-                        chatProvider.hasMoreMessages)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 3,
-                          child: const LinearProgressIndicator(),
+                  return Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.only(
+                          top: 16,
+                          left: 16,
+                          right: 16,
+                          bottom: 100,
                         ),
+                        itemCount: messages.length +
+                            (chatProvider.isLoadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == 0 && chatProvider.isLoadingMore) {
+                            return Center(
+                              child: Lottie.asset(
+                                'assets/lottie/loading.json',
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.contain,
+                              ),
+                            );
+                          }
+
+                          final actualIndex =
+                              chatProvider.isLoadingMore ? index - 1 : index;
+                          if (actualIndex < 0 ||
+                              actualIndex >= messages.length) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final message = messages[actualIndex];
+                          return _buildMessageBubble(message);
+                        },
                       ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      resizeToAvoidBottomInset: true, // Thay đổi kích thước để tránh bàn phím
-      bottomSheet: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              spreadRadius: 1,
-              offset: const Offset(0, -3),
+                      // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
+                      if (_scrollController.hasClients &&
+                          _scrollController.position.pixels <= 0 &&
+                          chatProvider.hasMoreMessages)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            height: 3,
+                            child: const LinearProgressIndicator(),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
-        child: MessageInputScreen(
-          onMessageChanged: (message, images) {
-            setState(() {
-              selectedImages = images;
-            });
-          },
-          onSubmit: _sendMessage,
-          onKeyboardOpen: () {
-            // Cuộn xuống khi bàn phím mở ra
-            _scrollToBottomWithInput();
-            print('⌨️ Bàn phím hiện ra - cuộn xuống với padding lớn 800');
-          },
+        resizeToAvoidBottomInset: true, // Thay đổi kích thước để tránh bàn phím
+        bottomSheet: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 6,
+                spreadRadius: 1,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          child: MessageInputScreen(
+            onMessageChanged: (message, images) {
+              setState(() {
+                selectedImages = images;
+              });
+            },
+            onSubmit: _sendMessage,
+            onKeyboardOpen: () {
+              // Cuộn xuống khi bàn phím mở ra
+              _scrollToBottomWithInput();
+              print('⌨️ Bàn phím hiện ra - cuộn xuống với padding lớn 800');
+            },
+          ),
         ),
       ),
     );
