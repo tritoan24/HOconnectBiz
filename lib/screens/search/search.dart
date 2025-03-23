@@ -136,11 +136,13 @@ class _SearchViewState extends State<SearchView>
                       // Trả về danh sách mặc định
                       if (_tabController.index == 0) {
                         // Tab doanh nghiệp - tải lại danh sách mặc định
-                        final boProvider = Provider.of<BoProvider>(context, listen: false);
+                        final boProvider =
+                            Provider.of<BoProvider>(context, listen: false);
                         boProvider.fetchBusinessesSearch(context);
                       } else {
                         // Tab bài viết - tải lại danh sách mặc định
-                        final postProvider = Provider.of<PostProvider>(context, listen: false);
+                        final postProvider =
+                            Provider.of<PostProvider>(context, listen: false);
                         postProvider.fetchPosts(context);
                       }
                     },
@@ -260,6 +262,7 @@ class _SearchViewState extends State<SearchView>
                         product: post.product ?? [],
                         likes: post.like ?? [],
                         comments: post.totalComment ?? 0,
+                        isJoin: post.isJoin ?? [],
                         idUser: post.author!.id,
                       );
                     },
@@ -291,6 +294,7 @@ class _SearchViewState extends State<SearchView>
                       product: post.product ?? [],
                       likes: post.like ?? [],
                       comments: post.totalComment ?? 0,
+                      isJoin: post.isJoin ?? [],
                       idUser: post.author!.id,
                     );
                   },
