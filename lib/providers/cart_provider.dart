@@ -183,4 +183,33 @@ class CartProvider extends BaseProvider {
     );
     LoadingOverlay.hide();
   }
+
+  OrderModel? orderModel;
+
+  // get list order sale
+  Future<void> fetcOrderDetail(BuildContext context, String orderId) async {
+    // _isLoadingOrderSale = true;
+    // _errorMessageOrderSale = '';
+    notifyListeners();
+
+    try {
+      final ApiResponse response = await _repository.getOrderDetail(context, orderId);
+
+      if (response.isSuccess && response.data is Map<String, dynamic>) {
+        Map<String, dynamic> data = response.data as Map<String, dynamic>;
+
+        orderModel = OrderModel.fromJson(data);
+      } else {
+        // _errorMessageOrderSale = response.message ?? 'Không có dữ liệu';
+        // _orderSaleList.clear();
+      }
+    } catch (e) {
+      // _errorMessageOrderSale = "Lỗi khi tải dữ liệu: $e";
+      // _orderSaleList.clear();
+    }
+
+    // _isLoadingOrderSale = false;
+    notifyListeners();
+  }
+
 }
