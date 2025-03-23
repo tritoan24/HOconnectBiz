@@ -114,13 +114,14 @@ class _TrangChuViewState extends State<TrangChuView>
                 title: 'Quản lý',
               ),
               TabItem(
-                  icon: SvgPicture.asset(
-                    "assets/icons/edit.svg",
-                    width: 28,
-                    height: 28,
-                    fit: BoxFit.cover,
-                  ),
-                  title: 'Assessment'),
+                icon: SvgPicture.asset(
+                  "assets/icons/edit.svg",
+                  width: 28,
+                  height: 28,
+                  fit: BoxFit.cover,
+                ),
+                title: 'Assessment'
+              ),
               TabItem(
                 icon: SvgPicture.asset(
                   "assets/icons/vector_noselect.svg",

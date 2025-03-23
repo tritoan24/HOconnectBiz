@@ -40,11 +40,7 @@ dependencies:
   flutter_form_builder: ^9.5.0
   form_builder_validators: ^11.0.0
   carousel_slider: ^5.0.0
-  convex_bottom_bar:
-#    path: /Users/luxihoang/libary/convex_bottom_bar
-      git:
-        url: https://github.com/CongThuan02/convex_bottom_bar.git
-        ref: main
+  convex_bottom_bar: ^3.2.0
   dropdown_button2: ^2.3.9
   form_builder_image_picker: ^4.1.0
   form_builder_file_picker: ^4.2.0
