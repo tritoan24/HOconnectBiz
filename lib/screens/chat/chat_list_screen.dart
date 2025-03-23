@@ -4,6 +4,7 @@ import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
@@ -170,7 +171,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
         child: Consumer<ChatProvider>(
           builder: (context, chatProvider, child) {
             if (chatProvider.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                  child: Center(
+                child: Lottie.asset(
+                  'assets/lottie/loading.json',
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.contain,
+                ),
+              ));
             }
 
             if (chatProvider.contacts.isEmpty) {
