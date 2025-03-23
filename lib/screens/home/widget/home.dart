@@ -233,7 +233,7 @@ class _HomeState extends State<Home> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      widget.onNavigateToTab(3); // Index của tab Shopping
+                      widget.onNavigateToTab(3); // Chuyển đến tab 3
                     },
                     child: const Text(
                       "Xem tất cả",
@@ -249,19 +249,28 @@ class _HomeState extends State<Home> {
               const SizedBox(
                 height: 16,
               ),
+              // Thay đổi phần CarouselSlider trong widget build
               SizedBox(
                 width: MediaQuery.of(context).size.width,
+                height: 645, // Giữ chiều cao container
                 child: CarouselSlider.builder(
                   options: CarouselOptions(
-                    height: 616,
+                    height: 645,
                     viewportFraction: 1,
                     enableInfiniteScroll: false,
+                    scrollDirection: Axis.horizontal,
+                    scrollPhysics:
+                        NeverScrollableScrollPhysics(), // Thêm dòng này để vô hiệu hóa cuộn dọc
                   ),
                   itemCount: posts.length,
                   itemBuilder: (context, index, realIndex) {
                     final post = posts[index];
 
-                    return PostItem(
+                    return SingleChildScrollView(
+                      // Thay đổi ở đây
+                      physics:
+                          NeverScrollableScrollPhysics(), // Vô hiệu hóa cuộn trong mỗi item
+                      child: PostItem(
                         postId: post.id ?? '',
                         postType: post.category ?? 1,
                         displayName: post.author?.displayName ?? '',
@@ -278,7 +287,9 @@ class _HomeState extends State<Home> {
                         comments: post.totalComment ?? 0,
                         isJoin: post.isJoin ?? [],
                         idUser: post.author!.id,
-                        isF: true);
+                        isF: true,
+                      ),
+                    );
                   },
                 ),
               ),

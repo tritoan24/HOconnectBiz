@@ -733,9 +733,14 @@ class _PostItemState extends State<PostItem> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          PostItem.formatCurrency.format(sanPham.price),
-          style: kPriceStyle,
+        Expanded(
+          // Để tự động xuống dòng nếu nội dung quá dài
+          child: Text(
+            PostItem.formatCurrency.format(sanPham.price),
+            style: kPriceStyle,
+            softWrap: true, // Cho phép xuống dòng
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         if (!isBusiness & !widget.isMe) _buildPurchaseButton(context, sanPham),
       ],
