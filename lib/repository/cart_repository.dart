@@ -112,7 +112,7 @@ class CartRepository {
     final response = await _apiClient.pacthJsonRequest(
       '${ApiEndpoints.updateStatusCart}/$orderId',
       context,
-      body: {"status_buy": status},
+      body: {"status": status},
     );
     print(response);
 

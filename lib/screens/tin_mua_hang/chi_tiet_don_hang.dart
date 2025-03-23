@@ -1,4 +1,5 @@
 import 'package:clbdoanhnhansg/models/order_model.dart';
+import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/button.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/status_cho_xac_nhan_don_mua.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/status_done.dart';
@@ -28,7 +29,8 @@ class ChiTietDonHang extends StatelessWidget {
     this.hideButtons = false,
   });
 
-  static void show(BuildContext context, OrderModel donHang, String status, {bool hideButtons = false}) {
+  static void show(BuildContext context, OrderModel donHang, String status,
+      {bool hideButtons = false}) {
     print('Status: $status');
     showModalBottomSheet(
       context: context,
@@ -37,7 +39,7 @@ class ChiTietDonHang extends StatelessWidget {
       builder: (context) => FractionallySizedBox(
         heightFactor: 0.9,
         child: ChiTietDonHang(
-          donHang: donHang, 
+          donHang: donHang,
           status: status,
           hideButtons: hideButtons,
         ),
@@ -138,7 +140,7 @@ class ChiTietDonHang extends StatelessWidget {
           ],
         ),
         // kiểm tra các trạng thái và dựa vào đó để hiển thị ra giao diện
-        _buildStatusWidget(status, donHang.id, hideButtons)
+        _buildStatusWidget(status, donHang.id, hideButtons, context),
       ]),
     );
   }
@@ -284,12 +286,80 @@ Widget _buildTotalRow(String label, String value,
   );
 }
 
-Widget _buildStatusWidget(String status, String id, bool hideButtons) {
+Widget _buildStatusWidget(
+    String status, String id, bool hideButtons, BuildContext context) {
   // Nếu hideButtons là true, không hiển thị các nút
   if (hideButtons) {
-    return const SizedBox(); // Trả về một widget trống
+    if (status == "Đang xử lý") {
+      return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+              ),
+            );
+          },
+          child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: AppColor.primaryBlue,
+                      ),
+                      Text(
+                        'Đã được nhận mua hàng',
+                        style: TextStyle(
+                          color: AppColor.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded),
+                ],
+              )));
+    } else
+      return Container(
+        child: ListTile(
+          title: Container(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'Đang chờ khách hàng xác nhận',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: Colors.grey,
+            size: 34,
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Cart(initialTab: CartTab.SaleOrder),
+                ));
+          },
+        ),
+      );
   }
-  
+
+  // Kiểm tra nếu status là "1"
+
   String statusLowerCase = status.toLowerCase();
 
   if (statusLowerCase == 'thành công') {
@@ -300,8 +370,40 @@ Widget _buildStatusWidget(String status, String id, bool hideButtons) {
     );
   } else if (statusLowerCase == 'Chờ xác nhận tin mua') {
     return const StatusProcessing();
+  } else if (statusLowerCase == 'đang xử lý') {
+    return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  const Cart(initialTab: CartTab.PurchaseOrder),
+            ),
+          );
+        },
+        child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check,
+                      color: AppColor.primaryBlue,
+                    ),
+                    Text(
+                      'Đã Xác nhận mua hàng',
+                      style: TextStyle(
+                        color: AppColor.primaryBlue,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(Icons.arrow_forward_ios_rounded),
+              ],
+            )));
   } else {
     return const SizedBox();
   }
 }
-
