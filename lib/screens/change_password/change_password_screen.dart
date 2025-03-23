@@ -7,6 +7,7 @@ import '../../utils/router/router.name.dart';
 import '../../widgets/button_widget.dart';
 import '../../widgets/inputpassword.dart';
 import '../../providers/auth_provider.dart';
+import '../account/fogot_password/input_account_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -214,7 +215,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          context.go(AppRoutes.quenMatKhau);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const InputAccountScreen(showAppBar: true),
+                            ),
+                          );
                         },
                         child: const Text(
                           'Quên mật khẩu',

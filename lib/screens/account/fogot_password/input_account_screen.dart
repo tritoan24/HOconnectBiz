@@ -11,7 +11,8 @@ import '../../../utils/router/router.name.dart';
 import '../../../widgets/text_styles.dart';
 
 class InputAccountScreen extends StatefulWidget {
-  const InputAccountScreen({super.key});
+  final bool showAppBar;
+  const InputAccountScreen({super.key, this.showAppBar = false});
 
   @override
   State<InputAccountScreen> createState() => _InputAccountScreenState();
@@ -27,6 +28,14 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: widget.showAppBar
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
