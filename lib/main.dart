@@ -29,24 +29,29 @@ import 'core/utils/app_logger.dart';
 import 'providers/send_error_log.dart';
 
 import 'firebase_options.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   // Bắt tất cả các lỗi không xử lý trong Zone
   runZonedGuarded(() async {
+    // Đảm bảo binding chỉ được gọi một lần
     WidgetsFlutterBinding.ensureInitialized();
 
+    await initializeDateFormatting('vi', null);
+
+    // Tải file môi trường
     await dotenv.load(fileName: ".env");
-    WidgetsFlutterBinding.ensureInitialized();
+
+    // Khởi tạo Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 
-    // Khởi tạo OneSignal
+    // Thiết lập OneSignal
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
     OneSignal.initialize(AppConfig.oneSignalAppId);
-    
-    // Yêu cầu quyền thông báo cho iOS 
-    // Android sẽ sử dụng permission_handler trong PermissionService
+
+    // Yêu cầu quyền thông báo cho iOS
     if (Platform.isIOS) {
       OneSignal.Notifications.requestPermission(true);
     }
@@ -56,23 +61,26 @@ void main() {
 
     // Thiết lập error handler toàn cục
     ErrorHandler().setupErrorHandling();
-    
-    // Khởi tạo các services
+
+    // Khởi tạo socket service
     final socketService = SocketService();
     final authProvider = AuthProvider();
 
-    // Lấy userId từ local storage hoặc auth state
+    // Lấy userId từ local storage
     final userId = await authProvider.getuserID();
 
+    // Chỉ kết nối socket khi có userId
     if (userId != null) {
       socketService.initializeSocket(userId);
       socketService.connect(userId);
     }
 
+    // Chạy ứng dụng với các providers
     runApp(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(
+              create: (_) => authProvider), // Sử dụng instance đã tạo
           ChangeNotifierProvider(create: (_) => ProductProvider()),
           ChangeNotifierProvider(create: (_) => PostProvider()),
           ChangeNotifierProvider(create: (_) => BannerProvider()),
@@ -94,17 +102,17 @@ void main() {
       ),
     );
   }, (error, stackTrace) {
-    // Gửi báo cáo lỗi Zone
+    // Xử lý lỗi không được bắt trong Zone
     sendErrorLog(
       level: 3, // Lỗi Zone rất nghiêm trọng
       message: 'Lỗi không xử lý trong Zone: ${error.toString()}',
       additionalInfo: stackTrace.toString(),
     );
-    
+
     // Log lỗi critical bằng AppLogger
-    AppLogger().fatal("App", "Unhandled", "Lỗi không xử lý trong Zone", 
-      error: error, stackTrace: stackTrace);
-    
+    AppLogger().fatal("App", "Unhandled", "Lỗi không xử lý trong Zone",
+        error: error, stackTrace: stackTrace);
+
     print('❌ Lỗi không xử lý: $error\n$stackTrace');
   });
 }
