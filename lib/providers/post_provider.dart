@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:clbdoanhnhansg/models/create_post.dart';
+import 'package:clbdoanhnhansg/screens/manage/manage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:clbdoanhnhansg/repository/post_repository.dart';
@@ -131,7 +132,12 @@ class PostProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await fetchPostsByUser(context);
-        Navigator.of(context).pop();
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return const QuanLyView(
+            isLeading: false,
+            initialTabIndex: 1,
+          );
+        }));
       },
       successMessage: 'Tạo bài viết thành công!',
     );
@@ -141,11 +147,11 @@ class PostProvider extends BaseProvider {
 
   Future<void> fetchPosts(BuildContext context) async {
     if (_isLoading) return; // Thêm kiểm tra nếu đang loading thì return
-    
+
     resetPagination();
     _isLoading = true;
     notifyListeners();
-    
+
     try {
       await _loadPostsPage(context);
     } catch (e) {
@@ -193,7 +199,8 @@ class PostProvider extends BaseProvider {
         if (postsData.isEmpty) {
           _hasMorePosts = false;
         } else {
-          List<Posts> newPosts = postsData.map((post) => Posts.fromJson(post)).toList();
+          List<Posts> newPosts =
+              postsData.map((post) => Posts.fromJson(post)).toList();
 
           // Kiểm tra trùng lặp trước khi thêm vào danh sách
           if (_currentPage == 1) {
@@ -201,7 +208,8 @@ class PostProvider extends BaseProvider {
           } else {
             // Lọc ra những bài post chưa có trong danh sách hiện tại
             final existingIds = _posts.map((p) => p.id).toSet();
-            final uniqueNewPosts = newPosts.where((p) => !existingIds.contains(p.id)).toList();
+            final uniqueNewPosts =
+                newPosts.where((p) => !existingIds.contains(p.id)).toList();
             _posts.addAll(uniqueNewPosts);
           }
 
@@ -788,25 +796,26 @@ class PostProvider extends BaseProvider {
       // Lấy userId hiện tại từ AuthProvider
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = await authProvider.getuserID();
-      
+
       if (userId == null || userId.isEmpty) {
         debugPrint("⚠️ WARNING: Không thể lấy userId hiện tại");
         return;
       }
-      
+
       // Tìm post trong các danh sách
       final post = getPostById(postId);
       if (post == null) {
         debugPrint("⚠️ WARNING: Không tìm thấy post với ID: $postId");
         return;
       }
-      
+
       // Khởi tạo mảng isJoin nếu chưa có
       post.isJoin ??= [];
-      
+
       // Kiểm tra xem user đã join chưa
-      bool userAlreadyJoined = post.isJoin!.any((join) => join.user?.id == userId);
-      
+      bool userAlreadyJoined =
+          post.isJoin!.any((join) => join.user?.id == userId);
+
       if (!userAlreadyJoined) {
         // Tạo đối tượng user từ userId
         final user = Author(
@@ -830,7 +839,7 @@ class PostProvider extends BaseProvider {
           type: "",
           userId: userId,
         );
-        
+
         // Tạo đối tượng IsJoin mới
         final newJoin = IsJoin(
           id: DateTime.now().millisecondsSinceEpoch.toString(), // ID tạm thời
@@ -841,17 +850,19 @@ class PostProvider extends BaseProvider {
           status: 0, // Trạng thái mặc định
           createdAt: DateTime.now(),
         );
-        
+
         // Thêm vào mảng isJoin của post
         post.isJoin!.add(newJoin);
-        
+
         // Cập nhật post trong tất cả các danh sách
         updatePostInLists(post);
-        
-        debugPrint("🔍 DEBUG: Đã thêm user vào danh sách join của post: $postId");
+
+        debugPrint(
+            "🔍 DEBUG: Đã thêm user vào danh sách join của post: $postId");
         notifyListeners();
       } else {
-        debugPrint("🔍 DEBUG: User đã tồn tại trong danh sách join của post: $postId");
+        debugPrint(
+            "🔍 DEBUG: User đã tồn tại trong danh sách join của post: $postId");
       }
     } catch (e) {
       debugPrint("⚠️ ERROR: Lỗi khi cập nhật trạng thái join: $e");

@@ -5,12 +5,14 @@ import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/post_provider.dart';
 import 'widget/post/post_tab.dart';
 
 class QuanLyView extends StatefulWidget {
   final bool isLeading;
-
-  const QuanLyView({super.key, required this.isLeading});
+  final int initialTabIndex;
+  const QuanLyView(
+      {super.key, required this.isLeading, this.initialTabIndex = 0});
 
   @override
   State<QuanLyView> createState() => _QuanLyViewState();
@@ -19,29 +21,11 @@ class QuanLyView extends StatefulWidget {
 class _QuanLyViewState extends State<QuanLyView> {
   final ScrollController _scrollController = ScrollController();
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // Gọi fetchUser một lần khi màn hình khởi tạo
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final userProvider = Provider.of<UserProvider>(context, listen: false);
-  //     if (userProvider.user == null) {
-  //       userProvider.fetchUser(context);
-  //     }
-  //
-  //     // Provider.of<UserProvider>(context, listen: false).fetchUser(context);
-  //     Provider.of<BusinessProvider>(context, listen: false)
-  //         .getListBusiness(context);
-  //   });
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final productProvider =
-  //         Provider.of<ProductProvider>(context, listen: false);
-  //     if (productProvider.products.isEmpty) {
-  //       productProvider.getListProduct(context);
-  //     }
-  //   });
-  //   // Provider.of<PostProvider>(context, listen: false).fetchPostsByUser(context);
-  // }
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<PostProvider>(context, listen: false).fetchPostsByUser(context);
+  }
 
   @override
   void dispose() {
@@ -53,6 +37,7 @@ class _QuanLyViewState extends State<QuanLyView> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
+      initialIndex: widget.initialTabIndex,
       child: Scaffold(
         backgroundColor: const Color(0xfff4f5f6),
         body: Consumer<UserProvider>(
