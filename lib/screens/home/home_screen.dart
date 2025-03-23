@@ -76,7 +76,7 @@ class _TrangChuViewState extends State<TrangChuView>
             controller: _tabController,
             curveSize: 90,
             top: -27,
-            height: 70,
+            height: 80,
             backgroundColor: Colors.white,
             color: Colors.grey,
             style: TabStyle.fixedCircle,
