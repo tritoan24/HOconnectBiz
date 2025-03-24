@@ -132,12 +132,19 @@ class PostProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await fetchPostsByUser(context);
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return const QuanLyView(
-            isLeading: false,
-            initialTabIndex: 1,
-          );
-        }));
+        //Hủy bỏ màn hình này trước khi chuyển
+        // Thử cách này
+        Navigator.of(context).pop(); // Hủy bỏ màn hình hiện tại
+        await Future.delayed(
+            Duration(milliseconds: 100)); // Đợi một chút để màn hình biến mất
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) {
+            return const QuanLyView(
+              isLeading: true,
+              initialTabIndex: 1,
+            );
+          }),
+        );
       },
       successMessage: 'Tạo bài viết thành công!',
     );
