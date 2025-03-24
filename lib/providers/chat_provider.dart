@@ -160,17 +160,15 @@ class ChatProvider with ChangeNotifier {
       if (data['data'] != null && data['data'] is Map<String, dynamic>) {
         var responseData = data['data'];
 
-        // Kiểm tra status thành công
         if (responseData['status'] == 'success' &&
             responseData['data'] != null) {
           var messagesData = responseData['data'];
 
-          // Lặp qua từng conversationId và danh sách tin nhắn
           messagesData.forEach((conversationId, messages) {
             if (messages is List) {
               for (var msgData in messages) {
                 if (msgData is Map<String, dynamic>) {
-                  // Chuyển đổi cấu trúc dữ liệu để phù hợp với Message model
+                  // Format message data
                   var formattedMsgData = {
                     '_id': msgData['_id'],
                     'sender': {
@@ -203,48 +201,50 @@ class ChatProvider with ChangeNotifier {
                     'status': MessageStatus.sent
                   };
 
-                  // Tạo message mới từ dữ liệu đã format
                   final message = Message.fromJson(formattedMsgData);
+                  final isFromCurrentUser =
+                      message.sender?.id == _currentUserId;
 
-                  // Kiểm tra xem tin nhắn có thuộc về group hiện tại không
                   if (_currentGroupChatId != null &&
                       message.conversationId == _currentGroupChatId) {
-                    // Kiểm tra xem tin nhắn đã tồn tại chưa
-                    bool isDuplicate = false;
+                    // Tìm tin nhắn trùng lặp theo ID
+                    int existingIndex =
+                        _messages.indexWhere((m) => m.id == message.id);
 
-                    // 1. Kiểm tra trùng ID
-                    if (_messages.any((m) => m.id == message.id)) {
-                      isDuplicate = true;
-                    }
-
-                    // 2. Kiểm tra trùng nội dung và thời gian (chỉ cho tin nhắn đang gửi)
-                    if (!isDuplicate) {
-                      isDuplicate = _messages.any((m) {
-                        // Chỉ kiểm tra trùng với tin nhắn đang gửi
-                        if (m.status == MessageStatus.sending) {
-                          // So sánh nội dung
+                    // Tìm tin nhắn trùng lặp theo nội dung và thời gian
+                    if (existingIndex == -1 && isFromCurrentUser) {
+                      existingIndex = _messages.indexWhere((m) {
+                        if ((m.status == MessageStatus.sending ||
+                                m.status == MessageStatus.sent) &&
+                            m.sender?.id == message.sender?.id) {
                           if (m.content == message.content) {
-                            // So sánh thời gian (trong khoảng 1 giây)
                             final timeDiff = m.timestamp
                                     ?.difference(
                                         message.timestamp ?? DateTime.now())
                                     .inSeconds
                                     .abs() ??
                                 0;
-                            return timeDiff < 1;
+                            return timeDiff < 2;
                           }
                         }
                         return false;
                       });
                     }
 
-                    // Chỉ thêm vào danh sách nếu chưa tồn tại
-                    if (!isDuplicate) {
-                      print("📥 Thêm tin nhắn mới vào group: ${message.id}");
-                      _messages.add(message);
-                      notifyListeners();
+                    if (existingIndex != -1) {
+                      // Cập nhật tin nhắn nếu đang trong trạng thái gửi
+                      if (_messages[existingIndex].status ==
+                          MessageStatus.sending) {
+                        _messages[existingIndex] = message;
+                        _messages[existingIndex].status = MessageStatus.sent;
+                        notifyListeners();
+                      }
                     } else {
-                      print("⚠️ Bỏ qua tin nhắn trùng lặp: ${message.id}");
+                      // Chỉ thêm tin nhắn nếu không phải từ người dùng hiện tại
+                      if (!isFromCurrentUser) {
+                        _messages.add(message);
+                        notifyListeners();
+                      }
                     }
                   }
                 }
@@ -347,8 +347,8 @@ class ChatProvider with ChangeNotifier {
             // Thêm các contact mới vào đầu danh sách
             _contacts.insertAll(0, uniqueNewContacts);
 
-            // Cập nhật số lượng contact
-            _cartItemCount = _contacts.length;
+            // // Cập nhật số lượng contact
+            // _cartItemCount = _contacts.length;
 
             print(
                 "👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
@@ -378,11 +378,48 @@ class ChatProvider with ChangeNotifier {
                 receiverId == _currentChatReceiverId) ||
             (senderId == _currentChatReceiverId &&
                 receiverId == _currentUserId)) {
-          // Thêm vào danh sách nếu chưa có
-          if (!_messages.any((m) => m.id == message.id)) {
-            // Thêm tin nhắn mới vào cuối danh sách
-            _messages.add(message);
-            notifyListeners();
+          // Kiểm tra message là từ người dùng hiện tại
+          final isFromCurrentUser = senderId == _currentUserId;
+
+          // Kiểm tra trùng lặp dựa trên ID
+          int existingIndex = _messages.indexWhere((m) => m.id == message.id);
+
+          // Kiểm tra trùng lặp dựa trên nội dung và thời gian
+          if (existingIndex == -1 && isFromCurrentUser) {
+            existingIndex = _messages.indexWhere((m) {
+              // Chỉ kiểm tra với tin nhắn đang gửi hoặc mới gửi gần đây
+              if ((m.status == MessageStatus.sending ||
+                      m.status == MessageStatus.sent) &&
+                  m.sender?.id == senderId) {
+                // So sánh nội dung
+                if (m.content == message.content) {
+                  // So sánh thời gian (trong khoảng 2 giây)
+                  final timeDiff = m.timestamp
+                          ?.difference(message.timestamp ?? DateTime.now())
+                          .inSeconds
+                          .abs() ??
+                      0;
+                  return timeDiff < 2;
+                }
+              }
+              return false;
+            });
+          }
+
+          if (existingIndex != -1) {
+            // Đã có tin nhắn này - cập nhật trạng thái nếu là tin nhắn đang gửi
+            if (_messages[existingIndex].status == MessageStatus.sending) {
+              _messages[existingIndex] = message;
+              _messages[existingIndex].status = MessageStatus.sent;
+              notifyListeners();
+            }
+          } else {
+            // Chỉ thêm vào nếu không phải là người dùng hiện tại
+            // hoặc không tìm thấy tin nhắn tương tự
+            if (!isFromCurrentUser) {
+              _messages.add(message);
+              notifyListeners();
+            }
           }
         }
       }

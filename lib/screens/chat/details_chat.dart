@@ -452,26 +452,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   : null,
             ),
             const SizedBox(width: 4),
-            RichText(
-              text: TextSpan(
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                  color: const Color(0xFF141415),
+            Expanded(
+              child: RichText(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                    color: const Color(0xFF141415),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${message.sender?.displayName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' được '),
+                    TextSpan(
+                      text: '$companyName ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: 'thêm vào nhóm'),
+                  ],
                 ),
-                children: [
-                  TextSpan(
-                    text: '${message.sender?.displayName}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: ' được '),
-                  TextSpan(
-                    text: '$companyName ',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: 'thêm vào nhóm'),
-                ],
               ),
             ),
           ],
