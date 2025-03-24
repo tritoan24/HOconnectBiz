@@ -242,8 +242,12 @@ class _CompanyListState extends State<_CompanyList> {
 
                         if (selectedIds.isNotEmpty) {
                           // Chỉ truyền postId khi nó không rỗng
-                          final String postIdToUse = widget.postId.trim();
-
+                          final String postIdToUse = selectedCompanies
+                                  .firstWhere(
+                                      (join) => join.postId?.isNotEmpty == true,
+                                      orElse: () => IsJoin(postId: ''))
+                                  .postId ??
+                              '';
                           // Gọi API duyệt doanh nghiệp
                           await businessProvider.approveBusiness(
                               selectedIds, context, postIdToUse);

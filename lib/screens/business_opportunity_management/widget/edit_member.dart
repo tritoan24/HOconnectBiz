@@ -7,9 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/bo_provider.dart';
+import '../../../providers/business_op_provider.dart';
+import '../../../providers/post_provider.dart';
 import '../../../utils/router/router.name.dart';
 import '../../../widgets/confirmdialog.dart';
 import '../../../widgets/text_styles.dart';
+import 'details_post_business.dart';
 
 class EditMember extends StatefulWidget {
   final List<IsJoin> data;
@@ -30,12 +33,59 @@ class _EditMemberState extends State<EditMember> {
   late List<IsJoin> _data;
   late List<IsJoin> _member;
   bool _hasChanges = false;
+  late BusinessOpProvider businessProvider;
 
   @override
   void initState() {
     super.initState();
     _data = List.from(widget.data);
     _member = List.from(widget.member);
+
+    // Initialize the business provider
+    businessProvider = Provider.of<BusinessOpProvider>(context, listen: false);
+
+    // Add listener to check for navigation changes
+    businessProvider.addListener(_checkNavigation);
+  }
+
+  @override
+  void dispose() {
+    // Remove listener when widget is disposed
+    businessProvider.removeListener(_checkNavigation);
+    super.dispose();
+  }
+
+  // Check navigation method similar to CompanyBottomSheet
+  void _checkNavigation() {
+    if (businessProvider.shouldNavigate && mounted && context.mounted) {
+      final String postId = businessProvider.pendingNavigationPostId;
+
+      // Pop current screen
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Schedule navigation after the frame is built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Clear navigation state
+        businessProvider.clearNavigation();
+
+        // Navigate to details screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailsPostBusiness(
+              idPost: postId,
+              isInBusiness: true,
+            ),
+          ),
+        );
+
+        // Refresh post data
+        Provider.of<PostProvider>(context, listen: false)
+            .fetchPostsByUser(context);
+      });
+    }
   }
 
   void deleteMember(String idPost, String idMember) async {
@@ -280,4 +330,3 @@ class _EditMemberState extends State<EditMember> {
     );
   }
 }
-
