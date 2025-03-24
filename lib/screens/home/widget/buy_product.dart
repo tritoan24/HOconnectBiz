@@ -40,6 +40,12 @@ class _BuyProductState extends State<BuyProduct> {
       appBar: AppBar(
         backgroundColor: const Color(0xffF4F5F6),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -194,8 +200,12 @@ class _BuyProductState extends State<BuyProduct> {
                 //     MaterialPageRoute(
                 //         builder: (context) => const TinMuaHang()));
                 Provider.of<ChatProvider>(context, listen: false)
-                    .sendMessageBuyNow(widget.product.author.toString(),
-                        widget.product.id.toString(), context);
+                    .sendMessageBuyNow(
+                        widget.product.author.toString(),
+                        widget.product.id.toString(),
+                        widget.avatar_image,
+                        widget.displayName,
+                        context);
                 // GoRouter.of(context).go('/chat');
               },
               child: Center(

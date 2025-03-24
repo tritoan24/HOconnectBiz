@@ -12,6 +12,7 @@ import '../models/auth_model.dart';
 import '../repository/chat_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
 import '../utils/router/router.name.dart';
+import '../widgets/loading_overlay.dart';
 import 'auth_provider.dart';
 import 'post_provider.dart';
 import 'package:http/http.dart' as http;
@@ -413,8 +414,10 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  Future<void> sendMessageBuyNow(
-      String receiverId, String productId, BuildContext context) async {
+  Future<void> sendMessageBuyNow(String receiverId, String productId,
+      String avtar, String displayName, BuildContext context) async {
+    LoadingOverlay.show(context);
+
     _isLoading = true;
     notifyListeners();
 
@@ -435,14 +438,14 @@ class ChatProvider with ChangeNotifier {
                       currentUserId: currentUserId,
                       idReceiver: receiverId,
                       idMessage: receiverId,
-                      avatarImage: '',
-                      displayName: '',
+                      avatarImage: avtar,
+                      displayName: displayName,
                     )));
       }
     } catch (e) {
       print("Error: $e");
     }
-
+    LoadingOverlay.hide();
     _isLoading = false;
     notifyListeners();
   }

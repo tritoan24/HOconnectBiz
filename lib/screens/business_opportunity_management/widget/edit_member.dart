@@ -312,7 +312,7 @@ class _EditMemberState extends State<EditMember> {
               ),
             ),
             title: Text(
-              widget.author.companyName.toString(),
+              widget.author.displayName.toString(),
               style: TextStyles.textStyleNormal14W400,
             ),
             trailing: const Text(
