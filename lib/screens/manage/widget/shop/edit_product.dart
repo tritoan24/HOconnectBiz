@@ -71,6 +71,61 @@ class _editProductState extends State<EditProduct> {
     });
   }
 
+  // Add this method to your _editProductState class
+  bool _validateForm() {
+    // First use FormBuilder's built-in validation
+    if (!(_formKey.currentState?.saveAndValidate() ?? false)) {
+      return false;
+    }
+
+    // Additional custom validations
+    bool isValid = true;
+    String errorMessage = '';
+
+    // Validate product name
+    if (_controllerTenSanPham.text.trim().isEmpty) {
+      errorMessage = 'Vui lòng nhập tên sản phẩm';
+      isValid = false;
+    }
+
+    // Validate price
+    if (_controllerPrice.text.trim().isEmpty) {
+      errorMessage = 'Vui lòng nhập giá sản phẩm';
+      isValid = false;
+    } else {
+      String priceText =
+          _controllerPrice.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (int.tryParse(priceText) == null || int.parse(priceText) <= 0) {
+        errorMessage = 'Giá sản phẩm phải lớn hơn 0';
+        isValid = false;
+      }
+    }
+
+    // Validate discount (if provided)
+    if (_controllerChietKhau.text.isNotEmpty) {
+      int? discount = int.tryParse(_controllerChietKhau.text);
+      if (discount == null || discount < 0 || discount > 100) {
+        errorMessage = 'Chiết khấu phải từ 0-100%';
+        isValid = false;
+      }
+    }
+
+    // Validate images
+    if (selectedImages.isEmpty) {
+      errorMessage = 'Vui lòng chọn ít nhất 1 ảnh sản phẩm';
+      isValid = false;
+    }
+
+    // Show error message if validation fails
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    }
+
+    return isValid;
+  }
+
   @override
   void dispose() {
     _controllerPrice.removeListener(_formatMoney);
@@ -99,6 +154,7 @@ class _editProductState extends State<EditProduct> {
     final productProvider = Provider.of<ProductProvider>(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -257,123 +313,128 @@ class _editProductState extends State<EditProduct> {
                 ButtonWidget(
                   label: widget.product != null ? "Cập nhật" : "Tạo sản phẩm",
                   onPressed: () async {
-                    if (_formKey.currentState?.saveAndValidate() ?? false) {
-                      final formData = _formKey.currentState?.value;
+                    if (_validateForm()) {
+                      if (_formKey.currentState?.saveAndValidate() ?? false) {
+                        final formData = _formKey.currentState?.value;
 
-                      // Dữ liệu gốc
-                      final originalProduct = widget.product;
+                        // Dữ liệu gốc
+                        final originalProduct = widget.product;
 
-                      // Phân tích các ảnh được thêm mới và các ảnh bị xóa
-                      List<String> newLocalImages = [];
-                      List<String> retainedUrlImages = [];
-                      List<String> deletedImages = [];
+                        // Phân tích các ảnh được thêm mới và các ảnh bị xóa
+                        List<String> newLocalImages = [];
+                        List<String> retainedUrlImages = [];
+                        List<String> deletedImages = [];
 
-                      if (originalProduct != null) {
-                        // Tìm ảnh mới (file local)
-                        newLocalImages = selectedImages
-                            .where((path) =>
-                                !path.startsWith('http') &&
-                                !originalProduct.album.contains(path))
-                            .toList();
+                        if (originalProduct != null) {
+                          // Tìm ảnh mới (file local)
+                          newLocalImages = selectedImages
+                              .where((path) =>
+                                  !path.startsWith('http') &&
+                                  !originalProduct.album.contains(path))
+                              .toList();
 
-                        // Tìm các ảnh URL được giữ lại
-                        retainedUrlImages = selectedImages
-                            .where((path) => path.startsWith('http'))
-                            .toList();
+                          // Tìm các ảnh URL được giữ lại
+                          retainedUrlImages = selectedImages
+                              .where((path) => path.startsWith('http'))
+                              .toList();
 
-                        // Tìm các ảnh bị xóa (URL có trong originalProduct nhưng không còn trong selectedImages)
-                        deletedImages = originalProduct.album
-                            .where((path) =>
-                                path.startsWith('http') &&
-                                !selectedImages.contains(path))
-                            .toList();
-                      }
+                          // Tìm các ảnh bị xóa (URL có trong originalProduct nhưng không còn trong selectedImages)
+                          deletedImages = originalProduct.album
+                              .where((path) =>
+                                  path.startsWith('http') &&
+                                  !selectedImages.contains(path))
+                              .toList();
+                        }
 
-                      // Dữ liệu mới
-                      final newProduct = ProductModel(
-                        id: originalProduct?.id,
-                        title: _controllerTenSanPham.text,
-                        price: int.parse(_controllerPrice.text
-                                .replaceAll(RegExp(r'[^0-9]'), '')) ??
-                            0,
-                        discount: int.parse(_controllerChietKhau.text.isEmpty
-                            ? '0'
-                            : _controllerChietKhau.text),
-                        description: _controllerMoTa.text,
-                        album: selectedImages,
-                      );
+                        // Dữ liệu mới
+                        final newProduct = ProductModel(
+                          id: originalProduct?.id,
+                          title: _controllerTenSanPham.text,
+                          price: int.parse(_controllerPrice.text
+                                  .replaceAll(RegExp(r'[^0-9]'), '')) ??
+                              0,
+                          discount: int.parse(_controllerChietKhau.text.isEmpty
+                              ? '0'
+                              : _controllerChietKhau.text),
+                          description: _controllerMoTa.text,
+                          album: selectedImages,
+                        );
 
-                      // Map lưu các trường bị thay đổi
-                      Map<String, dynamic> updatedFields = {};
+                        // Map lưu các trường bị thay đổi
+                        Map<String, dynamic> updatedFields = {};
 
-                      if (originalProduct == null) {
-                        // Nếu là sản phẩm mới, gửi toàn bộ dữ liệu
-                        await productProvider.createProduct(context, newProduct,
-                            files: selectedImages
+                        if (originalProduct == null) {
+                          // Nếu là sản phẩm mới, gửi toàn bộ dữ liệu
+                          await productProvider.createProduct(
+                              context, newProduct,
+                              files: selectedImages
+                                  .map((path) => File(path))
+                                  .toList());
+                        } else {
+                          // Nếu là cập nhật, chỉ gửi các trường bị thay đổi
+                          if (newProduct.title != originalProduct.title) {
+                            updatedFields['title'] = newProduct.title;
+                          }
+                          if (newProduct.price != originalProduct.price) {
+                            updatedFields['price'] = newProduct.price;
+                          }
+                          if (newProduct.discount != originalProduct.discount) {
+                            updatedFields['discount'] = newProduct.discount;
+                          }
+                          if (newProduct.description !=
+                              originalProduct.description) {
+                            updatedFields['description'] =
+                                newProduct.description;
+                          }
+
+                          // Phần xử lý ảnh
+                          if (newLocalImages.isNotEmpty ||
+                              deletedImages.isNotEmpty) {
+                            // Chỉ cập nhật album nếu có ảnh mới hoặc ảnh bị xóa
+                            updatedFields['album'] = retainedUrlImages;
+                          }
+
+                          // Thêm danh sách ảnh cần xóa nếu có
+                          if (deletedImages.isNotEmpty) {
+                            updatedFields['delete'] = deletedImages;
+                          }
+
+                          // Nếu có bất kỳ thay đổi nào thì mới gửi yêu cầu cập nhật
+                          if (updatedFields.isNotEmpty) {
+                            // Tạo một ProductModel mới chỉ với các giá trị bị thay đổi
+                            final updatedProduct = ProductModel(
+                              id: originalProduct.id,
+                              title: updatedFields.containsKey('title')
+                                  ? updatedFields['title']
+                                  : originalProduct.title,
+                              price: updatedFields.containsKey('price')
+                                  ? updatedFields['price']
+                                  : originalProduct.price,
+                              discount: updatedFields.containsKey('discount')
+                                  ? updatedFields['discount']
+                                  : originalProduct.discount,
+                              description:
+                                  updatedFields.containsKey('description')
+                                      ? updatedFields['description']
+                                      : originalProduct.description,
+                              album: updatedFields.containsKey('album')
+                                  ? updatedFields['album']
+                                  : originalProduct.album,
+                            );
+
+                            // Chuẩn bị danh sách các file ảnh mới cần upload
+                            List<File> newImageFiles = newLocalImages
                                 .map((path) => File(path))
-                                .toList());
-                      } else {
-                        // Nếu là cập nhật, chỉ gửi các trường bị thay đổi
-                        if (newProduct.title != originalProduct.title) {
-                          updatedFields['title'] = newProduct.title;
-                        }
-                        if (newProduct.price != originalProduct.price) {
-                          updatedFields['price'] = newProduct.price;
-                        }
-                        if (newProduct.discount != originalProduct.discount) {
-                          updatedFields['discount'] = newProduct.discount;
-                        }
-                        if (newProduct.description !=
-                            originalProduct.description) {
-                          updatedFields['description'] = newProduct.description;
-                        }
+                                .toList();
 
-                        // Phần xử lý ảnh
-                        if (newLocalImages.isNotEmpty ||
-                            deletedImages.isNotEmpty) {
-                          // Chỉ cập nhật album nếu có ảnh mới hoặc ảnh bị xóa
-                          updatedFields['album'] = retainedUrlImages;
-                        }
-
-                        // Thêm danh sách ảnh cần xóa nếu có
-                        if (deletedImages.isNotEmpty) {
-                          updatedFields['delete'] = deletedImages;
-                        }
-
-                        // Nếu có bất kỳ thay đổi nào thì mới gửi yêu cầu cập nhật
-                        if (updatedFields.isNotEmpty) {
-                          // Tạo một ProductModel mới chỉ với các giá trị bị thay đổi
-                          final updatedProduct = ProductModel(
-                            id: originalProduct.id,
-                            title: updatedFields.containsKey('title')
-                                ? updatedFields['title']
-                                : originalProduct.title,
-                            price: updatedFields.containsKey('price')
-                                ? updatedFields['price']
-                                : originalProduct.price,
-                            discount: updatedFields.containsKey('discount')
-                                ? updatedFields['discount']
-                                : originalProduct.discount,
-                            description:
-                                updatedFields.containsKey('description')
-                                    ? updatedFields['description']
-                                    : originalProduct.description,
-                            album: updatedFields.containsKey('album')
-                                ? updatedFields['album']
-                                : originalProduct.album,
-                          );
-
-                          // Chuẩn bị danh sách các file ảnh mới cần upload
-                          List<File> newImageFiles =
-                              newLocalImages.map((path) => File(path)).toList();
-
-                          await productProvider.editProduct(
-                            context,
-                            updatedProduct,
-                            files: newImageFiles, // Chỉ upload file ảnh mới
-                            deletedImages:
-                                deletedImages, // Danh sách ảnh cần xóa
-                          );
+                            await productProvider.editProduct(
+                              context,
+                              updatedProduct,
+                              files: newImageFiles, // Chỉ upload file ảnh mới
+                              deletedImages:
+                                  deletedImages, // Danh sách ảnh cần xóa
+                            );
+                          }
                         }
                       }
                     }
@@ -390,4 +451,3 @@ class _editProductState extends State<EditProduct> {
     );
   }
 }
-

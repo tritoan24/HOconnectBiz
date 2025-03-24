@@ -22,26 +22,88 @@ class _AddProductState extends State<AddProduct> {
   final _formKey = GlobalKey<FormBuilderState>();
   List<String> selectedImages = [];
 
+  // Add controllers for all fields
+  final TextEditingController _controllerPrice = TextEditingController();
+  final TextEditingController _controllerTenSanPham = TextEditingController();
+  final TextEditingController _controllerChietKhau = TextEditingController();
+  final TextEditingController _controllerMoTa = TextEditingController();
+  final NumberFormat _formatter = NumberFormat('#,###', 'vi_VN');
+
   void _onImagesSelected(List<String> paths) {
     setState(() {
       selectedImages = paths;
     });
   }
 
-  final TextEditingController _controllerPrice = TextEditingController();
-  final NumberFormat _formatter = NumberFormat('#,###', 'vi_VN');
-
   @override
   void initState() {
     super.initState();
-    _controllerPrice.addListener(_formatMoney); // Correct function name
+    _controllerPrice.addListener(_formatMoney);
   }
 
   @override
   void dispose() {
     _controllerPrice.removeListener(_formatMoney);
     _controllerPrice.dispose();
+    _controllerTenSanPham.dispose();
+    _controllerChietKhau.dispose();
+    _controllerMoTa.dispose();
     super.dispose();
+  }
+
+  // Add form validation method
+  bool _validateForm() {
+    // Use FormBuilder's built-in validation
+    if (!(_formKey.currentState?.saveAndValidate() ?? false)) {
+      return false;
+    }
+
+    // Additional custom validations
+    bool isValid = true;
+    String errorMessage = '';
+
+    // Validate product name
+    if (_controllerTenSanPham.text.trim().isEmpty) {
+      errorMessage = 'Vui lòng nhập tên sản phẩm';
+      isValid = false;
+    }
+
+    // Validate price
+    if (_controllerPrice.text.trim().isEmpty) {
+      errorMessage = 'Vui lòng nhập giá sản phẩm';
+      isValid = false;
+    } else {
+      String priceText =
+          _controllerPrice.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (int.tryParse(priceText) == null || int.parse(priceText) <= 0) {
+        errorMessage = 'Giá sản phẩm phải lớn hơn 0';
+        isValid = false;
+      }
+    }
+
+    // Validate discount (if provided)
+    if (_controllerChietKhau.text.isNotEmpty) {
+      int? discount = int.tryParse(_controllerChietKhau.text);
+      if (discount == null || discount < 0 || discount > 100) {
+        errorMessage = 'Chiết khấu phải từ 0-100%';
+        isValid = false;
+      }
+    }
+
+    // Validate images
+    if (selectedImages.isEmpty) {
+      errorMessage = 'Vui lòng chọn ít nhất 1 ảnh sản phẩm';
+      isValid = false;
+    }
+
+    // Show error message if validation fails
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    }
+
+    return isValid;
   }
 
   void _formatMoney() {
@@ -63,7 +125,6 @@ class _AddProductState extends State<AddProduct> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // Add Scaffold
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -76,18 +137,17 @@ class _AddProductState extends State<AddProduct> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: FormBuilder(
-            // Add FormBuilder here
-            key: _formKey, // Use the formKey
+            key: _formKey,
             child: Column(
-              mainAxisSize: MainAxisSize
-                  .min, // Đảm bảo Column không chiếm toàn bộ chiều cao
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const InputText(
+                InputText(
                   name: 'tenSanPham',
                   title: "Tên sản phẩm",
                   hintText: "Nhập tên sản phẩm",
+                  controller: _controllerTenSanPham,
                 ),
                 const SizedBox(
                   height: 20,
@@ -148,7 +208,8 @@ class _AddProductState extends State<AddProduct> {
                     ),
                     const SizedBox(height: 8),
                     FormBuilderTextField(
-                      maxLines: null, // Cho phép xuống dòng tự do
+                      controller: _controllerChietKhau,
+                      maxLines: null,
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.done,
                       autovalidateMode: AutovalidateMode.always,
@@ -188,7 +249,7 @@ class _AddProductState extends State<AddProduct> {
                           ),
                         ),
                         suffixIconConstraints:
-                            BoxConstraints(minWidth: 20, minHeight: 20),
+                            const BoxConstraints(minWidth: 20, minHeight: 20),
                       ),
                     ),
                   ],
@@ -196,10 +257,11 @@ class _AddProductState extends State<AddProduct> {
                 const SizedBox(
                   height: 20,
                 ),
-                const InputTextArea(
+                InputTextArea(
                   title: "Mô tả sản phẩm",
                   name: 'moTaSanPham',
                   hintText: "Nhập mô tả chi tiết sản phẩm",
+                  controller: _controllerMoTa,
                 ),
                 const SizedBox(
                   height: 20,
@@ -222,20 +284,20 @@ class _AddProductState extends State<AddProduct> {
                 ButtonWidget(
                   label: "Thêm sản phẩm",
                   onPressed: () async {
-                    if (_formKey.currentState?.saveAndValidate() ?? false) {
-                      final formData = _formKey.currentState?.value;
+                    if (_validateForm()) {
                       final product = ProductModel(
-                        title: formData?['tenSanPham'],
+                        title: _controllerTenSanPham.text,
                         price: int.parse(_controllerPrice.text
                                 .replaceAll(RegExp(r'[^0-9]'), '')) ??
                             0,
-                        discount:
-                            int.parse(formData?['chietKhauHoiVien'] ?? '0'),
-                        description: formData?['moTaSanPham'],
-                        album: selectedImages ?? [],
+                        discount: int.parse(_controllerChietKhau.text.isEmpty
+                            ? '0'
+                            : _controllerChietKhau.text),
+                        description: _controllerMoTa.text,
+                        album: selectedImages,
                       );
 
-                      // Chuyển tất cả các ảnh trong selectedImages thành tệp
+                      // Convert all images to File objects
                       List<File> files =
                           selectedImages.map((path) => File(path)).toList();
 
@@ -255,4 +317,3 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 }
-

@@ -280,10 +280,10 @@ class BangXepHang extends StatelessWidget {
                 color: const Color(0xffFDD949),
                 width: borderWidth,
               ),
-              borderRadius: BorderRadius.circular(size / 2),
+              borderRadius: BorderRadius.circular(size / 1),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(size / 2),
+              borderRadius: BorderRadius.circular(size / 1),
               child: rank.avatarImage.isNotEmpty
                   ? Image.network(
                       rank.avatarImage,

@@ -12,6 +12,7 @@ class BinhLuanItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(binhLuan.createdAt);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(8),
@@ -127,7 +128,8 @@ class BinhLuanItem extends StatelessWidget {
                               height: 100,
                               fit: BoxFit.cover,
                               // Xử lý khi đang tải ảnh
-                              loadingBuilder: (context, child, loadingProgress) {
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Container(
                                   width: 100,
@@ -174,13 +176,9 @@ class BinhLuanItem extends StatelessWidget {
                 ],
 
                 const SizedBox(height: 4),
+
                 Text(
-                  binhLuan.createdAt != null
-                      ? DateTimeUtils.formatDateTime(
-                          DateTimeUtils.toLocalTime(binhLuan.createdAt!),
-                          format: 'dd/MM/yyyy HH:mm'
-                        )
-                      : 'No date',
+                  binhLuan.createdAt.toString(),
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 12,
@@ -194,4 +192,3 @@ class BinhLuanItem extends StatelessWidget {
     );
   }
 }
-
