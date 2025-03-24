@@ -513,7 +513,7 @@ class ItemProductCreate extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  sanPham.description.toString(),
+                  'Chiết khấu ${sanPham.discount}% cho hội viên CLB',
                   style: GoogleFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -574,4 +574,3 @@ class ItemProductCreate extends StatelessWidget {
     );
   }
 }
-

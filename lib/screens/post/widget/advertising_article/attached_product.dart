@@ -222,11 +222,11 @@ class _SanPhamDinhKemState extends State<SanPhamDinhKem> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    widget.sanPham.description.toString(),
+                    'Chiết khấu ${widget.sanPham.discount}% hội viên CLB',
                     style: GoogleFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Colors.red,
+                      color: Colors.grey,
                     ),
                     maxLines: 5,
                     overflow: TextOverflow.ellipsis,
@@ -262,4 +262,3 @@ class _SanPhamDinhKemState extends State<SanPhamDinhKem> {
     );
   }
 }
-
