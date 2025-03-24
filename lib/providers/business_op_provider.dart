@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/base/base_provider.dart';
 import '../repository/business_op_repository.dart';
 import '../screens/business_opportunity_management/widget/details_post_business.dart';
+import '../widgets/loading_overlay.dart';
 import 'bo_provider.dart';
 
 class BusinessOpProvider extends BaseProvider {
@@ -44,6 +45,7 @@ class BusinessOpProvider extends BaseProvider {
 
   Future<bool> approveBusiness(
       List<String> postIds, BuildContext context, String targetPostId) async {
+    LoadingOverlay.show(context);
     setLoading(true);
 
     // Lưu tham chiếu đến BoProvider
@@ -71,7 +73,7 @@ class BusinessOpProvider extends BaseProvider {
       try {
         // Cập nhật dữ liệu
         await boProvider.fetchBoDataById(context, targetPostId);
-
+        LoadingOverlay.hide();
         // Đặt trạng thái cần điều hướng
         _pendingNavigationPostId = targetPostId;
         _shouldNavigate = true;
@@ -86,7 +88,9 @@ class BusinessOpProvider extends BaseProvider {
         boProvider.selectedBo!.id.isNotEmpty) {
       try {
         await boProvider.fetchBoDataById(context, boProvider.selectedBo!.id);
+        LoadingOverlay.hide();
       } catch (e) {
+        LoadingOverlay.hide();
         print("Lỗi khi fetch dữ liệu selectedBo: $e");
       }
     }

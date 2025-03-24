@@ -15,6 +15,7 @@ import '../../../widgets/text_styles.dart';
 import 'member_update_revenue_item.dart';
 import 'opportunityrating.dart';
 import 'item_post_business.dart';
+import 'package:lottie/lottie.dart';
 import 'member_item.dart';
 
 class DetailsPostBusiness extends StatefulWidget {
@@ -161,7 +162,14 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         ],
       ),
       body: boProvider.isLoadingBoDetail
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Lottie.asset(
+                'assets/lottie/loading.json',
+                width: 70,
+                height: 70,
+                fit: BoxFit.contain,
+              ),
+            )
           : bo == null
               ? Center(child: Text(boProvider.errorMessageBoDetail))
               : SingleChildScrollView(
