@@ -11,7 +11,6 @@ import '../profile/profile_screen.dart';
 import '../shopping/shopping.dart';
 
 class TrangChuView extends StatefulWidget {
-  // late int selectedIndex;
   const TrangChuView({
     super.key,
   });
@@ -31,8 +30,14 @@ class _TrangChuViewState extends State<TrangChuView> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final notificationProvider = Provider.of<NotificationProvider>(context);
     notificationProvider.setContext(context);
+
+    // Calculate button spacing based on screen width
+    final centerButtonWidth = 105.0;
+    final availableWidth = screenWidth - centerButtonWidth;
+    final navItemWidth = availableWidth / 4; // 4 navigation items
 
     final List<Widget> _pages = [
       Home(onNavigateToTab: handleTabChange),
@@ -75,41 +80,56 @@ class _TrangChuViewState extends State<TrangChuView> {
                     ],
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          _buildNavItem(
-                            0,
-                            'Trang chủ',
-                            'assets/icons/home_noselect.svg',
-                            'assets/icons/home_select.svg',
-                          ),
-                          _buildNavItem(
-                            1,
-                            'Quản lý',
-                            'assets/icons/shopNoSelect.svg',
-                            'assets/icons/shop.svg',
-                          ),
-                          const SizedBox(width: 42),
-                        ],
+                      // Left side navigation items with flexible width
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildNavItem(
+                              0,
+                              'Trang chủ',
+                              'assets/icons/home_noselect.svg',
+                              'assets/icons/home_select.svg',
+                              navItemWidth,
+                            ),
+                            _buildNavItem(
+                              1,
+                              'Quản lý',
+                              'assets/icons/shopNoSelect.svg',
+                              'assets/icons/shop.svg',
+                              navItemWidth,
+                            ),
+                          ],
+                        ),
                       ),
-                      Row(
-                        children: [
-                          const SizedBox(width: 42),
-                          _buildNavItem(
-                            3,
-                            'Dạo chợ',
-                            'assets/icons/vector_noselect.svg',
-                            'assets/icons/vector.svg',
-                          ),
-                          _buildNavItem(
-                            4,
-                            'Hồ sơ',
-                            'assets/icons/user_noselect.svg',
-                            'assets/icons/user_select.svg',
-                          ),
-                        ],
+
+                      // Center space for the floating action button
+                      SizedBox(width: centerButtonWidth),
+
+                      // Right side navigation items with flexible width
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildNavItem(
+                              3,
+                              'Dạo chợ',
+                              'assets/icons/vector_noselect.svg',
+                              'assets/icons/vector.svg',
+                              navItemWidth,
+                            ),
+                            _buildNavItem(
+                              4,
+                              'Hồ sơ',
+                              'assets/icons/user_noselect.svg',
+                              'assets/icons/user_select.svg',
+                              navItemWidth,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -121,8 +141,8 @@ class _TrangChuViewState extends State<TrangChuView> {
                 bottom: 6,
                 child: Center(
                   child: Container(
-                    width: 96,
-                    height: 96,
+                    width: 105,
+                    height: 105,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -196,13 +216,16 @@ class _TrangChuViewState extends State<TrangChuView> {
     String title,
     String inactiveIcon,
     String activeIcon,
+    double maxWidth,
   ) {
     final bool isSelected = selectedIndex == index;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => handleTabChange(index),
       child: Container(
-        width: 76,
+        // Constrain width to be responsive but not exceed maxWidth
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        padding: EdgeInsets.symmetric(horizontal: 4),
         height: 78,
         alignment: Alignment.center,
         child: Column(
@@ -210,13 +233,13 @@ class _TrangChuViewState extends State<TrangChuView> {
           children: [
             if (isSelected)
               Container(
-                width: 20,
+                width: 25,
                 height: 0,
                 margin: const EdgeInsets.only(bottom: 6),
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: const Color(0xFF006AF5),
-                    width: 1.76471,
+                    width: 1.46471,
                   ),
                 ),
               )
@@ -237,7 +260,10 @@ class _TrangChuViewState extends State<TrangChuView> {
                     : const Color(0xFF9DB2CE),
                 fontSize: 12,
                 fontFamily: 'Roboto',
+                overflow: TextOverflow.ellipsis,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
             ),
           ],
         ),

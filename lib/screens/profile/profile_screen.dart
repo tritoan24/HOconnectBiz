@@ -46,6 +46,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final width = size.width;
     final height = size.height;
 
+    // Add bottom padding to account for the navigation bar
+    // The value 90 accounts for the nav bar height (82) plus a little extra space
+    final bottomPadding = 90.0;
+
     return Scaffold(
       backgroundColor: AppColor.backgroundColorApp,
       body: Consumer<UserProvider>(builder: (context, userProvider, child) {
@@ -65,6 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final verticalPadding = height * 0.02;
 
         return SafeArea(
+          bottom:
+              false, // Disable SafeArea at bottom since we handle it manually
           child: Column(
             children: [
               // Header luôn chiếm 20% chiều cao màn hình
@@ -76,8 +82,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: verticalPadding,
+                    padding: EdgeInsets.only(
+                      top: verticalPadding,
+                      bottom:
+                          bottomPadding, // Add padding to prevent content from being hidden by nav bar
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
