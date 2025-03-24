@@ -158,6 +158,7 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
 
     // Determine order status
     String status = _getOrderStatusText(order.status);
+    print("trạng thái số: " + order.status.toString());
 
     return GestureDetector(
       onTap: () {
@@ -322,10 +323,12 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
   String _getOrderStatusText(int status) {
     switch (status) {
       case 0:
-        return 'Đang xử lý';
+        return 'Chờ xác nhận';
       case 1:
-        return 'Thành công';
+        return 'Đang xử lý';
       case 2:
+        return 'Thành công';
+      case 3:
         return 'Đã hủy';
       default:
         return 'Không xác định';

@@ -52,7 +52,7 @@ class NotificationModel {
     final String notificationId = data['id'] ?? '';
     final String message = data['message'] ?? '';
     final String deeplink = data['deeplink'] ?? 'dnsgapp://notification';
-    
+
     // Tạo đối tượng Author giả
     final Author defaultAuthor = Author(
       id: '',
@@ -75,10 +75,10 @@ class NotificationModel {
       type: '0',
       userId: '', // Thêm userId bắt buộc
     );
-    
+
     return NotificationModel(
       id: notificationId,
-      userId: '',  // Giá trị mặc định
+      userId: '', // Giá trị mặc định
       uId: defaultAuthor,
       message: message,
       deeplink: deeplink,

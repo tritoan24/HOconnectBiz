@@ -6,10 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/banner_provider.dart';
-import '../../providers/business_provider.dart';
-import '../../providers/post_provider.dart';
-import '../../providers/rank_provider.dart';
-import '../../providers/user_provider.dart';
 import '../../utils/router/router.name.dart';
 import '../../widgets/button_widget.dart';
 import '../../widgets/input_text.dart';
@@ -27,7 +23,7 @@ class _LoginViewState extends State<LoginView> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final TextEditingController identityController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  
+
   bool _showValidationErrors = false;
   Map<String, String?> validationErrors = {
     'identity': null,
@@ -41,33 +37,33 @@ class _LoginViewState extends State<LoginView> {
     // Xóa listeners
     identityController.removeListener(_resetErrors);
     passwordController.removeListener(_resetErrors);
-    
+
     _tapGestureRecognizer.dispose();
     identityController.dispose();
     passwordController.dispose();
-    
+
     // Xóa thông báo lỗi khi màn hình bị hủy
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.clearState();
-    
+
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    
+
     // Thêm listener để ẩn lỗi khi người dùng bắt đầu nhập lại
     identityController.addListener(_resetErrors);
     passwordController.addListener(_resetErrors);
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bannerProvider =
           Provider.of<BannerProvider>(context, listen: false);
       await bannerProvider.getListBanner(context);
     });
   }
-  
+
   // Hàm reset lỗi khi người dùng bắt đầu nhập lại
   void _resetErrors() {
     if (_showValidationErrors) {
@@ -99,46 +95,47 @@ class _LoginViewState extends State<LoginView> {
   bool _validateForm() {
     setState(() {
       _showValidationErrors = true;
-      
+
       // Reset lỗi
       validationErrors = {
         'identity': null,
         'password': null,
       };
-      
+
       // Validate identity
       final identity = identityController.text.trim();
       if (identity.isEmpty) {
         validationErrors['identity'] = "Vui lòng nhập email hoặc số điện thoại";
       }
-      
+
       // Validate password
       final password = passwordController.text;
       if (password.isEmpty) {
         validationErrors['password'] = "Vui lòng nhập mật khẩu";
       }
     });
-    
+
     // Form hợp lệ khi không có lỗi
     return !validationErrors.values.any((error) => error != null);
   }
-  
+
   // Hàm lấy lỗi cho từng trường
   String? getFieldError(String fieldName) {
     if (!_showValidationErrors) return null;
-    
+
     // Lấy lỗi từ client validation
     if (validationErrors[fieldName] != null) {
       return validationErrors[fieldName];
     }
-    
+
     // Lấy lỗi từ API nếu không có lỗi client
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (authProvider.errorMessage == null) return null;
-    
+
     if (fieldName == 'identity') {
       if (authProvider.errorMessage == "Người dùng không tồn tại" ||
-          authProvider.errorMessage == "Vui lòng nhập tên đăng nhập và mật khẩu") {
+          authProvider.errorMessage ==
+              "Vui lòng nhập tên đăng nhập và mật khẩu") {
         return authProvider.errorMessage;
       }
     } else if (fieldName == 'password') {
@@ -146,10 +143,10 @@ class _LoginViewState extends State<LoginView> {
         return authProvider.errorMessage;
       }
     }
-    
+
     return null;
   }
-  
+
   // Xử lý đăng nhập
   void _handleLogin() {
     // Validate form trước khi submit
@@ -275,9 +272,8 @@ class _LoginViewState extends State<LoginView> {
                             SizedBox(height: screenSize.height * 0.025),
                             ButtonWidget(
                               label: "Đăng nhập",
-                              onPressed: authProvider.isLoading
-                                  ? null
-                                  : _handleLogin,
+                              onPressed:
+                                  authProvider.isLoading ? null : _handleLogin,
                             ),
                             SizedBox(height: screenSize.height * 0.025),
                             Padding(
@@ -372,7 +368,10 @@ class _LoginViewState extends State<LoginView> {
                                 alignment: PlaceholderAlignment.baseline,
                                 baseline: TextBaseline.alphabetic,
                                 child: InkWell(
-                                  onTap: () {
+                                  onTap: () async {
+                                    //xóa dữ liệu trong ô input khi chuyển
+                                    identityController.clear();
+                                    passwordController.clear();
                                     context.push(AppRoutes.dangKyTaiKhoan);
                                   },
                                   borderRadius: BorderRadius.circular(8),

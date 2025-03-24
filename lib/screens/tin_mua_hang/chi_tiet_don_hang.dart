@@ -91,7 +91,7 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             children: [
-              _buildOrderDetailRow('Đơn hàng -', widget.donHang.id),
+              _buildOrderDetailRow('Đơn hàng -', widget.donHang.orderCode),
             ],
           ),
         ),

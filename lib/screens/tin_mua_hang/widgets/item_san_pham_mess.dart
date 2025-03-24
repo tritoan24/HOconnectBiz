@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import '../chi_tiet_don_hang.dart';
 
 class OrderCardData {
-  final String title;
   final String productImage;
   final String productName;
   final int quantity;
@@ -17,7 +16,6 @@ class OrderCardData {
   final String status;
 
   OrderCardData({
-    required this.title,
     required this.productImage,
     required this.productName,
     required this.quantity,
@@ -60,8 +58,13 @@ class OrderCardData {
       default:
         statusText = "Chờ xác nhận";
     }
+    // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
+    OrderModel order = orderModel;
+    String? currentUserId = '';
+
+    // Kiểm tra nếu currentUserId trùng với người tạo đơn hàng
+    bool isCreator = currentUserId != null && currentUserId == order.userCreate;
     return OrderCardData(
-      title: "BẠN VỪA NHẬN ĐƯỢC ĐƠN HÀNG",
       productImage: productImage,
       productName: productName,
       quantity: orderModel.totalProduct,
@@ -86,6 +89,10 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
+    OrderModel order = donHang as OrderModel;
+    // Kiểm tra nếu currentUserId trùng với người tạo đơn hàng
+    bool isCreator = currentUserId != null && currentUserId == order.userCreate;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -113,7 +120,9 @@ class OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  data.title,
+                  isCreator
+                      ? 'Bạn đã tạo đơn hàng'
+                      : 'Bạn vừa nhận được đơn hàng',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -252,14 +261,8 @@ class OrderCard extends StatelessWidget {
             ),
             child: InkWell(
               onTap: () {
-                // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
-                OrderModel order = donHang as OrderModel;
-                
-                // Kiểm tra nếu currentUserId trùng với người tạo đơn hàng
-                bool isCreator = currentUserId != null && currentUserId == order.userCreate;
-                
-                ChiTietDonHang.show(
-                    context, order, data.status, hideButtons: isCreator);
+                ChiTietDonHang.show(context, order, data.status,
+                    hideButtons: isCreator);
               },
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -290,4 +293,3 @@ class OrderCard extends StatelessWidget {
     );
   }
 }
-
