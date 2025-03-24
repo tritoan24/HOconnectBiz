@@ -1,5 +1,5 @@
 enum LoaiBaiDang {
-  coHoiKinhDoanh('Cơ hội kinh doanh'),
+  coHoiKinhDoanh('Tin cơ hội kinh doanh'),
   tinQuangCao('Tin quảng cáo');
 
   final String value;
