@@ -138,11 +138,11 @@ class _ShoppingState extends State<Shopping> {
           "🔍 DEBUG Shopping: Số lượng comment mới: ${updatedPost.totalComment}");
 
       if (result == true) {
-        // Hiển thị thông báo ngắn nếu có thay đổi từ màn hình comment
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Đã cập nhật dữ liệu mới nhất"),
-          duration: Duration(seconds: 1),
-        ));
+        // // Hiển thị thông báo ngắn nếu có thay đổi từ màn hình comment
+        // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        //   content: Text("Đã cập nhật dữ liệu mới nhất"),
+        //   duration: Duration(seconds: 1),
+        // ));
       }
 
       // Ép Flutter refresh UI

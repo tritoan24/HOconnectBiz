@@ -34,7 +34,9 @@ class CommentsScreen extends StatefulWidget {
   final List<String> likes;
   final int commentCount;
   final bool isComment;
+  final bool isMe;
   final String idUser;
+  final bool isBusiness;
   final List<IsJoin>? isJoin;
 
   const CommentsScreen({
@@ -51,6 +53,8 @@ class CommentsScreen extends StatefulWidget {
     required this.product,
     required this.likes,
     required this.commentCount,
+    this.isMe = false,
+    this.isBusiness = false,
     required this.idUser,
     this.isComment = false,
     this.isJoin,
@@ -63,27 +67,28 @@ class CommentsScreen extends StatefulWidget {
 class _CommentState extends State<CommentsScreen> {
   //lấy dữ liệu khi bắt đầu khởi tạo màn
   bool isJoind = false; // Lưu trạng thái join
-  
+
   @override
   void initState() {
     super.initState();
     // Khởi tạo trạng thái join dựa trên dữ liệu truyền vào
     _checkIsJoined();
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final commentProvider =
           Provider.of<CommentProvider>(context, listen: false);
       commentProvider.getComments(widget.postId, context);
       debugPrint(
           "🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
+      debugPrint("trạng thái business 111: ${widget.isBusiness} ");
     });
   }
-  
+
   // Kiểm tra xem người dùng đã tham gia bài viết chưa
   Future<void> _checkIsJoined() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = await authProvider.getuserID() ?? "";
-    
+
     // Kiểm tra xem userId có trong danh sách isJoin không
     if (widget.isJoin != null && widget.isJoin!.isNotEmpty) {
       setState(() {
@@ -145,14 +150,15 @@ class _CommentState extends State<CommentsScreen> {
         selectedImages = [];
         currentMessage = '';
       });
-      
+
       // Lấy post mới nhất từ PostProvider để có số lượng comment mới
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final updatedPost = postProvider.getPostById(widget.postId);
       if (updatedPost != null) {
-        debugPrint("🔍 DEBUG CommentsScreen: Cập nhật số lượng comment mới: ${updatedPost.totalComment}");
+        debugPrint(
+            "🔍 DEBUG CommentsScreen: Cập nhật số lượng comment mới: ${updatedPost.totalComment}");
       }
-      
+
       debugPrint("🔍 DEBUG CommentsScreen: Đã tạo comment thành công");
     } catch (e) {
       debugPrint('⚠️ ERROR CommentsScreen: Lỗi khi tạo comment: $e');
@@ -175,11 +181,12 @@ class _CommentState extends State<CommentsScreen> {
   Widget build(BuildContext context) {
     final commentProvider = Provider.of<CommentProvider>(context);
     final inputHeight = 80.0;
-    
+
     // Lấy số lượng comment mới nhất từ PostProvider
     final postProvider = Provider.of<PostProvider>(context, listen: false);
     final updatedPost = postProvider.getPostById(widget.postId);
-    final currentCommentCount = updatedPost?.totalComment ?? widget.commentCount;
+    final currentCommentCount =
+        updatedPost?.totalComment ?? widget.commentCount;
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColorApp,
@@ -194,7 +201,8 @@ class _CommentState extends State<CommentsScreen> {
               color: Color(0xff141415),
             ),
             onPressed: () {
-              debugPrint("🔍 DEBUG CommentsScreen: Quay lại với _hasChanges = $_hasChanges");
+              debugPrint(
+                  "🔍 DEBUG CommentsScreen: Quay lại với _hasChanges = $_hasChanges");
               Navigator.pop(context, _hasChanges);
             },
           ),
@@ -216,16 +224,18 @@ class _CommentState extends State<CommentsScreen> {
                         if (notification.postId == widget.postId) {
                           setState(() {
                             _hasChanges = true;
-                            
+
                             // Cập nhật isJoind nếu thông báo có thông tin về join
                             if (notification.isJoined != null) {
                               isJoind = notification.isJoined!;
-                              debugPrint("🔍 DEBUG CommentsScreen: Cập nhật isJoind = $isJoind từ thông báo");
+                              debugPrint(
+                                  "🔍 DEBUG CommentsScreen: Cập nhật isJoind = $isJoind từ thông báo");
                             }
-                            
+
                             // Cập nhật số lượng comment nếu có
                             if (notification.commentCount != null) {
-                              debugPrint("🔍 DEBUG CommentsScreen: Cập nhật số lượng comment = ${notification.commentCount} từ thông báo");
+                              debugPrint(
+                                  "🔍 DEBUG CommentsScreen: Cập nhật số lượng comment = ${notification.commentCount} từ thông báo");
                             }
                           });
                           debugPrint(
@@ -245,7 +255,9 @@ class _CommentState extends State<CommentsScreen> {
                         business: widget.business,
                         product: widget.product,
                         likes: widget.likes,
-                        comments: currentCommentCount, // Sử dụng số lượng comment mới nhất
+                        isMe: widget.isMe,
+                        comments:
+                            currentCommentCount, // Sử dụng số lượng comment mới nhất
                         isComment: widget.isComment,
                         idUser: widget.idUser,
                         isJoin: widget.isJoin,
@@ -381,7 +393,8 @@ class _PostItemWrapperState extends State<PostItemWrapper> {
             "🔍 DEBUG PostItemWrapper: Nhận thông báo thay đổi từ PostItem");
         // Xử lý cả thay đổi về like và join
         if (notification.isJoined != null) {
-          debugPrint("🔍 DEBUG PostItemWrapper: Phát hiện thay đổi trạng thái join");
+          debugPrint(
+              "🔍 DEBUG PostItemWrapper: Phát hiện thay đổi trạng thái join");
         }
         widget.onChanged();
         return true;

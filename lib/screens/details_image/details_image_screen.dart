@@ -9,6 +9,8 @@ import 'package:clbdoanhnhansg/screens/comment/comments_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/is_join_model.dart';
+
 class ChiTietBaiDang extends StatefulWidget {
   final List<String> imageList;
   final int initialIndex;
@@ -20,6 +22,11 @@ class ChiTietBaiDang extends StatefulWidget {
   final String? postId; // Thêm postId để có thể like và comment
   final String? title; // Thêm title
   final bool isLiked; // Thêm isLiked từ màn hình trước
+  final bool isBusiness;
+  final List<IsJoin>? isJoin;
+
+  final int postType;
+  final bool isMe;
   final List<String> likes; // Thêm danh sách likes
 
   const ChiTietBaiDang({
@@ -30,9 +37,13 @@ class ChiTietBaiDang extends StatefulWidget {
     required this.like,
     required this.comment,
     required this.dateTime,
+    required this.isJoin,
+    this.postType = 0,
     required this.description,
     this.postId, // Thêm postId
     this.title,
+    this.isMe = false,
+    this.isBusiness = false,
     this.isLiked = false, // Mặc định là false
     this.likes = const [], // Mặc định là danh sách rỗng
   });
@@ -61,7 +72,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
     isLiked = widget.isLiked; // Sử dụng giá trị isLiked từ constructor
     debugPrint(
         "🔍 DEBUG ChiTietBaiDang initState: isLiked=${widget.isLiked}, likeCount=$likeCount");
-
+    debugPrint("trạng thái isBusiness=${widget.isBusiness}");
     _loadUserIdAndStatusLikePost();
   }
 
@@ -111,7 +122,8 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
     });
   }
 
-  Future<void> _navigateToComments(BuildContext context) async {
+  Future<void> _navigateToComments(
+      BuildContext context, bool isBusiness) async {
     if (widget.postId == null) return;
 
     final result = await Navigator.push(
@@ -119,7 +131,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
       MaterialPageRoute(
         builder: (context) => CommentsScreen(
           postId: widget.postId!,
-          postType: 0, // Mặc định postType = 0 nếu không có thông tin
+          postType: widget.postType,
           displayName: widget.companyName,
           avatar_image: "", // Cần truyền avatar từ màn hình trước
           dateTime: widget.dateTime,
@@ -130,6 +142,9 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
           product: [], // Cần truyền product từ màn hình trước
           likes: widget.likes, // Cần truyền danh sách likes từ màn hình trước
           commentCount: widget.comment,
+          isBusiness: isBusiness,
+          isMe: widget.isMe,
+          isJoin: widget.isJoin,
           isComment: true,
           idUser: idUserID ?? "",
         ),
@@ -243,7 +258,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
                               ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                               : null,
                         ),
                       );
@@ -263,11 +278,14 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
             curve: Curves.easeInOut,
             child: Container(
               constraints: BoxConstraints(
-                maxHeight: _showFullDescription ? screenHeight * 0.5 : screenHeight * 0.2,
+                maxHeight: _showFullDescription
+                    ? screenHeight * 0.5
+                    : screenHeight * 0.2,
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -300,9 +318,12 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                                 fontSize: 14,
                               ),
                               maxLines: _showFullDescription ? null : 3,
-                              overflow: _showFullDescription ? null : TextOverflow.ellipsis,
+                              overflow: _showFullDescription
+                                  ? null
+                                  : TextOverflow.ellipsis,
                             ),
-                            if (!_showFullDescription && widget.description.split('\n').length > 3)
+                            if (!_showFullDescription &&
+                                widget.description.split('\n').length > 3)
                               Padding(
                                 padding: const EdgeInsets.only(top: 4.0),
                                 child: Text(
@@ -314,7 +335,6 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                                   ),
                                 ),
                               ),
-
                           ],
                         ),
                       ),
@@ -333,7 +353,8 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.8),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Column(
                 children: [
@@ -369,7 +390,8 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                           const SizedBox(width: 16),
                           GestureDetector(
                             onTap: widget.postId != null
-                                ? () => _navigateToComments(context)
+                                ? () => _navigateToComments(
+                                    context, widget.isBusiness)
                                 : null,
                             child: Row(
                               children: [

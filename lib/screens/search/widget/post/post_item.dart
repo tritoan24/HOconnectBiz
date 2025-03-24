@@ -232,6 +232,7 @@ class _PostItemState extends State<PostItem> {
       MaterialPageRoute(
         builder: (context) => ChiTietBaiDang(
           imageList: widget.images,
+          postType: widget.postType,
           initialIndex: index,
           companyName: widget.displayName,
           like: widget.likes.length,
@@ -241,7 +242,10 @@ class _PostItemState extends State<PostItem> {
           postId: widget.postId,
           title: widget.title,
           isLiked: isLiked,
+          isMe: widget.isMe,
+          isBusiness: isBusiness,
           likes: widget.likes,
+          isJoin: widget.isJoin,
         ),
       ),
     ).then((result) {
@@ -367,7 +371,7 @@ class _PostItemState extends State<PostItem> {
 
   Widget _buildHeader(BuildContext context) {
     return GestureDetector(
-      onTap: () => _navigateToBusinessInfo(context),
+      onTap: () => widget.isMe ? null : _navigateToBusinessInfo(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
         child: Row(
@@ -784,7 +788,7 @@ class _PostItemState extends State<PostItem> {
                 commentCount,
                 onTap: widget.isComment
                     ? null
-                    : () => _navigateToComments(context),
+                    : () => _navigateToComments(context, widget.isMe),
               )
             ],
           ),
@@ -902,7 +906,6 @@ class _PostItemState extends State<PostItem> {
                 )
               : GestureDetector(
                   onTap: () {
-                    // Cập nhật UI ngay lập tức để phản hồi nhanh với người dùng
                     setState(() {
                       isJoind = true;
                     });
@@ -918,9 +921,6 @@ class _PostItemState extends State<PostItem> {
                     // Cập nhật trạng thái isJoin trong post provider
                     Provider.of<PostProvider>(context, listen: false)
                         .updatePostJoinStatus(widget.postId, context);
-
-                    debugPrint(
-                        "🔍 DEBUG PostItem: Đã đăng ký tham gia và cập nhật UI với isJoind = $isJoind");
                   },
                   child: Container(
                     height: 36,
@@ -1087,7 +1087,7 @@ class _PostItemState extends State<PostItem> {
     );
   }
 
-  Future<void> _navigateToComments(BuildContext context) async {
+  Future<void> _navigateToComments(BuildContext context, bool isMe) async {
     debugPrint(
         "🔍 DEBUG PostItem: _navigateToComments bắt đầu cho postId: ${widget.postId}");
 
@@ -1108,6 +1108,7 @@ class _PostItemState extends State<PostItem> {
           likes: widget.likes,
           commentCount: commentCount,
           isComment: true,
+          isMe: isMe,
           idUser: widget.idUser,
           isJoin: widget.isJoin,
         ),
