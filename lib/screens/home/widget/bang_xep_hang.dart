@@ -18,10 +18,16 @@ class BangXepHang extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final top3 = ranks.where((rank) => rank.rank <= 3).toList();
     final others = ranks.where((rank) => rank.rank > 3).toList();
-    print('top3: $top3');
-    print('others: $others');
+
+    // Calculate responsive sizes
+    final podiumHeight =
+        screenWidth * 0.7; // Adjust podium height based on screen width
+    final avatarSize = screenWidth * 0.15; // Make avatar size responsive
+    final crownSize = screenWidth * 0.07; // Make crown size responsive
+    final topPadding = screenWidth * 0.04; // Responsive padding
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -29,102 +35,129 @@ class BangXepHang extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: screenWidth * 0.04, // Responsive font size
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: screenWidth * 0.04), // Responsive spacing
         Stack(
+          alignment: Alignment.topCenter,
           children: [
+            // Podium background
             Container(
-              width: MediaQuery.of(context).size.width,
-              height: 274,
+              width: screenWidth,
+              height: podiumHeight,
               decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                    colors: [Color(0xff10144D), Color(0xff3976B9)],
-                  ),
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20))),
+                gradient: LinearGradient(
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
+                  colors: [Color(0xff10144D), Color(0xff3976B9)],
+                ),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
                 child: Align(
                   alignment: Alignment.bottomCenter,
-                  child: Image.asset("assets/images/group32.png"),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Image.asset(
+                        "assets/images/group32.png",
+                        fit: BoxFit.contain,
+                        width: constraints.maxWidth,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
+
+            // Top 3 users
             Padding(
-              padding: const EdgeInsets.only(top: 16.0, left: 16, right: 16),
+              padding: EdgeInsets.only(
+                  top: topPadding,
+                  left: screenWidth * 0.04,
+                  right: screenWidth * 0.04),
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.center, // Căn giữa các phần tử trong Row
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Top 2 (bên trái)
+                  // Top 2 (left)
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // Căn giữa nội dung trong Column
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (top3.length > 1)
                           Column(
                             children: [
-                              const SizedBox(height: 20),
-                              SvgPicture.asset("assets/icons/i_vuongniem.svg"),
-                              const SizedBox(height: 10),
-                              buildTopItem(context, top3[1]),
+                              SizedBox(height: screenWidth * 0.05),
+                              SvgPicture.asset(
+                                "assets/icons/i_vuongniem.svg",
+                                width: crownSize,
+                                height: crownSize,
+                              ),
+                              SizedBox(height: screenWidth * 0.025),
+                              buildTopItem(context, top3[1], avatarSize),
                             ],
                           )
                         else
-                          const SizedBox(
-                              width: 65), // Giữ khoảng trống nếu không có top 2
+                          SizedBox(width: avatarSize),
                       ],
                     ),
                   ),
 
-                  // Top 1 (giữa, nhích cao hơn)
+                  // Top 1 (center, positioned higher)
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // Căn giữa nội dung trong Column
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (top3.isNotEmpty)
                           Column(
                             children: [
-                              SvgPicture.asset("assets/icons/i_vuongniem.svg"),
-                              const SizedBox(height: 10),
-                              buildTopItem(context, top3[0]),
-                              const SizedBox(height: 20),
+                              SvgPicture.asset(
+                                "assets/icons/i_vuongniem.svg",
+                                width: crownSize *
+                                    1.2, // Make top 1 crown slightly larger
+                                height: crownSize * 1.2,
+                              ),
+                              SizedBox(height: screenWidth * 0.025),
+                              buildTopItem(
+                                  context,
+                                  top3[0],
+                                  avatarSize *
+                                      1.2), // Make top 1 avatar slightly larger
+                              SizedBox(height: screenWidth * 0.05),
                             ],
                           )
                         else
-                          const SizedBox(
-                              width: 65), // Giữ khoảng trống nếu không có top 1
+                          SizedBox(width: avatarSize),
                       ],
                     ),
                   ),
 
-                  // Top 3 (bên phải)
+                  // Top 3 (right)
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // Căn giữa nội dung trong Column
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (top3.length > 2)
                           Column(
                             children: [
-                              const SizedBox(height: 20),
-                              SvgPicture.asset("assets/icons/i_vuongniem.svg"),
-                              const SizedBox(height: 10),
-                              buildTopItem(context, top3[2]),
+                              SizedBox(height: screenWidth * 0.05),
+                              SvgPicture.asset(
+                                "assets/icons/i_vuongniem.svg",
+                                width: crownSize,
+                                height: crownSize,
+                              ),
+                              SizedBox(height: screenWidth * 0.025),
+                              buildTopItem(context, top3[2], avatarSize),
                             ],
                           )
                         else
-                          const SizedBox(
-                              width: 65), // Giữ khoảng trống nếu không có top 3
+                          SizedBox(width: avatarSize),
                       ],
                     ),
                   ),
@@ -133,9 +166,11 @@ class BangXepHang extends StatelessWidget {
             )
           ],
         ),
+
+        // Bottom section (ranking list)
         Container(
-          width: MediaQuery.of(context).size.width,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          width: screenWidth,
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(10),
@@ -144,33 +179,34 @@ class BangXepHang extends StatelessWidget {
             color: Colors.white,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(screenWidth * 0.04),
             child: Column(
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Xếp hạng",
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: screenWidth * 0.035,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       "Tên doanh nghiệp",
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: screenWidth * 0.035,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: screenWidth * 0.04),
                 ...others.map((rank) => Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                              vertical: screenWidth * 0.02),
                           child: GestureDetector(
                             onTap: () {
                               context.push(AppRoutes.thongTinDoanhNghiep
@@ -181,29 +217,33 @@ class BangXepHang extends StatelessWidget {
                               children: [
                                 Text(
                                   "Thứ hạng ${rank.rank}",
-                                  style: const TextStyle(
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.035,
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                Text(
-                                  rank.companyName.isNotEmpty
-                                      ? rank.companyName
-                                      : rank.displayName,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
+                                Flexible(
+                                  child: Text(
+                                    rank.companyName.isNotEmpty
+                                        ? rank.companyName
+                                        : rank.displayName,
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.035,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: screenWidth * 0.005),
                         if (others.indexOf(rank) < 4)
                           SizedBox(
                             height: 1,
-                            width: MediaQuery.of(context).size.width,
+                            width: screenWidth,
                             child: const DecoratedBox(
                               decoration: BoxDecoration(
                                 color: Color(0xffEDF1F3),
@@ -220,13 +260,16 @@ class BangXepHang extends StatelessWidget {
     );
   }
 
-  Widget buildTopItem(BuildContext context, Rank rank) {
+  Widget buildTopItem(BuildContext context, Rank rank, double size) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final borderWidth = screenWidth * 0.012; // Responsive border width
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (contex) =>
+                builder: (context) =>
                     BusinessInformation(idUser: rank.id, isMe: false)));
       },
       child: Column(
@@ -235,35 +278,38 @@ class BangXepHang extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border.all(
                 color: const Color(0xffFDD949),
-                width: 5.0,
+                width: borderWidth,
               ),
-              borderRadius: BorderRadius.circular(50.0),
+              borderRadius: BorderRadius.circular(size / 2),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(50.0),
+              borderRadius: BorderRadius.circular(size / 2),
               child: rank.avatarImage.isNotEmpty
                   ? Image.network(
                       rank.avatarImage,
-                      width: 65,
-                      height: 65,
+                      width: size,
+                      height: size,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.person, size: 65),
+                          Icon(Icons.person, size: size),
                     )
-                  : const Icon(Icons.person, size: 65),
+                  : Icon(Icons.person, size: size),
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            rank.companyName.isNotEmpty ? rank.companyName : rank.displayName,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
+          SizedBox(height: screenWidth * 0.025),
+          SizedBox(
+            width: screenWidth * 0.25, // Constrain text width
+            child: Text(
+              rank.companyName.isNotEmpty ? rank.companyName : rank.displayName,
+              style: TextStyle(
+                fontSize: screenWidth * 0.035,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

@@ -88,7 +88,16 @@ class _ButtonState extends State<Button> {
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context), // Hành động khi đóng
+                onPressed: () {
+                  setState(() {
+                    final cartProvider =
+                        Provider.of<CartProvider>(context, listen: false);
+
+                    cartProvider.updateStatusOrderBuy(widget.id, 3, context);
+                    isConfirmed = true;
+                    Navigator.pop(context);
+                  });
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.secondaryBlue, // Màu nút "Đóng"
                   shape: RoundedRectangleBorder(

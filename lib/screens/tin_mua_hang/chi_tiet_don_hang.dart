@@ -162,28 +162,31 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
             )
           ],
         ),
-        // kiểm tra các trạng thái và dựa vào đó để hiển thị ra giao diện
-        Consumer<CartProvider>(builder: (context, cartProvider, ___) {
-          String statusText;
-          switch (cartProvider.orderModel?.status) {
-            case 0:
-              statusText = "Chờ xác nhận";
-              break;
-            case 1:
-              statusText = "Đang xử lý";
-              break;
-            case 2:
-              statusText = "Đang vận chuyển";
-              break;
-            case 3:
-              statusText = "Thành công";
-              break;
-            default:
-              statusText = "Chờ xác nhận";
-          }
-          return _buildStatusWidget(
-              statusText, widget.donHang.id, widget.hideButtons, context);
-        }),
+
+        // Add this Consumer at the very bottom, before the closing Column child
+        Consumer<CartProvider>(
+          builder: (context, cartProvider, ___) {
+            String statusText;
+            switch (cartProvider.orderModel?.status) {
+              case 0:
+                statusText = "Chờ xác nhận";
+                break;
+              case 1:
+                statusText = "Đang xử lý";
+                break;
+              case 2:
+                statusText = "Thành công";
+                break;
+              case 3:
+                statusText = "Đã hủy";
+                break;
+              default:
+                statusText = "Không xác định";
+            }
+            return _buildStatusWidget(
+                statusText, widget.donHang.id, widget.hideButtons, context);
+          },
+        ),
       ]),
     );
   }
@@ -365,6 +368,38 @@ Widget _buildStatusWidget(
                   Icon(Icons.arrow_forward_ios_rounded),
                 ],
               )));
+    } else if (status == "Đã hủy") {
+      return ListTile(
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Text(
+            'Đã hủy',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.red,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Colors.grey,
+          size: 34,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+              ));
+        },
+      );
     } else {
       return ListTile(
         title: Container(
@@ -445,6 +480,38 @@ Widget _buildStatusWidget(
                 Icon(Icons.arrow_forward_ios_rounded),
               ],
             )));
+  } else if (statusLowerCase == "đã hủy") {
+    return ListTile(
+      title: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Text(
+          'Đã hủy',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.red,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: Colors.grey,
+        size: 34,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+            ));
+      },
+    );
   } else {
     return const SizedBox();
   }

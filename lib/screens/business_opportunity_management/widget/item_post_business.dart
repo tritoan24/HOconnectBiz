@@ -89,9 +89,9 @@ class ItemPostBussiness extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Text(
-                    '4.8', // Rating giả sử
-                    style: TextStyle(
+                  Text(
+                    bo.avgStar.toString(),
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -103,7 +103,7 @@ class ItemPostBussiness extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '(10 doanh nghiệp)', // Dữ liệu giả sử
+                    '(${bo.totalCompany} doanh nghiệp)',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 13,

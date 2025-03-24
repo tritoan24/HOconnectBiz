@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import '../../../utils/Color/app_color.dart';
 import '../chi_tiet_don_hang.dart';
 
 class OrderCardData {
@@ -50,13 +51,13 @@ class OrderCardData {
         statusText = "Đang xử lý";
         break;
       case 2:
-        statusText = "Đang vận chuyển";
-        break;
-      case 3:
         statusText = "Thành công";
         break;
+      case 3:
+        statusText = "Đã hủy";
+        break;
       default:
-        statusText = "Chờ xác nhận";
+        statusText = "Không xác định";
     }
     // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
     OrderModel order = orderModel;
@@ -69,7 +70,7 @@ class OrderCardData {
       productName: productName,
       quantity: orderModel.totalProduct,
       additionalItems: additionalItems > 0 ? additionalItems : 0,
-      totalAmount: orderModel.totalPayAfterDiscount,
+      totalAmount: orderModel.totalPay.toDouble(),
       status: statusText,
     );
   }
@@ -86,6 +87,50 @@ class OrderCard extends StatelessWidget {
     required this.donHang,
     this.currentUserId,
   }) : super(key: key);
+
+  Widget _buildStatusChip(String status) {
+    Color backgroundColor;
+    Color textColor;
+
+    switch (status) {
+      case "Chờ xác nhận":
+        backgroundColor = AppColor.warningYellowBg;
+        textColor = AppColor.warningYellow;
+        break;
+      case "Đang xử lý":
+        backgroundColor = AppColor.warningYellowBg;
+        textColor = AppColor.warningYellow;
+        break;
+      case "Thành công":
+        backgroundColor = AppColor.successGreenBg;
+        textColor = AppColor.successGreen;
+        break;
+      case "Đã hủy":
+        backgroundColor = AppColor.errorRedBg;
+        textColor = AppColor.cancelRed;
+        break;
+      default:
+        backgroundColor = const Color(0xFFFEF9E1);
+        textColor = const Color(0xFFE8BA02);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 37),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: textColor,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,23 +235,7 @@ class OrderCard extends StatelessWidget {
                 const SizedBox(width: 12),
 
                 // "View details" button
-                Container(
-                  margin: const EdgeInsets.only(bottom: 37),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF9E1),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Text(
-                    data.status,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFFE8BA02),
-                    ),
-                  ),
-                ),
+                _buildStatusChip(data.status),
               ],
             ),
           ),
