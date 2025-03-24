@@ -228,7 +228,7 @@ class _EditMemberState extends State<EditMember> {
                                     ),
                                   ),
                                   title: Text(
-                                    dt.user?.companyName ?? "Không có tên",
+                                    dt.user?.displayName ?? "Không có tên",
                                     style: TextStyles.textStyleNormal14W400,
                                   ),
                                   trailing: Container(

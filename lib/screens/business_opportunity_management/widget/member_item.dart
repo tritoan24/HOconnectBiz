@@ -154,9 +154,9 @@ class MemberCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    member.user!.companyName.isEmpty
+                    member.user!.displayName.isEmpty
                         ? 'Chưa cập nhật'
-                        : member.user!.companyName,
+                        : member.user!.displayName,
                     style: TextStyles.textStyleNormal14W400,
                   ),
                 ),
@@ -196,4 +196,3 @@ class MemberCard extends StatelessWidget {
     );
   }
 }
-
