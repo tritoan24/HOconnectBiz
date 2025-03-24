@@ -608,4 +608,3 @@ class _MemberListSectionState extends State<MemberListSection> {
     );
   }
 }
-

@@ -122,7 +122,7 @@ class _EditMemberState extends State<EditMember> {
         backgroundColor: AppColor.backgroundColorApp,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios),
             onPressed: () => Navigator.pop(context, _hasChanges),
           ),
           title: const Text('Thành viên tham gia'),
