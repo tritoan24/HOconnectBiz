@@ -178,7 +178,7 @@ class BinhLuanItem extends StatelessWidget {
                 const SizedBox(height: 4),
 
                 Text(
-                  binhLuan.createdAt.toString(),
+                  DateTimeUtils.formatVnCommentTime(binhLuan.createdAt),
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 12,

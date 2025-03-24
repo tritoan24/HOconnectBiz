@@ -396,7 +396,8 @@ Widget _buildStatusWidget(
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+                builder: (context) =>
+                    const Cart(initialTab: CartTab.PurchaseOrder),
               ));
         },
       );

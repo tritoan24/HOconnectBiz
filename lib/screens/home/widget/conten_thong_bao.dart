@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../models/notification_model.dart';
 import '../../../widgets/text_styles.dart';
+import '../../../core/utils/date_time_utils.dart';
 
 class ContenThongBao extends StatelessWidget {
   final NotificationModel notification;
@@ -14,8 +15,9 @@ class ContenThongBao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Lấy NotificationProvider từ context
-    final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
-
+    final notificationProvider =
+        Provider.of<NotificationProvider>(context, listen: false);
+    print("thời gian thông báo: ${notification.timestamp}");
     return GestureDetector(
       onTap: () {
         notificationProvider.handleNotificationTap(notification, context);
@@ -44,7 +46,7 @@ class ContenThongBao extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  DateFormat('HH:mm, dd/MM/yyyy').format(notification.timestamp),
+                  DateTimeUtils.formatVnCommentTime(notification.timestamp),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -81,4 +83,3 @@ class ContenThongBao extends StatelessWidget {
     );
   }
 }
-
