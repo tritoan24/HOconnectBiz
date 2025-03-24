@@ -41,67 +41,64 @@ class _PostManageState extends State<PostManageTab> {
       debugPrint(
           "🔍 Có ${posts.length} bài viết trong danh sách-----------------------!");
       return Scaffold(
-          backgroundColor: AppColor.backgroundColorApp,
-          body: RefreshIndicator(
-            onRefresh: () async {
-              await postProvider.fetchPostsByUser(context);
-            },
-            child: isLoading
-                ? Center(
-                    child: Lottie.asset(
-                      'assets/lottie/loading.json',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.contain,
-                    ),
-                  )
-                : posts.isEmpty
-                    ? SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Container(
-                          color: AppColor.backgroundColorApp,
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: const Center(
-                            child: Text(
-                              "Không có bài viết nào.",
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
+        backgroundColor: AppColor.backgroundColorApp,
+        body: RefreshIndicator(
+          onRefresh: () async {
+            await postProvider.fetchPostsByUser(context);
+          },
+          child: isLoading
+              ? Center(
+                  child: Lottie.asset(
+                    'assets/lottie/loading.json',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
+                )
+              : posts.isEmpty
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        color: AppColor.backgroundColorApp,
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: const Center(
+                          child: Text(
+                            "Không có bài viết nào.",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: posts.length,
-                        itemBuilder: (context, index) {
-                          final post = posts[index];
-                          debugPrint("🔍 Bài viết #${index + 1}: ${post.id}");
-                          return PostItem(
-                            postId: post.id ?? '',
-                            postType: post.category ?? 1,
-                            displayName: post.author?.displayName ?? '',
-                            avatar_image: post.author?.avatarImage ?? '',
-                            dateTime: post.createdAt != null
-                                ? formatDateTime(post.createdAt)
-                                : '',
-                            title: post.title ?? '',
-                            content: post.content ?? '',
-                            images: post.album ?? [],
-                            business: post.business ?? [],
-                            product: post.product ?? [],
-                            likes: post.like ?? [],
-                            comments: post.totalComment ?? 0,
-                            isJoin: post.isJoin ?? [],
-                            isMe: widget.isMe,
-                            idUser: post.author!.id,
-                          );
-                        },
                       ),
-          ),
-          bottomNavigationBar: widget.isMe
-              ? const SizedBox(
-                  height: 90,
-                )
-              : null);
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 90),
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        debugPrint("🔍 Bài viết #${index + 1}: ${post.id}");
+                        return PostItem(
+                          postId: post.id ?? '',
+                          postType: post.category ?? 1,
+                          displayName: post.author?.displayName ?? '',
+                          avatar_image: post.author?.avatarImage ?? '',
+                          dateTime: post.createdAt != null
+                              ? formatDateTime(post.createdAt)
+                              : '',
+                          title: post.title ?? '',
+                          content: post.content ?? '',
+                          images: post.album ?? [],
+                          business: post.business ?? [],
+                          product: post.product ?? [],
+                          likes: post.like ?? [],
+                          comments: post.totalComment ?? 0,
+                          isJoin: post.isJoin ?? [],
+                          isMe: widget.isMe,
+                          idUser: post.author!.id,
+                        );
+                      },
+                    ),
+        ),
+      );
     });
   }
 }
