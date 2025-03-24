@@ -199,19 +199,11 @@ class _LoginViewState extends State<LoginView> {
                           children: [
                             SizedBox(height: screenSize.height * 0.05),
                             Center(
-                              child: Image.network(
-                                UrlImage.logo,
+                              child: Image.asset(
+                                "assets/images/logo.png",
                                 width: isSmallScreen ? 120 : 144,
                                 height: isSmallScreen ? 65 : 80,
                                 fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Image.asset(
-                                    "assets/images/logo.png",
-                                    width: isSmallScreen ? 120 : 144,
-                                    height: isSmallScreen ? 65 : 80,
-                                    fit: BoxFit.contain,
-                                  );
-                                },
                               ),
                             ),
                             SizedBox(height: screenSize.height * 0.04),

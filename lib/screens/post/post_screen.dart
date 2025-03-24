@@ -124,10 +124,12 @@ class _PostScreenState extends State<PostScreen> {
                       style: TextStyle(fontSize: 14),
                     ),
                     items: LoaiBaiDang.values
-                        .map((item) => DropdownMenuItem<String>(
-                              value: item.value,
-                              child: Text(item.value),
-                            ))
+                        .map(
+                          (item) => DropdownMenuItem<String>(
+                            value: item.value,
+                            child: Text(item.value),
+                          ),
+                        )
                         .toList(),
                     validator: (value) {
                       if (value == null) {
@@ -153,6 +155,8 @@ class _PostScreenState extends State<PostScreen> {
                     dropdownStyleData: DropdownStyleData(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
+                        // Add this line to set dropdown menu background to white
+                        color: Colors.white,
                       ),
                     ),
                     menuItemStyleData: const MenuItemStyleData(

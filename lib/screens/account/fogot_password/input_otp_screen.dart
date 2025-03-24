@@ -91,19 +91,11 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                     children: [
                       SizedBox(height: size.height * 0.05),
                       Center(
-                        child: Image.network(
-                          UrlImage.logo,
+                        child: Image.asset(
+                          "assets/images/logo.png",
                           width: size.width * 0.4,
                           height: size.height * 0.1,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              "assets/images/logo.png",
-                              width: size.width * 0.4,
-                              height: size.height * 0.1,
-                              fit: BoxFit.contain,
-                            );
-                          },
                         ),
                       ),
                       SizedBox(height: size.height * 0.03),

@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Add bottom padding to account for the navigation bar
     // The value 90 accounts for the nav bar height (82) plus a little extra space
-    final bottomPadding = 90.0;
+    final bottomPadding = 100.0;
 
     return Scaffold(
       backgroundColor: AppColor.backgroundColorApp,

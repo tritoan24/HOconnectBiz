@@ -64,20 +64,13 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(height: size.height * 0.05),
-                      Image.network(
-                        UrlImage.logo,
+                      Image.asset(
+                        "assets/images/logo.png",
                         width: size.width * 0.4,
                         height: size.height * 0.1,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            "assets/images/logo.png",
-                            width: size.width * 0.4,
-                            height: size.height * 0.1,
-                            fit: BoxFit.contain,
-                          );
-                        },
                       ),
+
                       SizedBox(height: size.height * 0.03),
 
                       // Tiêu đề

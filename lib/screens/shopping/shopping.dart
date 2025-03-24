@@ -91,7 +91,8 @@ class _ShoppingState extends State<Shopping> {
 
     // Kiểm tra trạng thái isJoind
     final isJoind = checkIsJoind(latestPost.isJoin, userId);
-    debugPrint("🔍 DEBUG Shopping: Trạng thái isJoind trước khi chuyển màn hình: $isJoind");
+    debugPrint(
+        "🔍 DEBUG Shopping: Trạng thái isJoind trước khi chuyển màn hình: $isJoind");
 
     debugPrint(
         "🔍 DEBUG Shopping: Dữ liệu bài viết trước khi chuyển màn hình - likes: ${latestPost.like?.length}, comments: ${latestPost.totalComment}, isJoind: $isJoind");
@@ -122,16 +123,20 @@ class _ShoppingState extends State<Shopping> {
     );
 
     // Nếu có thay đổi từ màn hình comment, cập nhật UI cục bộ
-    debugPrint("🔍 DEBUG Shopping: Nhận kết quả từ màn hình comment, result = $result");
-    
+    debugPrint(
+        "🔍 DEBUG Shopping: Nhận kết quả từ màn hình comment, result = $result");
+
     // Luôn làm mới UI sau khi quay lại từ màn hình comments
     // Điều này đảm bảo trạng thái mới nhất được hiển thị
     final updatedPost = postProvider.getPostById(post.id ?? '');
     if (updatedPost != null) {
-      debugPrint("🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
-      debugPrint("🔍 DEBUG Shopping: isJoin mới có ${updatedPost.isJoin?.length} phần tử");
-      debugPrint("🔍 DEBUG Shopping: Số lượng comment mới: ${updatedPost.totalComment}");
-      
+      debugPrint(
+          "🔍 DEBUG Shopping: Cập nhật bài viết cục bộ với ID: ${post.id}");
+      debugPrint(
+          "🔍 DEBUG Shopping: isJoin mới có ${updatedPost.isJoin?.length} phần tử");
+      debugPrint(
+          "🔍 DEBUG Shopping: Số lượng comment mới: ${updatedPost.totalComment}");
+
       if (result == true) {
         // Hiển thị thông báo ngắn nếu có thay đổi từ màn hình comment
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -139,7 +144,7 @@ class _ShoppingState extends State<Shopping> {
           duration: Duration(seconds: 1),
         ));
       }
-      
+
       // Ép Flutter refresh UI
       setState(() {});
     }
@@ -211,6 +216,7 @@ class _ShoppingState extends State<Shopping> {
                           ],
                         )
                       : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 90),
                           controller: _scrollController,
                           physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: posts.length +

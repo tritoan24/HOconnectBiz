@@ -52,22 +52,13 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       SizedBox(
                           height: size.height *
                               0.05), // Tương đối theo chiều cao màn hình
-                      Image.network(
-                        UrlImage.logo,
-                        width: size.width *
-                            0.4, // Tương đối theo chiều rộng màn hình
-                        height: size.height *
-                            0.1, // Tương đối theo chiều cao màn hình
+                      Image.asset(
+                        "assets/images/logo.png",
+                        width: size.width * 0.4,
+                        height: size.height * 0.1,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            "assets/images/logo.png",
-                            width: size.width * 0.4,
-                            height: size.height * 0.1,
-                            fit: BoxFit.contain,
-                          );
-                        },
                       ),
+
                       SizedBox(height: size.height * 0.03),
 
                       // ✅ Căn trái tiêu đề

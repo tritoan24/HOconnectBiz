@@ -63,6 +63,7 @@ class _EditMemberState extends State<EditMember> {
       // Pop current screen
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
+        Navigator.pop(context);
       }
 
       // Schedule navigation after the frame is built

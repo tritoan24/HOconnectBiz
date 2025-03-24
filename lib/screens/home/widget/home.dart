@@ -59,7 +59,12 @@ class _HomeState extends State<Home> {
     final rankProvider = Provider.of<RankProvider>(context);
     final ranksRevenue = rankProvider.rankRevenue;
     final ranksBusiness = rankProvider.rankBusiness;
-    final imageUrl = Provider.of<BannerProvider>(context).allImageUrls.first;
+    final bannerProvider = Provider.of<BannerProvider>(context);
+    final imageUrl = (bannerProvider.allImageUrls.isNotEmpty
+            ? bannerProvider.allImageUrls.first
+            : null) ??
+        'https://tse1.mm.bing.net/th?id=OIP.jSD1OrNbZLkNquNQ40Oa0AHaE8&pid=Api&P=0&w=300&h=300';
+
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
       appBar: AppBar(
@@ -69,17 +74,10 @@ class _HomeState extends State<Home> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Center(
-            child: Image.network(
-              UrlImage.logo,
+            child: Image.asset(
+              "assets/images/logo.png",
               width: 150,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  "assets/images/logo.png",
-                  width: 150,
-                  fit: BoxFit.contain,
-                );
-              },
             ),
           ),
         ),
@@ -193,17 +191,25 @@ class _HomeState extends State<Home> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(
+                height: 16,
+              ),
               imageUrl != null
-                  ? Image.network(
-                      imageUrl!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          AppIcons.getError(),
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        imageUrl!,
+                        width: double.infinity,
+                        height: 153,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            AppIcons.getError(),
+                      ),
                     )
                   : Lottie.asset(
                       'assets/lottie/loading.json',
                     ),
+
               const SizedBox(
                 height: 40,
               ),
