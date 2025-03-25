@@ -913,4 +913,31 @@ class PostProvider extends BaseProvider {
       }
     }
   }
+
+  //eidt post
+  Future<void> editPost(
+    BuildContext context,
+    String postId,
+    CreatePost product, {
+    List<File>? files,
+    List<String>? deletedImages,
+  }) async {
+    LoadingOverlay.show(context);
+    await executeApiCall(
+      apiCall: () => _postRepository.editPost(
+        product,
+        postId,
+        context,
+        files: files,
+        deletedImages: deletedImages,
+      ),
+      context: context,
+      onSuccess: () async {
+        await fetchPostsByUser(context);
+        Navigator.of(context).pop();
+      },
+      successMessage: 'Cập nhật bài viết thành công!',
+    );
+    LoadingOverlay.hide();
+  }
 }

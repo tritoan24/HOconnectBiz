@@ -38,5 +38,36 @@ class PostRepository {
 
     return ApiResponse.fromJson(response);
   }
-}
 
+  //edit post
+  Future<ApiResponse> editPost(
+    CreatePost post,
+    String postId,
+    BuildContext context, {
+    List<File>? files,
+    List<String>? deletedImages,
+  }) async {
+    // Create a map for the file fields
+    final Map<String, List<File>> fileFields = {
+      'album': files ?? [],
+    };
+
+    // Create a map for the request body
+    final Map<String, dynamic> body = post.toJson();
+
+    // Add the delete field if there are images to delete
+    if (deletedImages != null && deletedImages.isNotEmpty) {
+      body['delete'] = deletedImages;
+    }
+
+    // Make the API call
+    final response = await _apiClient.patchRequest(
+      '${ApiEndpoints.post}/$postId',
+      body: body,
+      context,
+      files: fileFields,
+    );
+
+    return ApiResponse.fromJson(response);
+  }
+}

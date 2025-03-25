@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -37,26 +39,31 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
   int content = 1;
   int category = 1;
 
-  // Danh sách sản phẩm đã chọn
+  // Product tracking
   List<ProductModel> selectedProductsList = [];
   Map<ProductModel, bool> selectedProducts = {};
   Map<ProductModel, int> productQuantities = {};
 
+  // Image tracking
   List<String> selectedImages = []; // Currently selected images
   List<String> deletedImages = []; // Images to be deleted
   List<String> originalImages = []; // Original images from product
   List<String> newImages = []; // New images added during edit
 
+  final GlobalKey<_AdvertisingArticleState> _advertisingArticleKey =
+      GlobalKey<_AdvertisingArticleState>();
+
   @override
   void initState() {
     super.initState();
 
-    // Initialize selected images from props if available
+    // Initialize selected images from props
     if (widget.initialImages != null && widget.initialImages!.isNotEmpty) {
+      originalImages = List.from(widget.initialImages!);
       selectedImages = List.from(widget.initialImages!);
     }
 
-    // Initialize selected products from props if available
+    // Initialize selected products from props
     if (widget.initialProducts != null && widget.initialProducts!.isNotEmpty) {
       selectedProductsList = List.from(widget.initialProducts!);
     }
@@ -69,7 +76,7 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
 
       // Initialize product selection maps
       for (var product in products) {
-        // Check if this product is in the initial selected products list
+        // Check if product is in initial selected products
         bool isSelected = false;
         if (widget.initialProducts != null) {
           isSelected = widget.initialProducts!.any((p) => p.id == product.id);
@@ -78,9 +85,60 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
         productQuantities[product] = 1;
       }
 
-      // Update UI with initial selected products
+      // Update UI
       setState(() {});
     });
+  }
+
+  // Updated image handling method
+  void _onImagesSelected(List<String> paths) {
+    setState(() {
+      // Determine which images are new (not in originalImages)
+      newImages = paths
+          .where((path) =>
+              !path.startsWith('http') && !originalImages.contains(path))
+          .toList();
+
+      // Determine which original images were deleted
+      deletedImages =
+          originalImages.where((path) => !paths.contains(path)).toList();
+
+      // Update main selected images list
+      selectedImages = paths;
+      widget.onImagesChanged(paths);
+    });
+  }
+
+  // Get prepared data for API submission
+  Map<String, dynamic> getPostData() {
+    final title = widget.formKey.currentState?.value['tieuDe'];
+    final content = widget.formKey.currentState?.value['noiDungBaiDang'];
+
+    // Product IDs for submission
+    List<String> productList = selectedProductsList
+        .map((product) => product.id ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+
+    // Determine which images to retain (URLs)
+    List<String> retainedUrlImages =
+        selectedImages.where((path) => path.startsWith('http')).toList();
+
+    return {
+      'title': title,
+      'content': content,
+      'category': 2, // Advertising post type
+      'product': productList,
+      'album': retainedUrlImages,
+    };
+  }
+
+  // Get file objects from new images
+  List<File> getNewImageFiles() {
+    return newImages
+        .where((path) => !path.startsWith('http'))
+        .map((path) => File(path))
+        .toList();
   }
 
   void updateSelectedProducts() {
@@ -92,13 +150,6 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
           .where((product) => selectedProducts[product] == true)
           .toList();
       widget.onProductsChanged(selectedProductsList);
-    });
-  }
-
-  void _onImagesSelected(List<String> paths) {
-    setState(() {
-      selectedImages = paths;
-      widget.onImagesChanged(paths);
     });
   }
 
