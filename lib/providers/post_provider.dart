@@ -935,6 +935,13 @@ class PostProvider extends BaseProvider {
       onSuccess: () async {
         await fetchPostsByUser(context);
         Navigator.of(context).pop();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cập nhật bài viết thành công!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       },
       successMessage: 'Cập nhật bài viết thành công!',
     );

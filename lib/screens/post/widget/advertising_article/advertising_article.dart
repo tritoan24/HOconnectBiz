@@ -106,7 +106,6 @@ class AdvertisingArticleState extends State<AdvertisingArticle> {
     };
   }
 
-  // Updated image handling method
   void _onImagesSelected(List<String> paths) {
     setState(() {
       // Determine which images are new (not in originalImages)
@@ -121,7 +120,14 @@ class AdvertisingArticleState extends State<AdvertisingArticle> {
 
       // Update main selected images list
       selectedImages = paths;
+
+      // Immediately notify parent widget about the change
       widget.onImagesChanged(paths);
+
+      // Debug output to verify the state
+      print('Selected images updated: ${selectedImages.length} images');
+      print(
+          'New images: ${newImages.length}, Deleted: ${deletedImages.length}');
     });
   }
 
@@ -247,17 +253,11 @@ class AdvertisingArticleState extends State<AdvertisingArticle> {
                       child: Column(
                         children: <Widget>[
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  "Danh sách sản phẩm",
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                const Spacer(),
                                 IconButton(
                                   onPressed: () {
                                     updateSelectedProducts();

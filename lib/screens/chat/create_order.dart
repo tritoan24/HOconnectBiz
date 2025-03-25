@@ -229,6 +229,14 @@ class _CreateOrderState extends State<CreateOrder> {
                                         ),
                                       ],
                                     ),
+                                    const Divider(
+                                      color: Colors.grey,
+                                      thickness: 1,
+                                      height: 1,
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Expanded(
                                       child: poductsList.isEmpty
                                           ? const Center(

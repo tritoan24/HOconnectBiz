@@ -149,51 +149,56 @@ class _InputFileImagesState extends State<InputFileImages> {
                       (image.path.startsWith('http://') ||
                           image.path.startsWith('https://'));
 
-                  return Stack(
+                  return Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: !isNetworkImage
-                            ? Image.file(
-                                File(image.path),
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
+                      const SizedBox(width: 5), // 5px horizontal spacing
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: !isNetworkImage
+                                ? Image.file(
+                                    File(image.path),
                                     width: 100,
                                     height: 100,
-                                    color: Colors.grey,
-                                    child: const Icon(Icons.error),
-                                  );
-                                },
-                              )
-                            : Image.network(
-                                image.path,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                      ),
-                      Positioned(
-                        top: 5,
-                        right: 5,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedImages.remove(image);
-                            });
-                            _updateImages();
-                          },
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.red,
-                            ),
-                            child: const Icon(Icons.close,
-                                size: 20, color: Colors.white),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        color: Colors.grey,
+                                        child: const Icon(Icons.error),
+                                      );
+                                    },
+                                  )
+                                : Image.network(
+                                    image.path,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
-                        ),
+                          Positioned(
+                            top: 5,
+                            right: 5,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedImages.remove(image);
+                                });
+                                _updateImages();
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red,
+                                ),
+                                child: const Icon(Icons.close,
+                                    size: 20, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   );

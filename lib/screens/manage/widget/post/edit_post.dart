@@ -81,7 +81,8 @@ class _EditPostState extends State<EditPost> {
 
   void _handleImagesChanged(List<String> images) {
     setState(() {
-      selectedImages = images;
+      // selectedImages = images;
+      selectedImages = List.from(images);
     });
   }
 
@@ -143,7 +144,17 @@ class _EditPostState extends State<EditPost> {
       newImagePaths = imageData['newImages'];
       deletedImages = imageData['deletedImages'];
       currentImages = imageData['selectedImages'];
-      newImageFiles = newImagePaths.map((path) => File(path)).toList();
+
+      //validate ảnh cũ
+      if (currentImages.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng chọn ít nhất một ảnh')),
+        );
+        return;
+      }
+      // Chuẩn bị danh sách các file ảnh mới cần upload
+      List<File> newImageFiles =
+          newImagePaths.map((path) => File(path)).toList();
 
       // Create post data ONLY with business fields
       final Map<String, dynamic> postJson = {
@@ -154,6 +165,9 @@ class _EditPostState extends State<EditPost> {
         'album': currentImages,
       };
       // DON'T include empty product field at all
+
+      print('ảnh mới: $newImagePaths');
+      print('ảnh cũ: $currentImages');
 
       context.read<PostProvider>().editPost(
             context,
@@ -177,6 +191,12 @@ class _EditPostState extends State<EditPost> {
       currentImages = imageData['selectedImages'];
       newImageFiles = newImagePaths.map((path) => File(path)).toList();
 
+      if (currentImages.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng chọn ít nhất một ảnh')),
+        );
+        return;
+      }
       // Create post data with ONLY product fields - don't include business field
       final Map<String, dynamic> postJson = {
         'title': title,

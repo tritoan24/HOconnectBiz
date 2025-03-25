@@ -71,8 +71,26 @@ class BusinessOpportunityState extends State<BusinessOpportunity> {
 
   void _onImagesSelected(List<String> paths) {
     setState(() {
+      // Determine which images are new (not in originalImages)
+      newImages = paths
+          .where((path) =>
+              !path.startsWith('http') && !originalImages.contains(path))
+          .toList();
+
+      // Determine which original images were deleted
+      deletedImages =
+          originalImages.where((path) => !paths.contains(path)).toList();
+
+      // Update main selected images list
       selectedImages = paths;
+
+      // Immediately notify parent widget about the change
       widget.onImagesChanged(paths);
+
+      // Debug output to verify the state
+      print('Selected images updated: ${selectedImages.length} images');
+      print(
+          'New images: ${newImages.length}, Deleted: ${deletedImages.length}');
     });
   }
 
@@ -90,24 +108,6 @@ class BusinessOpportunityState extends State<BusinessOpportunity> {
         widget.onBusinessChanged(selectedItems);
       });
     });
-
-    void _onImagesSelected(List<String> paths) {
-      setState(() {
-        // Determine which images are new (not in originalImages)
-        newImages = paths
-            .where((path) =>
-                !path.startsWith('http') && !originalImages.contains(path))
-            .toList();
-
-        // Determine which original images were deleted
-        deletedImages =
-            originalImages.where((path) => !paths.contains(path)).toList();
-
-        // Update main selected images list
-        selectedImages = paths;
-        widget.onImagesChanged(paths);
-      });
-    }
   }
 
   @override
