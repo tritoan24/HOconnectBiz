@@ -73,55 +73,56 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
     //in ra tiêu chí đánh giá
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Chi tiết đánh giá cơ hội'),
         ),
-        title: const Text('Chi tiết đánh giá cơ hội'),
-      ),
-      body: provider.isLoadingRating
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: widget.ratings.isEmpty
-                      ? const Center(
-                          child: Text('Chưa có đánh giá nào'),
-                        )
-                      : ListView.builder(
-                          itemCount: widget.ratings.length,
-                          itemBuilder: (context, index) {
-                            // Only build cards for entries that have reviews
-                            if (widget.ratings[index].review == null) {
-                              return const SizedBox.shrink();
-                            }
-                            return _buildRatingCard(
-                              widget.ratings[index],
-                              // criteria,
-                            );
-                          },
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ButtonWidget16(
-                    label: 'Đánh giá cơ hội kinh doanh',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RatingScreen(
-                            businessOpportunityId: widget.idPost,
-                          ),
-                        ),
-                      ).then((_) {});
-                    },
-                  ),
-                )
-              ],
-            ),
-    );
+        body: provider.isLoadingRating
+            ? const Center(child: CircularProgressIndicator())
+            : Container(
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: widget.ratings.isEmpty
+                          ? const Center(
+                              child: Text('Chưa có đánh giá nào'),
+                            )
+                          : ListView.builder(
+                              itemCount: widget.ratings.length,
+                              itemBuilder: (context, index) {
+                                // Only build cards for entries that have reviews
+                                if (widget.ratings[index].review == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return _buildRatingCard(
+                                  widget.ratings[index],
+                                  // criteria,
+                                );
+                              },
+                            ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ButtonWidget16(
+                        label: 'Đánh giá cơ hội kinh doanh',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RatingScreen(
+                                businessOpportunityId: widget.idPost,
+                              ),
+                            ),
+                          ).then((_) {});
+                        },
+                      ),
+                    )
+                  ],
+                )));
   }
 
   Widget _buildRatingCard(
@@ -299,4 +300,3 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
     );
   }
 }
-

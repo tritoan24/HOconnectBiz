@@ -92,34 +92,37 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       SizedBox(height: size.height * 0.01),
 
                       // ✅ Căn phải phần "Bạn đã nhớ mật khẩu" + "Đăng nhập"
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Row(
-                          mainAxisSize: MainAxisSize
-                              .min, // ✅ Giữ row nhỏ để không bị kéo dãn
-                          children: [
-                            Text(
-                              'Bạn đã nhớ mật khẩu?',
-                              style: TextStyles.textStyleNormal12W400Grey,
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // Xóa lỗi trước khi chuyển màn hình
-                                Provider.of<AuthProvider>(context,
-                                        listen: false)
-                                    .clearState();
-                                context.go(AppRoutes.login);
-                              },
-                              child: const Text('Đăng nhập',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColor.primaryBlue,
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                            ),
-                          ],
-                        ),
-                      ),
+
+                      !widget.showAppBar
+                          ? Align(
+                              alignment: Alignment.centerRight,
+                              child: Row(
+                                mainAxisSize: MainAxisSize
+                                    .min, // ✅ Giữ row nhỏ để không bị kéo dãn
+                                children: [
+                                  Text(
+                                    'Bạn đã nhớ mật khẩu?',
+                                    style: TextStyles.textStyleNormal12W400Grey,
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // Xóa lỗi trước khi chuyển màn hình
+                                      Provider.of<AuthProvider>(context,
+                                              listen: false)
+                                          .clearState();
+                                      context.go(AppRoutes.login);
+                                    },
+                                    child: const Text('Đăng nhập',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColor.primaryBlue,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : SizedBox(),
 
                       SizedBox(height: size.height * 0.05),
                       ButtonWidget16(
@@ -145,35 +148,37 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
           },
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 50,
-        child: Center(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(
-                    text: "Chưa có tài khoản?  ",
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
-                TextSpan(
-                  text: "Đăng ký ngay",
-                  style: const TextStyle(
-                    color: Color(0xff006AF5),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+      bottomNavigationBar: widget.showAppBar
+          ? null
+          : Container(
+              height: 50,
+              child: Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(
+                          text: "Chưa có tài khoản?  ",
+                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      TextSpan(
+                        text: "Đăng ký ngay",
+                        style: const TextStyle(
+                          color: Color(0xff006AF5),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            // Xóa lỗi trước khi chuyển màn hình
+                            Provider.of<AuthProvider>(context, listen: false)
+                                .clearState();
+                            context.push(AppRoutes.dangKyTaiKhoan);
+                          },
+                      ),
+                    ],
                   ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      // Xóa lỗi trước khi chuyển màn hình
-                      Provider.of<AuthProvider>(context, listen: false)
-                          .clearState();
-                      context.push(AppRoutes.dangKyTaiKhoan);
-                    },
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

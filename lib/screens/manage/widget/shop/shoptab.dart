@@ -86,7 +86,7 @@ class _TabShopState extends State<TabShop> {
                         label: 'Chỉnh sửa sản phẩm đã ghim',
                       ),
                     Container(
-                      height: sanPhamGhim.isEmpty ? 30 : 380,
+                      height: sanPhamGhim.isEmpty ? 30 : 268,
                       child: sanPhamGhim.isNotEmpty
                           ? ListView.builder(
                               scrollDirection: Axis.horizontal,

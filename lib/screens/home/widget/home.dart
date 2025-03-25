@@ -41,11 +41,9 @@ class _HomeState extends State<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Provider.of<PostProvider>(context, listen: false).fetchPosts(context);
       final postProvider = Provider.of<PostProvider>(context, listen: false);
-      final boProvider = Provider.of<BoProvider>(context, listen: false);
+
       final staticsticalProvider =
           Provider.of<StatisticalProvider>(context, listen: false);
-      boProvider.fetchBoDataOut(context);
-      boProvider.fetchBoData(context);
 
       staticsticalProvider.fetchStatistics(context);
 
