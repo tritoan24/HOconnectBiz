@@ -183,8 +183,8 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _HeaderSection(
-                          owner: bo.companyName,
-                          ownerAvatar: bo.thumbnail,
+                          owner: bo.authorName,
+                          ownerAvatar: bo.authorAvatar,
                           totalRevenue: bo.revenue,
                           rating: bo.avgStar,
                           ratedBy: bo.totalReview,
@@ -277,15 +277,18 @@ class _HeaderSection extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(ownerAvatar),
-                      onBackgroundImageError: (_, __) {},
+                    ClipOval(
                       child: Image.network(
                         ownerAvatar,
+                        fit: BoxFit.cover,
+                        width: 40,
+                        height: 40,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
                             UrlImage.errorImage,
                             fit: BoxFit.cover,
+                            width: 40,
+                            height: 40,
                           );
                         },
                       ),

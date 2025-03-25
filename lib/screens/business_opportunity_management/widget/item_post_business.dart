@@ -41,11 +41,11 @@ class ItemPostBussiness extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage(bo.thumbnail),
+                    backgroundImage: NetworkImage(bo.authorAvatar),
                     onBackgroundImageError: (_, __) {},
                     child: ClipOval(
                       child: Image.network(
-                        bo.thumbnail,
+                        bo.authorAvatar,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
@@ -59,7 +59,7 @@ class ItemPostBussiness extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      bo.companyName,
+                      bo.authorName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
