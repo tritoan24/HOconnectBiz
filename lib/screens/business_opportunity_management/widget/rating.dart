@@ -11,10 +11,12 @@ import '../../manage/widget/shop/widget/un_checkbox.dart';
 
 class RatingScreen extends StatefulWidget {
   final String businessOpportunityId;
+  final bool? isBusiness;
 
   const RatingScreen({
     super.key,
     required this.businessOpportunityId,
+    this.isBusiness,
   });
 
   @override
@@ -115,6 +117,7 @@ class _RatingScreenState extends State<RatingScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<BoProvider>(context);
     final criteria = provider.listCriteriaRating;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -357,14 +360,17 @@ class _RatingScreenState extends State<RatingScreen> {
                       ),
                     const SizedBox(height: 24),
                     // Khoảng cách để nút "Gửi đánh giá" không bị che
-                    ButtonWidget16(
-                      label: isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá',
-                      onPressed: (selectedRating != null &&
-                              selectedRating! > 0 &&
-                              !isSubmitting)
-                          ? _submitRating
-                          : null,
-                    ),
+                    widget.isBusiness == null || widget.isBusiness == false
+                        ? SizedBox()
+                        : ButtonWidget16(
+                            label:
+                                isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá',
+                            onPressed: (selectedRating != null &&
+                                    selectedRating! > 0 &&
+                                    !isSubmitting)
+                                ? _submitRating
+                                : null,
+                          ),
                     const SizedBox(height: 16),
                     // Đệm dưới cùng để tránh bàn phím che nút
                   ],
@@ -374,4 +380,3 @@ class _RatingScreenState extends State<RatingScreen> {
     );
   }
 }
-

@@ -83,6 +83,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         otherMembers.add(member);
       }
     }
+    print('trạng thái is business: ${widget.isInBusiness}');
 
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
@@ -345,7 +346,8 @@ class _HeaderSection extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => RatingScreen(
-                                    businessOpportunityId: idPost)),
+                                      businessOpportunityId: idPost,
+                                    )),
                           );
 
                           if (result == true) {
@@ -410,6 +412,7 @@ class _HeaderSection extends StatelessWidget {
                             ratings: data,
                             idPost: idPost,
                             userStar: userStar,
+                            isInBusiness: isBusiness,
                           )));
             },
             icon: const Icon(

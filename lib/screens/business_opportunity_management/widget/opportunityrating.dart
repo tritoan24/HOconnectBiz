@@ -51,12 +51,14 @@ class OpportunityRating2 extends StatefulWidget {
   final String idPost;
   final List<IsJoin> ratings;
   final double? userStar;
+  final bool? isInBusiness;
 
   const OpportunityRating2({
     Key? key,
     required this.idPost,
     required this.ratings,
     this.userStar,
+    this.isInBusiness,
   }) : super(key: key);
 
   @override
@@ -89,7 +91,7 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
                 child: Column(
                   children: [
                     Expanded(
-                      child: widget.ratings.isEmpty
+                      child: widget.ratings[0].review == null
                           ? const Center(
                               child: Text('Chưa có đánh giá nào'),
                             )
@@ -107,26 +109,29 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
                               },
                             ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ButtonWidget16(
-                        label: widget.userStar != null
-                            ? 'Bạn đã đánh giá'
-                            : 'Đánh giá cơ hội kinh doanh',
-                        onPressed: () {
-                          widget.userStar != null
-                              ? null
-                              : Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RatingScreen(
-                                      businessOpportunityId: widget.idPost,
-                                    ),
-                                  ),
-                                ).then((_) {});
-                        },
-                      ),
-                    )
+                    widget.isInBusiness == true
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: ButtonWidget16(
+                              label: widget.userStar != null
+                                  ? 'Bạn đã đánh giá'
+                                  : 'Đánh giá cơ hội kinh doanh',
+                              onPressed: () {
+                                widget.userStar != null
+                                    ? null
+                                    : Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RatingScreen(
+                                            businessOpportunityId:
+                                                widget.idPost,
+                                          ),
+                                        ),
+                                      ).then((_) {});
+                              },
+                            ),
+                          )
                   ],
                 )));
   }
