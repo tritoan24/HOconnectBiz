@@ -292,7 +292,15 @@ class ChatProvider with ChangeNotifier {
 
         if (innerData['data'] != null && innerData['data'] is List) {
           // Chuyển đổi dữ liệu từ socket thành danh sách Contact
-          List<Contact> newContacts = (innerData['data'] as List).map((item) {
+          List<Contact> newContacts = (innerData['data'] as List).where((item) {
+            // Kiểm tra xem _currentUserId có trong memberIds không
+            List<String> memberIds = item['members'] != null
+                ? List<String>.from(
+                    item['members'].map((member) => member.toString()))
+                : [];
+
+            return memberIds.contains(_currentUserId);
+          }).map((item) {
             // Tạo lastMessage từ dữ liệu
             LastMessage lastMessage = LastMessage(
               content: item['lastMessage']?['content'] ?? '',
@@ -300,18 +308,28 @@ class ChatProvider with ChangeNotifier {
                   DateTime.now().toIso8601String(),
             );
 
-            // Lấy thông tin từ sender
-            final sender = item['sender'] as Map<String, dynamic>;
-            final senderId = sender['_id'] ?? '';
+            // Lấy contactId
+            final contactId = item['contactId'] ?? '';
 
-            // Kiểm tra xem sender đã tồn tại trong danh sách contacts chưa
-            int existingIndex =
-                _contacts.indexWhere((contact) => contact.id == senderId);
+            //lấy id của contact
+            final id = item['_id'] ?? '';
+
+            // In ra danh sách contactId của các contact hiện có
+            print('Danh sách contactId hiện tại:');
+            _contacts.forEach((contact) {
+              print(
+                  'Contact: ${contact.displayName}, ContactId: ${contact.contactId}');
+            });
+
+// Kiểm tra xem contact đã tồn tại chưa
+            int existingIndex = _contacts
+                .indexWhere((contact) => contact.contactId == contactId);
 
             if (existingIndex != -1) {
-              // Nếu sender đã tồn tại, chỉ cập nhật tin nhắn cuối
+              // Nếu contact đã tồn tại, chỉ cập nhật tin nhắn cuối
               _contacts[existingIndex] = Contact(
                 id: _contacts[existingIndex].id,
+                contactId: contactId,
                 displayName: _contacts[existingIndex].displayName,
                 avatarImage: _contacts[existingIndex].avatarImage,
                 username: _contacts[existingIndex].username,
@@ -320,18 +338,19 @@ class ChatProvider with ChangeNotifier {
                 lastMessage: lastMessage,
               );
               print(
-                  "🔄 Đã cập nhật tin nhắn cuối cho sender: ${_contacts[existingIndex].displayName}");
+                  "🔄 Đã cập nhật tin nhắn cuối cho contact: ${_contacts[existingIndex].displayName}");
               return _contacts[existingIndex];
             } else {
-              // Nếu là sender mới, tạo contact mới
+              // Nếu là contact mới, tạo contact mới
               return Contact(
-                id: senderId,
-                displayName: sender['displayName'] ?? 'No Name',
+                id: item['_id'] ?? '',
+                contactId: contactId,
+                displayName: item['displayName'] ?? 'No Name',
                 avatarImage:
-                    sender['avatar_image'] ?? UrlImage.defaultContactImage,
-                username: sender['username'] ?? '',
-                userId: sender['user_id']?.toString() ?? '',
-                type: sender['type'] ?? '',
+                    item['avatar_image'] ?? UrlImage.defaultContactImage,
+                username: item['username'] ?? '',
+                userId: item['user_id']?.toString() ?? '',
+                type: item['type'] ?? '',
                 lastMessage: lastMessage,
               );
             }
@@ -339,16 +358,13 @@ class ChatProvider with ChangeNotifier {
 
           // Lọc ra các contact thực sự mới (chưa tồn tại trong _contacts)
           List<Contact> uniqueNewContacts = newContacts.where((newContact) {
-            return !_contacts
-                .any((existingContact) => existingContact.id == newContact.id);
+            return !_contacts.any((existingContact) =>
+                existingContact.contactId == newContact.contactId);
           }).toList();
 
           if (uniqueNewContacts.isNotEmpty) {
             // Thêm các contact mới vào đầu danh sách
             _contacts.insertAll(0, uniqueNewContacts);
-
-            // // Cập nhật số lượng contact
-            // _cartItemCount = _contacts.length;
 
             print(
                 "👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
@@ -611,6 +627,8 @@ class ChatProvider with ChangeNotifier {
                 .map((item) => Contact.fromJson(item))
                 .toList()
             : [];
+
+        print("dữ liệu contact: ${_contacts}");
 
         // Lưu total từ API response
         _cartItemCount = response.total ?? 0;

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart'; // Add this import for date formatting
 
 class Contact {
   final String id;
+  final String? contactId;
   final String displayName;
   final dynamic avatarImage;
   final String? username;
@@ -12,6 +13,7 @@ class Contact {
 
   Contact({
     required this.id,
+    this.contactId,
     required this.displayName,
     required this.avatarImage,
     this.username,
@@ -44,6 +46,7 @@ class Contact {
 
     return Contact(
       id: json['_id'] ?? '',
+      contactId: json['contactId'] ?? '',
       displayName: json['displayName'] ?? 'No Name',
       avatarImage: avatarImage,
       username: json['username'] ?? '',
