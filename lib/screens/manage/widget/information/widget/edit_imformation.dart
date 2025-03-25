@@ -197,13 +197,17 @@ class _EditInformationState extends State<EditInformation> {
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(20),
+                    color: Color(0xff006AF5),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Center(
                     child: Text(
-                      'Lưu thông tin',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      'Lưu thông tin chỉnh sửa',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -486,4 +490,3 @@ class _EditInformationState extends State<EditInformation> {
     );
   }
 }
-

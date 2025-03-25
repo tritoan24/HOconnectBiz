@@ -181,10 +181,12 @@ class _InformationState extends State<InformationTab> {
                                 context.push(AppRoutes.chinhSuaThongTin);
                               },
                               child: Container(
-                                height: 50,
+                                padding: const EdgeInsets.all(12.0),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
                                   color: AppColor.primaryBlue,
                                 ),
                                 child: const Center(
@@ -200,7 +202,7 @@ class _InformationState extends State<InformationTab> {
                               ),
                             )
                           : Container(),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 18),
                     ],
                   ),
                 ),
