@@ -67,6 +67,7 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.only(bottom: 10),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
