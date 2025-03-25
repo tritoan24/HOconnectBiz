@@ -54,6 +54,7 @@ class PostRepository {
 
     // Create a map for the request body
     final Map<String, dynamic> body = post.toJson();
+    print(body);
 
     // Add the delete field if there are images to delete
     if (deletedImages != null && deletedImages.isNotEmpty) {
@@ -68,6 +69,15 @@ class PostRepository {
       files: fileFields,
     );
 
+    return ApiResponse.fromJson(response);
+  }
+
+  // Add delete method
+  Future<ApiResponse> deletePost(String postID, BuildContext context) async {
+    final response = await _apiClient.deleteRequest(
+      '${ApiEndpoints.post}/$postID',
+      context,
+    );
     return ApiResponse.fromJson(response);
   }
 }

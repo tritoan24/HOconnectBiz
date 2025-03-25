@@ -918,14 +918,14 @@ class PostProvider extends BaseProvider {
   Future<void> editPost(
     BuildContext context,
     String postId,
-    CreatePost product, {
+    CreatePost post, {
     List<File>? files,
     List<String>? deletedImages,
   }) async {
     LoadingOverlay.show(context);
     await executeApiCall(
       apiCall: () => _postRepository.editPost(
-        product,
+        post,
         postId,
         context,
         files: files,
@@ -937,6 +937,18 @@ class PostProvider extends BaseProvider {
         Navigator.of(context).pop();
       },
       successMessage: 'Cập nhật bài viết thành công!',
+    );
+    LoadingOverlay.hide();
+  }
+
+  //delete post
+  Future<void> deletePost(BuildContext context, String postID) async {
+    LoadingOverlay.show(context);
+    await executeApiCall(
+      apiCall: () => _postRepository.deletePost(postID, context),
+      context: context,
+      onSuccess: () => fetchPostsByUser(context),
+      successMessage: 'Xóa sản phẩm thành công!',
     );
     LoadingOverlay.hide();
   }

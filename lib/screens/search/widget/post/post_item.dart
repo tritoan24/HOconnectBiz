@@ -405,11 +405,10 @@ class _PostItemState extends State<PostItem> {
                               titleButtonLeft: 'Quay lại',
                               titleButtonRight: 'Xóa',
                               onConfirm: () {
-                                // final postProvider = Provider.of<PostProvider>(
-                                //     context,
-                                //     listen: false);
-                                // postProvider.deletePost(
-                                //     context, post.id.toString());
+                                final postProvider = Provider.of<PostProvider>(
+                                    context,
+                                    listen: false);
+                                postProvider.deletePost(context, widget.postId);
                               },
                             );
                           },

@@ -134,7 +134,7 @@ class _EditPostState extends State<EditPost> {
       // Business opportunity post
       imageData = businessOpportunityKey.currentState!.getImageData();
 
-      // Extract business IDs
+      // Format business IDs properly
       List<String> businessList = selectedBusinesses
           .map((business) => business['id'] ?? '')
           .where((id) => id.isNotEmpty)
@@ -145,19 +145,20 @@ class _EditPostState extends State<EditPost> {
       currentImages = imageData['selectedImages'];
       newImageFiles = newImagePaths.map((path) => File(path)).toList();
 
-      // Create post data with business fields
-      final CreatePost postData = CreatePost(
-        title: title,
-        content: content,
-        category: 1, // Business opportunity category
-        business: businessList,
-        album: currentImages,
-      );
+      // Create post data ONLY with business fields
+      final Map<String, dynamic> postJson = {
+        'title': title,
+        'content': content,
+        'category': 1,
+        'business': businessList,
+        'album': currentImages,
+      };
+      // DON'T include empty product field at all
 
       context.read<PostProvider>().editPost(
             context,
             widget.postId,
-            postData,
+            CreatePost.fromJson(postJson),
             files: newImageFiles,
             deletedImages: deletedImages,
           );
@@ -176,14 +177,18 @@ class _EditPostState extends State<EditPost> {
       currentImages = imageData['selectedImages'];
       newImageFiles = newImagePaths.map((path) => File(path)).toList();
 
-      // Create post data with product fields
-      final CreatePost postData = CreatePost(
-        title: title,
-        content: content,
-        category: 2, // Advertising article category
-        product: productList,
-        album: currentImages,
-      );
+      // Create post data with ONLY product fields - don't include business field
+      final Map<String, dynamic> postJson = {
+        'title': title,
+        'content': content,
+        'category': 2,
+        'product': productList,
+        'album': currentImages,
+      };
+
+      final CreatePost postData = CreatePost.fromJson(postJson);
+      print('🔄 EditPost: Post data:');
+      print(jsonEncode(postJson));
 
       context.read<PostProvider>().editPost(
             context,
