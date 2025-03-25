@@ -124,7 +124,7 @@ class _EditInformationState extends State<EditInformation> {
       setState(() {
         _phoneError = phoneError;
       });
-      return; // Dừng xử lý nếu số điện thoại không hợp lệ
+      return;
     }
     final formData = {
       'company_name': _companyNameController.text,
