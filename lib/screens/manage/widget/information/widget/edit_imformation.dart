@@ -22,8 +22,9 @@ class EditInformation extends StatefulWidget {
 class _EditInformationState extends State<EditInformation> {
   Map<String, String>? _formData;
   String? _phoneError; // Biến lưu lỗi của phoneNumber
+  bool _controllersInitialized = false;
 
-  // Controllers để lấy dữ liệu từ InputText
+  // Controllers to get data from InputText
   final _companyNameController = TextEditingController();
   final _displayNameController = TextEditingController();
   final _addressController = TextEditingController();
@@ -62,13 +63,19 @@ class _EditInformationState extends State<EditInformation> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //
-    // });
+    // Add listener for phone validation
+    _phoneController.addListener(_validateAndSetPhoneError);
 
+    // Delay initialization until after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeControllers();
+    });
+  }
+
+  void _initializeControllers() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.author;
-    if (user != null) {
+    if (user != null && !_controllersInitialized) {
       _companyNameController.text =
           user.companyName?.isNotEmpty ?? false ? user.companyName! : "";
       _displayNameController.text =
@@ -80,13 +87,19 @@ class _EditInformationState extends State<EditInformation> {
       _descriptionController.text = user.companyDescription?.isNotEmpty ?? false
           ? user.companyDescription!
           : "";
-    }
-    // Lắng nghe thay đổi của phoneController để validate realtime
-    _phoneController.addListener(() {
+
       setState(() {
         _phoneError = _validatePhoneNumber(_phoneController.text);
       });
-    });
+    }
+  }
+
+  void _validateAndSetPhoneError() {
+    if (_controllersInitialized) {
+      setState(() {
+        _phoneError = _validatePhoneNumber(_phoneController.text);
+      });
+    }
   }
 
   @override
