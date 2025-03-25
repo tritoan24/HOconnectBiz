@@ -30,7 +30,7 @@ class ContenThongBao extends StatelessWidget {
             child: ClipOval(
               child: Image.network(
                 notification.uId.avatarImage,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return Image.asset(
                     UrlImage.imageUserDefault,

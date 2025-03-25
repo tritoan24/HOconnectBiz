@@ -464,7 +464,7 @@ Widget _buildStatusWidget(
                         color: AppColor.primaryBlue,
                       ),
                       Text(
-                        'Khác hàng đã nhận hàng',
+                        'Khách hàng đã nhận hàng',
                         style: TextStyle(
                           color: AppColor.primaryBlue,
                         ),

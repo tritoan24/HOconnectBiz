@@ -89,29 +89,32 @@ class _ProductSelectionScreenState extends State<ProductSelectionScreen> {
                             ),
                           ),
                           Expanded(
-                            child: products.isEmpty
+                            child: productProvider.isLoading
                                 ? const Center(
                                     child:
                                         CircularProgressIndicator()) // Hiển thị loading khi chưa có dữ liệu
-                                : ListView.builder(
-                                    padding: const EdgeInsets.all(16),
-                                    itemCount: products.length,
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8.0),
-                                        child: SanPhamDinhKem(
-                                          sanPham: products[index],
-                                          initialValue: false,
-                                          choice: (isSelected) {
-                                            // Xử lý khi người dùng chọn hoặc bỏ chọn sản phẩm
-                                            print(
-                                                '${products[index].title} đã chọn: $isSelected');
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                : products.isEmpty
+                                    ? const Center(
+                                        child: Text('Không có sản phẩm nào'))
+                                    : ListView.builder(
+                                        padding: const EdgeInsets.all(16),
+                                        itemCount: products.length,
+                                        itemBuilder: (context, index) {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
+                                            child: SanPhamDinhKem(
+                                              sanPham: products[index],
+                                              initialValue: false,
+                                              choice: (isSelected) {
+                                                // Xử lý khi người dùng chọn hoặc bỏ chọn sản phẩm
+                                                print(
+                                                    '${products[index].title} đã chọn: $isSelected');
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
                           ),
                         ],
                       ),

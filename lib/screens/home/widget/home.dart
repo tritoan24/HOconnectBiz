@@ -63,7 +63,7 @@ class _HomeState extends State<Home> {
     final imageUrl = (bannerProvider.allImageUrls.isNotEmpty
             ? bannerProvider.allImageUrls.first
             : null) ??
-        'https://tse1.mm.bing.net/th?id=OIP.jSD1OrNbZLkNquNQ40Oa0AHaE8&pid=Api&P=0&w=300&h=300';
+        'https://doanhnghiepapp.webest.asia/public/images/banner-default.png';
 
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
