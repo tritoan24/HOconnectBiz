@@ -291,23 +291,32 @@ class _CreateOrderState extends State<CreateOrder> {
                   // Hiển thị danh sách sản phẩm đã chọn
                   if (selectedProductsList.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: selectedProductsList.length,
-                      itemBuilder: (context, index) {
-                        final product = selectedProductsList[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ItemProductCreate(
-                            sanPham: product,
-                            quantity: productQuantities[product] ?? 1,
-                            onQuantityChanged: (newQuantity) {
-                              updateQuantity(product, newQuantity);
-                            },
-                          ),
-                        );
-                      },
+                    Container(
+                      height: 280,
+                      child: Scrollbar(
+                        thickness: 6,
+                        radius: Radius.circular(10),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          itemCount: selectedProductsList.length,
+                          itemBuilder: (context, index) {
+                            final product = selectedProductsList[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: ItemProductCreate(
+                                sanPham: product,
+                                quantity: productQuantities[product] ?? 1,
+                                onQuantityChanged: (newQuantity) {
+                                  updateQuantity(product, newQuantity);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 16),
                     Column(
                       children: [
                         const SizedBox(height: 16),
