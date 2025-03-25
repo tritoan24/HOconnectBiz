@@ -344,7 +344,7 @@ class _CreateOrderState extends State<CreateOrder> {
                               ),
                             ),
                             Text(
-                              NumberFormat('#,###đ').format(totalAmount),
+                              currencyFormatter.format(totalAmount),
                               style: GoogleFonts.roboto(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w400,
@@ -388,7 +388,7 @@ class _CreateOrderState extends State<CreateOrder> {
                               ),
                             ),
                             Text(
-                              NumberFormat('#,###đ').format(totalDiscount),
+                              currencyFormatter.format(totalDiscount),
                               style: GoogleFonts.roboto(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w400,
@@ -410,7 +410,7 @@ class _CreateOrderState extends State<CreateOrder> {
                               ),
                             ),
                             Text(
-                              NumberFormat('#,###đ')
+                              currencyFormatter
                                   .format(totalAmount - totalDiscount),
                               style: GoogleFonts.roboto(
                                 fontSize: 15,
@@ -480,6 +480,9 @@ class ItemProductCreate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -535,7 +538,7 @@ class ItemProductCreate extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      NumberFormat('#,###đ').format(sanPham.price),
+                      currencyFormatter.format(sanPham.price),
                       style: GoogleFonts.roboto(
                         fontSize: 16,
                         color: Colors.red,
