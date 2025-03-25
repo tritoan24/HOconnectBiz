@@ -23,9 +23,16 @@ class TextStyles {
     height: 1.2,
     fontWeight: FontWeight.w400,
   );
+
   static TextStyle textStyleNormal12W400Grey = GoogleFonts.roboto(
     fontSize: 12,
     height: 1.2,
+    fontWeight: FontWeight.w400,
+    color: Colors.grey,
+  );
+  static TextStyle textStyleNormal12W400Grey15 = GoogleFonts.roboto(
+    fontSize: 12,
+    height: 1.6,
     fontWeight: FontWeight.w400,
     color: Colors.grey,
   );
