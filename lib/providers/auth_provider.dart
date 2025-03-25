@@ -325,103 +325,115 @@ class AuthProvider extends BaseProvider {
   }
 
   Future<void> logout(BuildContext context) async {
-    await executeApiCall(
-      apiCall: () async {
-        // Xóa dữ liệu từ cả hai storage
-        await _clearAllData();
+    // Show loading overlay at the beginning
+    LoadingOverlay.show(context);
 
-        // Lấy registerType từ SharedPreferences
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? registerType = prefs.getString('register_type');
+    try {
+      await executeApiCall(
+        apiCall: () async {
+          // Xóa dữ liệu từ cả hai storage
+          await _clearAllData();
 
-        if (registerType == null) {
-          developer.log('Không tìm thấy registerType trong storage',
-              name: 'LOGOUT.ERROR');
-        } else if (registerType == 'gg') {
-          try {
-            developer.log('Bắt đầu quá trình đăng xuất Google',
-                name: 'LOGOUT_GOOGLE');
+          // Lấy registerType từ SharedPreferences
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          final String? registerType = prefs.getString('register_type');
 
-            // Đăng xuất Google
-            final GoogleSignIn googleSignIn = GoogleSignIn(
-              scopes: [
-                'email',
-                'https://www.googleapis.com/auth/userinfo.profile'
-              ],
-              clientId: Platform.isIOS ? AppConfig.clientIdIos : null,
-            );
+          if (registerType == null) {
+            developer.log('Không tìm thấy registerType trong storage',
+                name: 'LOGOUT.ERROR');
+          } else if (registerType == 'gg') {
+            try {
+              developer.log('Bắt đầu quá trình đăng xuất Google',
+                  name: 'LOGOUT_GOOGLE');
 
-            developer.log('Kiểm tra phiên đăng nhập hiện tại...',
-                name: 'LOGOUT_GOOGLE');
-            // Kiểm tra xem có đang đăng nhập không
-            final currentUser = await googleSignIn.signInSilently();
+              // Đăng xuất Google
+              final GoogleSignIn googleSignIn = GoogleSignIn(
+                scopes: [
+                  'email',
+                  'https://www.googleapis.com/auth/userinfo.profile'
+                ],
+                clientId: Platform.isIOS ? AppConfig.clientIdIos : null,
+              );
 
-            if (currentUser != null) {
+              developer.log('Kiểm tra phiên đăng nhập hiện tại...',
+                  name: 'LOGOUT_GOOGLE');
+              // Kiểm tra xem có đang đăng nhập không
+              final currentUser = await googleSignIn.signInSilently();
+
+              if (currentUser != null) {
+                developer.log(
+                    'Tìm thấy người dùng đã đăng nhập: ${currentUser.email}',
+                    name: 'LOGOUT_GOOGLE');
+
+                try {
+                  developer.log('Thực hiện disconnect()...',
+                      name: 'LOGOUT_GOOGLE');
+                  await googleSignIn.disconnect();
+                  developer.log('Đã thực hiện disconnect thành công',
+                      name: 'LOGOUT_GOOGLE');
+                } catch (disconnectError) {
+                  developer.log('Lỗi khi disconnect: $disconnectError',
+                      name: 'LOGOUT_GOOGLE_ERROR');
+                }
+
+                try {
+                  developer.log('Thực hiện signOut()...',
+                      name: 'LOGOUT_GOOGLE');
+                  await googleSignIn.signOut();
+                  developer.log('Đã thực hiện signOut thành công',
+                      name: 'LOGOUT_GOOGLE');
+                } catch (signOutError) {
+                  developer.log('Lỗi khi signOut: $signOutError',
+                      name: 'LOGOUT_GOOGLE_ERROR');
+                }
+
+                // Đảm bảo xóa register_type
+                await prefs.remove('register_type');
+                developer.log('Đã xóa register_type', name: 'LOGOUT_GOOGLE');
+
+                developer.log('Quá trình đăng xuất Google ho��n tất',
+                    name: 'LOGOUT_GOOGLE');
+              } else {
+                developer.log('Không tìm thấy phiên đăng nhập Google hiện tại',
+                    name: 'LOGOUT_GOOGLE');
+              }
+
+              // Kiểm tra lại sau khi đăng xuất
+              final checkUser = await googleSignIn.signInSilently();
               developer.log(
-                  'Tìm thấy người dùng đã đăng nhập: ${currentUser.email}',
+                  'Kiểm tra sau đăng xuất: ${checkUser == null ? "Đã đăng xuất thành công" : "Vẫn còn đăng nhập"}',
                   name: 'LOGOUT_GOOGLE');
-
-              try {
-                developer.log('Thực hiện disconnect()...',
-                    name: 'LOGOUT_GOOGLE');
-                await googleSignIn.disconnect();
-                developer.log('Đã thực hiện disconnect thành công',
-                    name: 'LOGOUT_GOOGLE');
-              } catch (disconnectError) {
-                developer.log('Lỗi khi disconnect: $disconnectError',
-                    name: 'LOGOUT_GOOGLE_ERROR');
-              }
-
-              try {
-                developer.log('Thực hiện signOut()...', name: 'LOGOUT_GOOGLE');
-                await googleSignIn.signOut();
-                developer.log('Đã thực hiện signOut thành công',
-                    name: 'LOGOUT_GOOGLE');
-              } catch (signOutError) {
-                developer.log('Lỗi khi signOut: $signOutError',
-                    name: 'LOGOUT_GOOGLE_ERROR');
-              }
-
-              // Đảm bảo xóa register_type
-              await prefs.remove('register_type');
-              developer.log('Đã xóa register_type', name: 'LOGOUT_GOOGLE');
-
-              developer.log('Quá trình đăng xuất Google hoàn tất',
-                  name: 'LOGOUT_GOOGLE');
-            } else {
-              developer.log('Không tìm thấy phiên đăng nhập Google hiện tại',
-                  name: 'LOGOUT_GOOGLE');
+            } catch (e) {
+              developer.log('Lỗi trong quá trình đăng xuất Google: $e',
+                  name: 'LOGOUT_GOOGLE_ERROR', error: e);
             }
-
-            // Kiểm tra lại sau khi đăng xuất
-            final checkUser = await googleSignIn.signInSilently();
-            developer.log(
-                'Kiểm tra sau đăng xuất: ${checkUser == null ? "Đã đăng xuất thành công" : "Vẫn còn đăng nhập"}',
-                name: 'LOGOUT_GOOGLE');
-          } catch (e) {
-            developer.log('Lỗi trong quá trình đăng xuất Google: $e',
-                name: 'LOGOUT_GOOGLE_ERROR', error: e);
+          } else if (registerType == 'fb') {
+            await FacebookAuth.instance.logOut();
+            developer.log('Đã đăng xuất Facebook',
+                name: 'PROFILE_LOGOUT.FACEBOOK');
           }
-        } else if (registerType == 'fb') {
-          await FacebookAuth.instance.logOut();
-          developer.log('Đã đăng xuất Facebook',
-              name: 'PROFILE_LOGOUT.FACEBOOK');
-        }
 
-        // Đăng xuất OneSignal
-        OneSignal.logout();
+          // Đăng xuất OneSignal
+          OneSignal.logout();
 
-        // Xóa tất cả dữ liệu từ SharedPreferences
-        await prefs.clear();
+          // Xóa tất cả dữ liệu từ SharedPreferences
+          await prefs.clear();
 
-        return ApiResponse(isSuccess: true, message: "Đăng xuất thành công");
-      },
-      context: context,
-      onSuccess: () {
-        clearState();
-        context.go(AppRoutes.login);
-      },
-    );
+          return ApiResponse(isSuccess: true, message: "Đăng xuất thành công");
+        },
+        context: context,
+        onSuccess: () {
+          clearState();
+          context.go(AppRoutes.login);
+        },
+      );
+    } catch (e) {
+      developer.log('Lỗi trong quá trình đăng xuất: $e',
+          name: 'LOGOUT_ERROR', error: e);
+    } finally {
+      // Hide loading overlay regardless of success or failure
+      LoadingOverlay.hide();
+    }
   }
 
   Future<void> sendEmailOtp(BuildContext context, String email) async {

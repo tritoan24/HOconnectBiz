@@ -1,6 +1,7 @@
 import 'package:clbdoanhnhansg/models/product_model.dart';
 import 'package:clbdoanhnhansg/widgets/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -181,24 +182,17 @@ class _BuyProductState extends State<BuyProduct> {
       bottomNavigationBar: Material(
         elevation: 10,
         color: Colors.white,
-        // onTap: () {
-        //   Navigator.push(context,
-        //       MaterialPageRoute(builder: (context) => const TinMuaHang()));
-        // },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColor.primaryBlue,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => const TinMuaHang()));
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              // Use a debounce mechanism to prevent multiple taps
+              HapticFeedback
+                  .lightImpact(); // Optional: add a light vibration feedback
+
+              // Avoid using Provider.of directly in the build method
+              Future.microtask(() {
                 Provider.of<ChatProvider>(context, listen: false)
                     .sendMessageBuyNow(
                         widget.product.author.toString(),
@@ -206,16 +200,26 @@ class _BuyProductState extends State<BuyProduct> {
                         widget.avatar_image,
                         widget.displayName,
                         context);
-                // GoRouter.of(context).go('/chat');
-              },
+              });
+            },
+            child: Ink(
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColor.primaryBlue,
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
                       "assets/icons/i_lien_he.png",
                       width: 32,
                       height: 32,
+                      // Optional: cache the image
+                      cacheWidth: 32,
+                      cacheHeight: 32,
                     ),
                     const SizedBox(width: 10),
                     const Text(
