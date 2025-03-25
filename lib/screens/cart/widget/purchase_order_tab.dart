@@ -19,7 +19,6 @@ class PurchaseOrderTab extends StatefulWidget {
 }
 
 class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
-  // Key cho RefreshIndicator
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -31,7 +30,6 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
     });
   }
 
-  // Hàm để tải dữ liệu
   Future<void> _loadData() async {
     final provider = Provider.of<CartProvider>(context, listen: false);
     await provider.fetcOrderBuy(context);
@@ -43,11 +41,15 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       color: const Color(0xFFF4F5F6),
       child: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          // if (cartProvider.isLoading) {
-          //   return const Center(child: CircularProgressIndicator());
-          // }
+          // Check if search is active
+          final bool isSearching = cartProvider.lastSearchKeyword.isNotEmpty;
+          final orders = isSearching
+              ? cartProvider.searchResults
+              : cartProvider.orderBuyList;
 
-          final orders = cartProvider.orderBuyList;
+          if (cartProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
           if (orders.isEmpty) {
             return RefreshIndicator(
@@ -55,15 +57,28 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
               onRefresh: _loadData,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 200),
-                  Center(child: Text("Không có đơn hàng nào"))
+                children: [
+                  const SizedBox(height: 200),
+                  Center(
+                      child: Text(isSearching
+                          ? "Không tìm thấy đơn hàng nào phù hợp"
+                          : "Không có đơn hàng nào"))
                 ],
               ),
             );
           }
 
-          // Group orders by month
+          // For search results, show a simple list without month grouping
+          if (isSearching) {
+            return ListView.builder(
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                return _buildOrderCard(orders[index], context);
+              },
+            );
+          }
+
+          // For regular view, group orders by month
           final Map<String, List<OrderModel>> ordersByMonth = {};
 
           for (var order in orders) {
@@ -75,7 +90,6 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
             ordersByMonth[monthKey]!.add(order);
           }
 
-          // Bọc ListView.builder bằng RefreshIndicator
           return RefreshIndicator(
             key: _refreshIndicatorKey,
             onRefresh: _loadData,

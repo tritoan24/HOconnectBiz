@@ -42,15 +42,15 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
       backgroundColor: const Color(0xffF4F5F6),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          // if (cartProvider.isLoading) {
-          //   return const Center(child: CircularProgressIndicator());
-          // }
+          // Check if search is active
+          final bool isSearching = cartProvider.lastSearchKeyword.isNotEmpty;
+          final orders = isSearching
+              ? cartProvider.searchResults
+              : cartProvider.orderSaleList;
 
-          // if (cartProvider.errorMessage!.isNotEmpty) {
-          //   return Center(child: Text("lỗi"));
-          // }
-
-          final orders = cartProvider.orderSaleList;
+          if (cartProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
           if (orders.isEmpty) {
             return RefreshIndicator(
@@ -58,56 +58,68 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
               onRefresh: _loadData,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 200),
-                  Center(child: Text("Không có đơn hàng nào"))
+                children: [
+                  const SizedBox(height: 200),
+                  Center(
+                      child: Text(isSearching
+                          ? "Không tìm thấy đơn hàng nào phù hợp"
+                          : "Không có đơn hàng nào"))
                 ],
               ),
             );
           }
 
-          // Group orders by month
-          final Map<String, List<OrderModel>> ordersByMonth = {};
+          // Group orders by month (only for non-search results)
+          if (!isSearching) {
+            final Map<String, List<OrderModel>> ordersByMonth = {};
+            for (var order in orders) {
+              final monthYear = DateFormat('MM-yyyy').format(order.createdAt);
+              final monthName = _getMonthName(monthYear);
 
-          for (var order in orders) {
-            final monthYear = DateFormat('MM-yyyy').format(order.createdAt);
-            final monthName = _getMonthName(monthYear);
-
-            if (!ordersByMonth.containsKey(monthName)) {
-              ordersByMonth[monthName] = [];
+              if (!ordersByMonth.containsKey(monthName)) {
+                ordersByMonth[monthName] = [];
+              }
+              ordersByMonth[monthName]!.add(order);
             }
-            ordersByMonth[monthName]!.add(order);
-          }
 
-          // Tạo danh sách các mục để hiển thị
-          final List<Widget> monthSections = [];
-          ordersByMonth.forEach((month, orderList) {
-            monthSections.add(
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  month,
-                  style: GoogleFonts.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            // Create month sections list for display
+            final List<Widget> monthSections = [];
+            ordersByMonth.forEach((month, orderList) {
+              monthSections.add(
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    month,
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
+              );
+
+              for (var order in orderList) {
+                monthSections.add(_buildOrderCard(context, order));
+              }
+            });
+
+            return RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: _loadData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: monthSections,
               ),
             );
-
-            for (var order in orderList) {
-              monthSections.add(_buildOrderCard(context, order));
-            }
-          });
-
-          return RefreshIndicator(
-            key: _refreshIndicatorKey,
-            onRefresh: _loadData,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: monthSections,
-            ),
-          );
+          } else {
+            // Display search results without month grouping
+            return ListView.builder(
+              itemCount: orders.length,
+              itemBuilder: (context, index) {
+                return _buildOrderCard(context, orders[index]);
+              },
+            );
+          }
         },
       ),
     );

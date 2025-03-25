@@ -1,10 +1,13 @@
 import 'package:clbdoanhnhansg/models/order_model.dart';
 import 'package:clbdoanhnhansg/models/product_model.dart';
+import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/item_san_pham_mess.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/base/base_provider.dart';
+import '../core/network/api_client.dart';
+import '../core/network/api_endpoints.dart';
 import '../models/apiresponse.dart';
 import '../repository/cart_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
@@ -21,6 +24,21 @@ class CartProvider extends BaseProvider {
   double totalDiscount = 0;
   double totalPayAfterDiscount = 0.0;
   String receiverId = '';
+
+  List<OrderModel> _searchResults = [];
+  List<OrderModel> get searchResults => _searchResults;
+  String _lastSearchKeyword = '';
+  String get lastSearchKeyword => _lastSearchKeyword;
+
+  List<OrderModel> _dataOderSale = [];
+  List<OrderModel> get dataSale => _dataOderSale;
+
+  List<OrderModel> _dataOderBuy = [];
+  List<OrderModel> get dataBuy => _dataOderBuy;
+
+  //loading
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   List<BuyProductModel> get cartItems => _cartItems;
 
@@ -228,6 +246,70 @@ class CartProvider extends BaseProvider {
     }
 
     // _isLoadingOrderSale = false;
+    notifyListeners();
+  }
+
+  // Phương thức tìm kiếm đơn hàng
+  Future<void> searchOrders(
+      BuildContext context, String keyword, String type) async {
+    // When keyword is empty, clear search results and fetch original data
+    if (keyword.trim().isEmpty) {
+      _searchResults = [];
+      _lastSearchKeyword = '';
+
+      // Fetch appropriate data based on type
+      if (type == 'sell') {
+        await fetcOrderSale(context);
+      } else if (type == 'buy') {
+        await fetcOrderBuy(context);
+      }
+
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    _lastSearchKeyword = keyword;
+    notifyListeners();
+
+    try {
+      // Create request body with type parameter
+      Map<String, dynamic> body = {'keyword': keyword, 'type': type};
+
+      // Send POST request to API
+      final response = await ApiClient().postRequest(
+        ApiEndpoints.oderDetail,
+        body,
+        context,
+      );
+
+      if (response != null && response.containsKey('data')) {
+        List ordersData = response['data'] ?? [];
+
+        // Convert JSON data to OrderModel objects
+        _searchResults =
+            ordersData.map((order) => OrderModel.fromJson(order)).toList();
+        debugPrint('Found ${_searchResults.length} orders matching "$keyword"');
+      } else {
+        _searchResults = [];
+        debugPrint('No orders found matching "$keyword"');
+      }
+    } catch (e) {
+      debugPrint('Error searching orders: $e');
+      _searchResults = [];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi khi tìm kiếm: $e')),
+      );
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // Clear search results
+  void clearSearchResults() {
+    _searchResults = [];
+    _lastSearchKeyword = '';
     notifyListeners();
   }
 }
