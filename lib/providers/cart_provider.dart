@@ -179,6 +179,23 @@ class CartProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await fetcOrderBuy(context);
+        notifyListeners();
+      },
+      successMessage: "Cập nhật trạng thái đơn hàng thành công!",
+    );
+    LoadingOverlay.hide();
+  }
+
+  //update status order bán
+  Future<void> updateStatusOrderSale(
+      String orderId, int status, BuildContext context) async {
+    LoadingOverlay.show(context);
+    await executeApiCall(
+      apiCall: () => _repository.updateStatusOrderBuy(orderId, status, context),
+      context: context,
+      onSuccess: () async {
+        await fetcOrderSale(context);
+        notifyListeners();
       },
       successMessage: "Cập nhật trạng thái đơn hàng thành công!",
     );

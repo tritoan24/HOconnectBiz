@@ -295,6 +295,7 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'đang xử lý':
+      case 'chờ vận chuyển':
       case 'chờ xác nhận':
         return AppColor.warningYellow;
       case 'đã hủy':
@@ -311,10 +312,12 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       case 0:
         return 'Chờ xác nhận';
       case 1:
-        return 'Đang xử lý';
+        return 'Chờ vận chuyển';
       case 2:
-        return 'Thành công';
+        return 'Đang xử lý';
       case 3:
+        return 'Thành công';
+      case 4:
         return 'Đã hủy';
       default:
         return 'Không xác định';
@@ -323,7 +326,11 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
 
   bool _shouldShowButtons(OrderModel order) {
     final status = _getOrderStatusText(order.status);
-    return status == 'Chờ xác nhận' || status == 'Đang xử lý';
+    return status == 'Chờ xác nhận' ||
+        status == 'Đang xử lý' ||
+        status == 'Chờ vận chuyển' ||
+        status == 'Đã hủy' ||
+        status == 'Thành công';
   }
 
   Widget _buildActionButtons(OrderModel order) {
@@ -375,7 +382,7 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
                     onConfirm: () {
                       final cartProvider =
                           Provider.of<CartProvider>(context, listen: false);
-                      cartProvider.updateStatusOrderBuy(order.id, 3, context);
+                      cartProvider.updateStatusOrderBuy(order.id, 4, context);
                     },
                   );
                 },
@@ -397,28 +404,46 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
           ],
         ),
       );
-    } else if (status == 'Đang xử lý') {
+    } else if (status == 'Chờ vận chuyển') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: ConfirmButtonWithAction(
           onConfirm: () {
-            // Cập nhật trạng thái sang "Thành công" (status = 2)
             _showConfirmDialog(
               context: context,
               title: 'Xác nhận hoàn thành',
-              content:
-                  'Bạn xác nhận đã nhận được hàng và hoàn thành đơn hàng này?',
-              onConfirm: () {
+              content: 'Bạn xác nhận đã nhận được đơn hàng này?',
+              onConfirm: () async {
                 final cartProvider =
                     Provider.of<CartProvider>(context, listen: false);
-                cartProvider.updateStatusOrderBuy(order.id, 2, context);
+                await cartProvider.updateStatusOrderBuy(order.id, 2, context);
               },
             );
           },
         ),
       );
+    } else if (status == 'Đang xử lý') {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.check,
+              color: AppColor.primaryBlue,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Đã nhận hàng',
+              style: TextStyle(
+                  color: AppColor.primaryBlue, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return const SizedBox();
     }
-    return const SizedBox.shrink();
   }
 
   void _showConfirmDialog({

@@ -93,7 +93,7 @@ class _ButtonState extends State<Button> {
                     final cartProvider =
                         Provider.of<CartProvider>(context, listen: false);
 
-                    cartProvider.updateStatusOrderBuy(widget.id, 3, context);
+                    cartProvider.updateStatusOrderBuy(widget.id, 4, context);
                     isConfirmed = true;
                     Navigator.pop(context);
                   });

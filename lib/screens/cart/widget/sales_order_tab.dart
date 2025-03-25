@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 
+import 'button_comfirm.dart';
+
 class SalesOrderTab extends StatefulWidget {
   const SalesOrderTab({super.key});
 
@@ -40,9 +42,9 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
       backgroundColor: const Color(0xffF4F5F6),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          if (cartProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          // if (cartProvider.isLoading) {
+          //   return const Center(child: CircularProgressIndicator());
+          // }
 
           // if (cartProvider.errorMessage!.isNotEmpty) {
           //   return Center(child: Text("lỗi"));
@@ -230,7 +232,13 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
                           ],
                         ),
                       ),
-                      _buildStatusChip(status),
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _buildStatusContainer(status),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -261,25 +269,18 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
                 ],
               ),
             ),
-            if (_shouldShowButtons(order)) _buildActionButtons(order),
+            _buildActionButtons(order),
           ],
         ),
       ),
     );
   }
 
-  // Kiểm tra trạng thái của đơn hàng để quyết định có hiển thị các nút hành động không
-  bool _shouldShowButtons(OrderModel order) {
-    final status = _getOrderStatusText(order.status);
-    return status == 'Đang xử lý';
-  }
-
   // Hiển thị các nút hành động dựa trên trạng thái của đơn hàng
   Widget _buildActionButtons(OrderModel order) {
     final status = _getOrderStatusText(order.status);
 
-    // Đơn hàng đang xử lý (status = 0) - hiển thị nút hoàn tất màu xám không có hành động
-    if (status == 'Đang xử lý') {
+    if (status == 'Chờ vận chuyển') {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -315,9 +316,69 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
           ],
         ),
       );
+    } else if (status == 'Đang xử lý') {
+      return Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+        child: ElevatedButton(
+          onPressed: () {
+            _showConfirmDialog(
+              context: context,
+              title: 'Hoàn tất đơn hàng',
+              content: 'Bạn xác nhận đã hoàn tất đơn hàng này?',
+              onConfirm: () {
+                final cartProvider =
+                    Provider.of<CartProvider>(context, listen: false);
+                cartProvider.updateStatusOrderSale(order.id, 3, context);
+              },
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColor.primaryBlue,
+            minimumSize: const Size(double.infinity, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: const Text(
+            'Hoàn tất đơn hàng',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
     }
 
     return const SizedBox.shrink();
+  }
+
+  Container _buildStatusContainer(String status) {
+    final statusColor = _getStatusColor(status);
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(color: statusColor, fontSize: 12),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'đang xử lý':
+      case 'chờ vận chuyển':
+      case 'chờ xác nhận':
+        return AppColor.warningYellow;
+      case 'đã hủy':
+        return AppColor.cancelRed;
+      case 'thành công':
+        return AppColor.successGreen;
+      default:
+        return Colors.grey; // Màu mặc định cho các status khác
+    }
   }
 
   String _getOrderStatusText(int status) {
@@ -325,76 +386,45 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
       case 0:
         return 'Chờ xác nhận';
       case 1:
-        return 'Đang xử lý';
+        return 'Chờ vận chuyển';
       case 2:
-        return 'Thành công';
+        return 'Đang xử lý';
       case 3:
+        return 'Thành công';
+      case 4:
         return 'Đã hủy';
       default:
         return 'Không xác định';
     }
   }
 
-  Widget _buildStatusChip(String status) {
-    Color backgroundColor;
-    Color textColor;
-
-    switch (status.toLowerCase()) {
-      case 'đang xử lý':
-        backgroundColor = AppColor.warningYellowBg;
-        textColor = AppColor.warningYellow;
-        break;
-      case 'thành công':
-        backgroundColor = AppColor.successGreenBg;
-        textColor = AppColor.successGreen;
-        break;
-      case 'đã hủy':
-        backgroundColor = AppColor.errorRedBg;
-        textColor = AppColor.cancelRed;
-        break;
-      default:
-        backgroundColor = Colors.grey[100]!;
-        textColor = Colors.grey;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  void _showConfirmDialog(BuildContext context, String title, String message,
-      VoidCallback onConfirm) {
+  void _showConfirmDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required Function onConfirm,
+  }) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: Text(message),
-          actions: [
+          content: Text(content),
+          backgroundColor: Colors.white,
+          actions: <Widget>[
             TextButton(
+              child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
+              child: const Text('Xác nhận',
+                  style: TextStyle(color: Color(0xFF006AF5))),
               onPressed: () {
                 Navigator.of(context).pop();
                 onConfirm();
               },
-              child: const Text('Đồng ý',
-                  style: TextStyle(color: Color(0xFF006AF5))),
             ),
           ],
         );

@@ -174,12 +174,14 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
                 statusText = "Chờ xác nhận";
                 break;
               case 1:
+                statusText = "Chờ vận chuyển";
+              case 2:
                 statusText = "Đang xử lý";
                 break;
-              case 2:
+              case 3:
                 statusText = "Thành công";
                 break;
-              case 3:
+              case 4:
                 statusText = "Đã hủy";
                 break;
               default:
@@ -338,7 +340,7 @@ Widget _buildStatusWidget(
     String status, String id, bool hideButtons, BuildContext context) {
   // Nếu hideButtons là true, không hiển thị các nút
   if (hideButtons) {
-    if (status == "Đang xử lý") {
+    if (status == "Chờ vận chuyển") {
       return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -398,11 +400,76 @@ Widget _buildStatusWidget(
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    const Cart(initialTab: CartTab.PurchaseOrder),
+                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
               ));
         },
       );
+    } else if (status == "Thành công") {
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize:
+                MainAxisSize.min, // Important: restricts the row's size
+            children: [
+              const Icon(
+                Icons.check,
+                color: AppColor.successGreen,
+              ),
+              const SizedBox(
+                  width: 8), // Add some spacing between icon and text
+              const Text(
+                'Đơn hàng hoàn tất',
+                style: TextStyle(
+                  color: AppColor.successGreen,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (status == "Đang xử lý") {
+      return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
+              ),
+            );
+          },
+          child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: AppColor.primaryBlue,
+                      ),
+                      Text(
+                        'Khác hàng đã nhận hàng',
+                        style: TextStyle(
+                          color: AppColor.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded),
+                ],
+              )));
     } else {
       return ListTile(
         title: Container(
@@ -436,22 +503,13 @@ Widget _buildStatusWidget(
         },
       );
     }
-  }
+  } else {
+    // Kiểm tra nếu status là "1"
 
-  // Kiểm tra nếu status là "1"
+    String statusLowerCase = status.toLowerCase();
 
-  String statusLowerCase = status.toLowerCase();
-
-  if (statusLowerCase == 'thành công') {
-    return const StatusDone();
-  } else if (statusLowerCase == 'chờ xác nhận') {
-    return Button(
-      id: id,
-    );
-  } else if (statusLowerCase == 'Chờ xác nhận tin mua') {
-    return const StatusProcessing();
-  } else if (statusLowerCase == 'đang xử lý') {
-    return GestureDetector(
+    if (statusLowerCase == 'thành công') {
+      return GestureDetector(
         onTap: () {
           Navigator.push(
             context,
@@ -461,61 +519,168 @@ Widget _buildStatusWidget(
             ),
           );
         },
-        child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.check,
-                      color: AppColor.primaryBlue,
-                    ),
-                    Text(
-                      'Đã Xác nhận mua hàng',
-                      style: TextStyle(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize:
+                MainAxisSize.min, // Important: restricts the row's size
+            children: [
+              const Icon(
+                Icons.check,
+                color: AppColor.successGreen,
+              ),
+              const SizedBox(
+                  width: 8), // Add some spacing between icon and text
+              const Text(
+                'Đơn hàng hoàn tất',
+                style: TextStyle(
+                  color: AppColor.successGreen,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (statusLowerCase == 'chờ xác nhận') {
+      return Button(
+        id: id,
+      );
+    } else if (status == "đang xử lý") {
+      return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Cart(initialTab: CartTab.PurchaseOrder),
+              ),
+            );
+          },
+          child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check,
                         color: AppColor.primaryBlue,
                       ),
-                    ),
-                  ],
-                ),
-                Icon(Icons.arrow_forward_ios_rounded),
-              ],
-            )));
-  } else if (statusLowerCase == "đã hủy") {
-    return ListTile(
-      title: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Text(
-          'Đã hủy',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Colors.red,
+                      Text(
+                        'Đã nhận hàng',
+                        style: TextStyle(
+                          color: AppColor.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded),
+                ],
+              )));
+    } else if (statusLowerCase == 'chờ vận chuyển') {
+      return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Cart(initialTab: CartTab.PurchaseOrder),
+              ),
+            );
+          },
+          child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: AppColor.primaryBlue,
+                      ),
+                      Text(
+                        'Đã Xác nhận mua hàng',
+                        style: TextStyle(
+                          color: AppColor.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded),
+                ],
+              )));
+    } else if (statusLowerCase == "đang xử lý") {
+      return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Cart(initialTab: CartTab.PurchaseOrder),
+              ),
+            );
+          },
+          child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: AppColor.primaryBlue,
+                      ),
+                      Text(
+                        'Đã nhận hàng',
+                        style: TextStyle(
+                          color: AppColor.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded),
+                ],
+              )));
+    } else if (statusLowerCase == "đã hủy") {
+      return ListTile(
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
           ),
-          textAlign: TextAlign.center,
+          child: const Text(
+            'Đã hủy',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.red,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Colors.grey,
-        size: 34,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const Cart(initialTab: CartTab.SaleOrder),
-            ));
-      },
-    );
-  } else {
-    return const SizedBox();
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Colors.grey,
+          size: 34,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Cart(initialTab: CartTab.PurchaseOrder),
+              ));
+        },
+      );
+    } else {
+      return const SizedBox();
+    }
   }
 }

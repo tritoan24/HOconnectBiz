@@ -48,17 +48,20 @@ class OrderCardData {
         statusText = "Chờ xác nhận";
         break;
       case 1:
-        statusText = "Đang xử lý";
+        statusText = "Chờ vận chuyển";
         break;
       case 2:
-        statusText = "Thành công";
+        statusText = "Đang xử lý";
         break;
       case 3:
+        statusText = "Thành công";
+      case 4:
         statusText = "Đã hủy";
         break;
       default:
         statusText = "Không xác định";
     }
+
     // Kiểm tra xem người đang xem có phải là người tạo đơn hàng hay không
     OrderModel order = orderModel;
     String? currentUserId = '';
@@ -94,6 +97,10 @@ class OrderCard extends StatelessWidget {
 
     switch (status) {
       case "Chờ xác nhận":
+        backgroundColor = AppColor.warningYellowBg;
+        textColor = AppColor.warningYellow;
+        break;
+      case "Chờ vận chuyển":
         backgroundColor = AppColor.warningYellowBg;
         textColor = AppColor.warningYellow;
         break;
@@ -138,6 +145,7 @@ class OrderCard extends StatelessWidget {
     OrderModel order = donHang as OrderModel;
     // Kiểm tra nếu currentUserId trùng với người tạo đơn hàng
     bool isCreator = currentUserId != null && currentUserId == order.userCreate;
+    print('trạng thái: ' + data.status);
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
