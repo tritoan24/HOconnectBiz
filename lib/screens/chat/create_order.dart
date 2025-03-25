@@ -292,7 +292,7 @@ class _CreateOrderState extends State<CreateOrder> {
                   if (selectedProductsList.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Container(
-                      height: 280,
+                      height: 230,
                       child: Scrollbar(
                         thickness: 6,
                         radius: Radius.circular(10),

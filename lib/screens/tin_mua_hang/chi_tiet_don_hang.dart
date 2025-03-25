@@ -99,6 +99,7 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
         // Danh sách sản phẩm
         Flexible(
           child: Container(
+            height: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 8),
             child: Scrollbar(
               thumbVisibility: true,
