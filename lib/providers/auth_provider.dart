@@ -123,6 +123,8 @@ class AuthProvider extends BaseProvider {
     try {
       // Bắt đầu loading
       setLoading(true);
+      // Record start time
+      final startTime = DateTime.now();
 
       final token = await _getToken();
 
@@ -165,10 +167,17 @@ class AuthProvider extends BaseProvider {
           appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
         }
       } else {
-        Future.microtask(() {
+        // Ensure minimum 3 seconds even for login routing
+        final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
+        final remainingMs = 3000 - elapsedMs;
+        if (remainingMs > 0) {
+          await Future.delayed(Duration(milliseconds: remainingMs));
+        }
+
+        if (context.mounted) {
           clearState();
           appRouter.go(AppRoutes.login);
-        });
+        }
       }
     } catch (e) {
       setError("Lỗi điều hướng: $e");

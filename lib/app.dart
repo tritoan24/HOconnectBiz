@@ -128,41 +128,41 @@ class _MyAppState extends State<MyApp> {
                 ),
                 routerConfig: appRouter,
                 title: 'CLB DNSG',
-                builder: (context, child) {
-                  return Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: Stack(
-                      children: [
-                        child!,
-                        if (authProvider.isLoading)
-                          Material(
-                            color: Colors.black54,
-                            child: Center(
-                              child: Lottie.asset(
-                                'assets/lottie/loading.json',
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          )
-                      ],
-                    ),
-                  );
-                },
+                //     //   builder: (context, child) {
+                //     //     return Directionality(
+                //     //       textDirection: TextDirection.ltr,
+                //     //       child: Stack(
+                //     //         children: [
+                //     //           child!,
+                //     //           if (authProvider.isLoading)
+                //     //             Material(
+                //     //               color: Colors.black54,
+                //     //               child: Center(
+                //     //                 child: Lottie.asset(
+                //     //                   'assets/lottie/loading.json',
+                //     //                   width: 70,
+                //     //                   height: 70,
+                //     //                   fit: BoxFit.contain,
+                //     //                 ),
+                //     //               ),
+                //     //             )
+                //     //         ],
+                //     //       ),
+                //     //     );
+                //     //   },
+                //     // ),
+                //     // if (_isInitializing)
+                //     //   Material(
+                //     //     color: Colors.black54,
+                //     //     child: Center(
+                //     //       child: Lottie.asset(
+                //     //         'assets/lottie/loading.json',
+                //     //         width: 70,
+                //     //         height: 70,
+                //     //         fit: BoxFit.contain,
+                //     //       ),
+                //     //     ),
               ),
-              if (_isInitializing)
-                Material(
-                  color: Colors.black54,
-                  child: Center(
-                    child: Lottie.asset(
-                      'assets/lottie/loading.json',
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
             ],
           ),
         );

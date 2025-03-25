@@ -8,6 +8,7 @@ import 'package:clbdoanhnhansg/screens/home/widget/notification.dart';
 import 'package:clbdoanhnhansg/screens/manage/widget/information/widget/edit_imformation.dart';
 import 'package:clbdoanhnhansg/screens/post/post_screen.dart';
 import 'package:clbdoanhnhansg/screens/search/search.dart';
+import 'package:clbdoanhnhansg/screens/splash_screen.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,7 +24,7 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: AppRoutes.home,
-      builder: (context, state) => const LoginView(),
+      builder: (context, state) => const SplashScreen(),
       routes: [
         GoRoute(
           path: AppRoutes.dangKyTaiKhoan,
