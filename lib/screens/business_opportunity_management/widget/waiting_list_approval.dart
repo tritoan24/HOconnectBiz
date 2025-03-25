@@ -88,6 +88,7 @@ class _CompanyListState extends State<_CompanyList> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Xóa trạng thái điều hướng sau khi đã đặt lịch điều hướng
         businessProvider.clearNavigation();
+        Navigator.pop(context);
 
         Navigator.push(
           context,

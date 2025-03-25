@@ -366,6 +366,7 @@ class _HeaderSection extends StatelessWidget {
   }
 
   Widget _buildRatingRow(BuildContext context, String idPost) {
+    double? userStar = getUserStar(data, currentUserId.toString());
     return Row(
       children: [
         SvgPicture.asset(
@@ -408,6 +409,7 @@ class _HeaderSection extends StatelessWidget {
                       builder: (context) => OpportunityRating2(
                             ratings: data,
                             idPost: idPost,
+                            userStar: userStar,
                           )));
             },
             icon: const Icon(
