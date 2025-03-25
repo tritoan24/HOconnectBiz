@@ -53,7 +53,7 @@ class _TabShopState extends State<TabShop> {
       return RefreshIndicator(
         onRefresh: _handleRefresh,
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // Thêm dòng này
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -65,10 +65,8 @@ class _TabShopState extends State<TabShop> {
                   children: [
                     Row(
                       children: [
-                        SvgPicture.asset(
-                          "assets/icons/pin.svg",
-                          fit: BoxFit.cover,
-                        ),
+                        SvgPicture.asset("assets/icons/pin.svg",
+                            fit: BoxFit.cover),
                         const SizedBox(width: 8),
                         const Text('Sản phẩm đã ghim',
                             style: TextStyle(
@@ -76,29 +74,29 @@ class _TabShopState extends State<TabShop> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    widget.isLeading
-                        ? ButtonAdd(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProductManage(products: products)));
-                            },
-                            label: 'Chỉnh sửa sản phẩm đã ghim',
-                          )
-                        : Container(),
-                    SizedBox(
+                    if (widget.isLeading)
+                      ButtonAdd(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductManage(products: products)));
+                        },
+                        label: 'Chỉnh sửa sản phẩm đã ghim',
+                      ),
+                    Container(
                       height: sanPhamGhim.isEmpty ? 30 : 380,
                       child: sanPhamGhim.isNotEmpty
                           ? ListView.builder(
-                              scrollDirection: Axis.horizontal, // Kéo ngang
+                              scrollDirection: Axis.horizontal,
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(), // Keep horizontal scrolling
                               itemCount: sanPhamGhim.length,
                               itemBuilder: (context, index) {
                                 return Container(
-                                  width: 193, // Định nghĩa chiều rộng của item
-                                  margin: const EdgeInsets.only(
-                                      right: 10), // Khoảng cách giữa các item
+                                  width: 193,
+                                  margin: const EdgeInsets.only(right: 10),
                                   child: ItemProduct(
                                     sanPham: sanPhamGhim[index],
                                     isProfile: widget.isLeading,
@@ -116,7 +114,8 @@ class _TabShopState extends State<TabShop> {
 
               // Sản phẩm khác
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.only(
+                    left: 12, right: 12, top: 12, bottom: 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -124,43 +123,39 @@ class _TabShopState extends State<TabShop> {
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
-                    widget.isLeading
-                        ? ButtonAdd(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => AddProduct()));
+                    if (widget.isLeading)
+                      ButtonAdd(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AddProduct()));
+                        },
+                        label: 'Thêm sản phẩm',
+                      ),
+                    sanPhamKhac.isNotEmpty
+                        ? GridView.builder(
+                            shrinkWrap: true,
+                            physics:
+                                const NeverScrollableScrollPhysics(), // Disable scrolling within GridView
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              mainAxisExtent: 268,
+                            ),
+                            itemCount: sanPhamKhac.length,
+                            itemBuilder: (context, index) {
+                              return ItemProduct(
+                                sanPham: sanPhamKhac[index],
+                                isProfile: widget.isLeading,
+                              );
                             },
-                            label: 'Thêm sản phẩm',
                           )
-                        : Container(),
-                    SizedBox(
-                      height: sanPhamKhac.isEmpty ? 30 : 380,
-                      child: sanPhamKhac.isNotEmpty
-                          ? GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2, // 2 cột
-                                mainAxisSpacing:
-                                    10, // Khoảng cách giữa các item theo chiều dọc
-                                crossAxisSpacing:
-                                    10, // Khoảng cách giữa các item theo chiều ngang
-                                mainAxisExtent:
-                                    268, // Định nghĩa chiều cao từng item
-                              ),
-                              itemCount: sanPhamKhac.length,
-                              itemBuilder: (context, index) {
-                                return ItemProduct(
-                                  sanPham: sanPhamKhac[index],
-                                  isProfile: widget.isLeading,
-                                );
-                              },
-                            )
-                          : Center(
-                              child: Text('Không có sản phẩm nào',
-                                  style: TextStyles.textStyleNormal12W400)),
-                    )
+                        : Center(
+                            child: Text('Không có sản phẩm nào',
+                                style: TextStyles.textStyleNormal12W400)),
                   ],
                 ),
               ),

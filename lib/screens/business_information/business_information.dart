@@ -140,8 +140,9 @@ class _BusinessInformationState extends State<BusinessInformation> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
-                                  "4.8",
+                                Text(
+                                  userProvider.authorByID?.boStar.toString() ??
+                                      "0",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -156,8 +157,8 @@ class _BusinessInformationState extends State<BusinessInformation> {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              "(12 cơ hội kinh doanh)",
+                            Text(
+                              '(${userProvider.authorByID?.totalBo} cơ hội kinh doanh)',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,

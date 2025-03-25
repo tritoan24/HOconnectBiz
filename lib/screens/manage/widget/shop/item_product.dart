@@ -73,12 +73,16 @@ class ItemProduct extends StatelessWidget {
                       child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        formatCurrency.format(sanPham.price),
-                        style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          formatCurrency.format(sanPham.price),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                       !isProfile
                           ? const SizedBox()
@@ -150,4 +154,3 @@ class ItemProduct extends StatelessWidget {
     );
   }
 }
-
