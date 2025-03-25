@@ -363,7 +363,7 @@ class _PostItemState extends State<PostItem> {
             Text(
               widget.content,
               style: kContentTextStyle,
-              maxLines: widget.isF ? 2 : 100,
+              maxLines: widget.isF ? 1 : 100,
               overflow:
                   widget.isF ? TextOverflow.ellipsis : TextOverflow.visible,
             ),

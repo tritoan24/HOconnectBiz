@@ -1,4 +1,3 @@
-import 'package:clbdoanhnhansg/notifications/popup_notification.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -18,7 +17,8 @@ class NotificationProvider extends BaseProvider {
   final SocketService _socketService;
   BuildContext? _lastContext;
 
-  NotificationProvider({required SocketService socketService}):_socketService=socketService {
+  NotificationProvider({required SocketService socketService})
+      : _socketService = socketService {
     _setupNotificationListener();
   }
 
@@ -42,15 +42,15 @@ class NotificationProvider extends BaseProvider {
               final newNotification = NotificationModel.fromJson(item);
               _notifications.insert(0, newNotification);
 
-              // Hiển thị popup nếu có context
-              if (_lastContext != null && _lastContext!.mounted) {
-                _lastContext!.showNotificationPopup(
-                  notification: newNotification,
-                  onDismiss: () {
-                    debugPrint('Notification dismissed: ${newNotification.id}');
-                  },
-                );
-              }
+              // // Hiển thị popup nếu có context
+              // if (_lastContext != null && _lastContext!.mounted) {
+              //   _lastContext!.showNotificationPopup(
+              //     notification: newNotification,
+              //     onDismiss: () {
+              //       debugPrint('Notification dismissed: ${newNotification.id}');
+              //     },
+              //   );
+              // }
             }
           }
           notifyListeners();
@@ -64,7 +64,7 @@ class NotificationProvider extends BaseProvider {
   void handleNotificationTap(
       NotificationModel notification, BuildContext context) async {
     debugPrint('Handling notification tap: ${notification.deeplink}');
-    
+
     if (notification.deeplink.startsWith('dnsgapp://post/')) {
       final postId = notification.deeplink.split('/').last;
       final post = notification.post;
@@ -107,7 +107,7 @@ class NotificationProvider extends BaseProvider {
           // Thay thế phần code bên dưới bằng API thực tế của bạn
           // final fetchedPost = await _postRepository.getPostById(postId);
           // Nếu bạn không có API cụ thể, có thể chuyển đến màn hình comment với ID
-          
+
           // Tạm thời điều hướng với postId
           final userId = await _authProvider.getuserID() ?? '';
           if (!context.mounted) return;
