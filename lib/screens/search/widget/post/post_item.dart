@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import '../../../../models/product_model.dart';
 import '../../../../models/business_model.dart';
 import '../../../../providers/post_provider.dart';
+import '../../../../providers/product_provider.dart';
+import '../../../../widgets/confirmdialog.dart';
 import '../../../business_opportunity_management/widget/waiting_list_approval.dart';
 import '../../../details_image/details_image_screen.dart';
 import '../../../home/widget/buy_product.dart';
@@ -21,6 +23,8 @@ import '../../../comment/comments_screen.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:clbdoanhnhansg/notifications/post_item_changed_notification.dart';
 import 'package:clbdoanhnhansg/core/utils/date_time_utils.dart';
+
+import '../../../manage/widget/post/edit_post.dart';
 
 // Constants
 const double _kPadding = 12.0;
@@ -378,7 +382,73 @@ class _PostItemState extends State<PostItem> {
           children: [
             _buildAvatar(),
             const SizedBox(width: 10),
-            Text(widget.displayName, style: kDisplayNameStyle)
+            Text(widget.displayName, style: kDisplayNameStyle),
+            const Spacer(),
+            //dấu ...
+            widget.isMe
+                ? PopupMenuButton<String>(
+                    color: Colors.white,
+                    shadowColor: Colors.black,
+                    splashRadius: 10,
+                    icon: SvgPicture.asset(
+                      "assets/icons/more.svg",
+                      fit: BoxFit.cover,
+                    ),
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return CustomConfirmDialog(
+                              content:
+                                  'Bạn có chắc chắn muốn xóa bài viết không?',
+                              titleButtonLeft: 'Quay lại',
+                              titleButtonRight: 'Xóa',
+                              onConfirm: () {
+                                // final postProvider = Provider.of<PostProvider>(
+                                //     context,
+                                //     listen: false);
+                                // postProvider.deletePost(
+                                //     context, post.id.toString());
+                              },
+                            );
+                          },
+                        );
+                      } else if (value == "edit") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditPost(
+                              imageList: widget.images,
+                              postType: widget.postType,
+                              description: widget.content,
+                              postId: widget.postId,
+                              title: widget.title,
+                              isBusiness: isBusiness,
+                              business: widget.business,
+                              product: widget.product,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Text(
+                          'Sửa bài đăng',
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          'Xóa bài đăng',
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
           ],
         ),
       ),

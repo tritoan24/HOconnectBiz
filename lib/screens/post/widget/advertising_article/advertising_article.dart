@@ -17,12 +17,16 @@ class AdvertisingArticle extends StatefulWidget {
   final GlobalKey<FormBuilderState> formKey;
   final Function(List<String>) onImagesChanged;
   final Function(List<ProductModel>) onProductsChanged;
+  final List<String>? initialImages;
+  final List<ProductModel>? initialProducts;
 
   const AdvertisingArticle({
     super.key,
     required this.formKey,
     required this.onImagesChanged,
     required this.onProductsChanged,
+    this.initialImages,
+    this.initialProducts,
   });
 
   @override
@@ -30,7 +34,6 @@ class AdvertisingArticle extends StatefulWidget {
 }
 
 class _AdvertisingArticleState extends State<AdvertisingArticle> {
-  List<String> selectedImages = [];
   int content = 1;
   int category = 1;
 
@@ -39,18 +42,44 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
   Map<ProductModel, bool> selectedProducts = {};
   Map<ProductModel, int> productQuantities = {};
 
+  List<String> selectedImages = []; // Currently selected images
+  List<String> deletedImages = []; // Images to be deleted
+  List<String> originalImages = []; // Original images from product
+  List<String> newImages = []; // New images added during edit
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize selected images from props if available
+    if (widget.initialImages != null && widget.initialImages!.isNotEmpty) {
+      selectedImages = List.from(widget.initialImages!);
+    }
+
+    // Initialize selected products from props if available
+    if (widget.initialProducts != null && widget.initialProducts!.isNotEmpty) {
+      selectedProductsList = List.from(widget.initialProducts!);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false)
           .getListProduct(context);
       final products =
           Provider.of<ProductProvider>(context, listen: false).products;
+
+      // Initialize product selection maps
       for (var product in products) {
-        selectedProducts[product] = false;
+        // Check if this product is in the initial selected products list
+        bool isSelected = false;
+        if (widget.initialProducts != null) {
+          isSelected = widget.initialProducts!.any((p) => p.id == product.id);
+        }
+        selectedProducts[product] = isSelected;
         productQuantities[product] = 1;
       }
+
+      // Update UI with initial selected products
+      setState(() {});
     });
   }
 
@@ -118,6 +147,7 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
         InputFileImages(
           formKey: widget.formKey,
           onImagesChanged: _onImagesSelected,
+          initialImages: selectedImages,
         ),
         const SizedBox(
           height: 20,
@@ -259,4 +289,3 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
     );
   }
 }
-

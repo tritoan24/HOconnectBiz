@@ -15,12 +15,16 @@ class BusinessOpportunity extends StatefulWidget {
   final GlobalKey<FormBuilderState> formKey;
   final Function(List<String>) onImagesChanged;
   final Function(List<Map<String, String>>) onBusinessChanged;
+  final List<String>? initialImages;
+  final List<Map<String, String>>? initialBusinesses;
 
   const BusinessOpportunity({
     super.key,
     required this.formKey,
     required this.onImagesChanged,
     required this.onBusinessChanged,
+    this.initialImages,
+    this.initialBusinesses,
   });
 
   @override
@@ -28,16 +32,33 @@ class BusinessOpportunity extends StatefulWidget {
 }
 
 class _BusinessOpportunityState extends State<BusinessOpportunity> {
-  List<String> selectedImages = [];
   List<Map<String, String>> selectedBusinesses = [];
+
+  List<String> selectedImages = []; // Currently selected images
+  List<String> deletedImages = []; // Images to be deleted
+  List<String> originalImages = []; // Original images from product
+  List<String> newImages = []; // New images added during edit
 
   @override
   void initState() {
     super.initState();
+    // Initialize business list
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<BusinessProvider>(context, listen: false)
           .getListBusiness(context);
     });
+
+    // Initialize images from passed data
+    if (widget.initialImages != null && widget.initialImages!.isNotEmpty) {
+      originalImages = List.from(widget.initialImages!);
+      selectedImages = List.from(widget.initialImages!);
+    }
+
+    // Initialize selected businesses
+    if (widget.initialBusinesses != null &&
+        widget.initialBusinesses!.isNotEmpty) {
+      selectedBusinesses = List.from(widget.initialBusinesses!);
+    }
   }
 
   void _onImagesSelected(List<String> paths) {
@@ -61,6 +82,24 @@ class _BusinessOpportunityState extends State<BusinessOpportunity> {
         widget.onBusinessChanged(selectedItems);
       });
     });
+
+    void _onImagesSelected(List<String> paths) {
+      setState(() {
+        // Determine which images are new (not in originalImages)
+        newImages = paths
+            .where((path) =>
+                !path.startsWith('http') && !originalImages.contains(path))
+            .toList();
+
+        // Determine which original images were deleted
+        deletedImages =
+            originalImages.where((path) => !paths.contains(path)).toList();
+
+        // Update main selected images list
+        selectedImages = paths;
+        widget.onImagesChanged(paths);
+      });
+    }
   }
 
   @override
@@ -195,6 +234,7 @@ class _BusinessOpportunityState extends State<BusinessOpportunity> {
         InputFileImages(
           formKey: widget.formKey,
           onImagesChanged: _onImagesSelected,
+          initialImages: selectedImages,
         )
       ],
     );

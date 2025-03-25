@@ -12,7 +12,7 @@ import 'package:clbdoanhnhansg/providers/product_provider.dart';
 import 'dart:io';
 
 class EditProduct extends StatefulWidget {
-  final ProductModel? product; // Thêm tham số product (tuỳ chọn)
+  final ProductModel? product;
   const EditProduct({super.key, this.product});
 
   @override
