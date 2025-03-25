@@ -455,11 +455,16 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
             icon: const Icon(Icons.add, color: Colors.black),
             iconSize: 24,
             onPressed: () {
+              Navigator.pop(
+                context,
+              );
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          CreateOrder(idRecive: widget.idReceiver)));
+                      builder: (context) => CreateOrder(
+                          idRecive: widget.idReceiver,
+                          name: widget.displayName,
+                          avatar: widget.avatarImage)));
             },
           ),
         ),

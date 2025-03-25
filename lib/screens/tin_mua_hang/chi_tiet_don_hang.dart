@@ -360,7 +360,7 @@ Widget _buildStatusWidget(
                         color: AppColor.primaryBlue,
                       ),
                       Text(
-                        'Đã được nhận mua hàng',
+                        'Đơn hàng đã được xác nhận',
                         style: TextStyle(
                           color: AppColor.primaryBlue,
                         ),

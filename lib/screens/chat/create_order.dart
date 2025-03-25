@@ -16,7 +16,10 @@ import '../../utils/router/router.name.dart';
 
 class CreateOrder extends StatefulWidget {
   final String idRecive;
-  const CreateOrder({super.key, required this.idRecive});
+  final String? name;
+  final String? avatar;
+  const CreateOrder(
+      {super.key, required this.idRecive, this.name, this.avatar});
 
   @override
   State<CreateOrder> createState() => _CreateOrderState();
@@ -453,18 +456,11 @@ class _CreateOrderState extends State<CreateOrder> {
                 child: ButtonWidget(
                   label: "Tạo đơn",
                   onPressed: () async {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const DeltailsSalesArticle(
-                    //       isCreate: true,
-                    //     ),
-                    //   ),
-                    // );
                     addToCart();
                     final cartProvider =
                         Provider.of<CartProvider>(context, listen: false);
-                    await cartProvider.createBuild(context, widget.idRecive);
+                    await cartProvider.createBuild(context, widget.idRecive,
+                        widget.name.toString(), widget.avatar.toString());
                   },
                 ),
               ),

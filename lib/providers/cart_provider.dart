@@ -65,7 +65,8 @@ class CartProvider extends BaseProvider {
   bool get isLoadingOrderBuy => _isLoadingOrderBuy;
   String get errorMessageOrderBuy => _errorMessageOrderBuy;
 
-  Future<void> createBuild(BuildContext context, String userId) async {
+  Future<void> createBuild(
+      BuildContext context, String userId, String name, String avatar) async {
     if (_cartItems.isEmpty) {
       setError("Giỏ hàng trống!");
       return;
@@ -96,7 +97,7 @@ class CartProvider extends BaseProvider {
         String currentUserId;
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         currentUserId = (await authProvider.getuserID())!;
-        Navigator.push(
+        Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => DeltailsSalesArticle(
@@ -104,8 +105,8 @@ class CartProvider extends BaseProvider {
                       currentUserId: currentUserId,
                       idReceiver: receiverId,
                       idMessage: receiverId,
-                      avatarImage: '',
-                      displayName: '',
+                      avatarImage: avatar,
+                      displayName: name,
                     )));
       },
       successMessage: "Đặt hàng thành công!",
@@ -143,7 +144,7 @@ class CartProvider extends BaseProvider {
 
   // get list order buy
   Future<void> fetcOrderBuy(BuildContext context) async {
-    _isLoadingOrderBuy = true;
+    // _isLoadingOrderBuy = true;
     _errorMessageOrderBuy = '';
     notifyListeners();
 
@@ -165,7 +166,7 @@ class CartProvider extends BaseProvider {
       _orderBuyList.clear();
     }
 
-    _isLoadingOrderBuy = false;
+    // _isLoadingOrderBuy = false;
     notifyListeners();
   }
 
@@ -193,7 +194,8 @@ class CartProvider extends BaseProvider {
     notifyListeners();
 
     try {
-      final ApiResponse response = await _repository.getOrderDetail(context, orderId);
+      final ApiResponse response =
+          await _repository.getOrderDetail(context, orderId);
 
       if (response.isSuccess && response.data is Map<String, dynamic>) {
         Map<String, dynamic> data = response.data as Map<String, dynamic>;
@@ -211,5 +213,4 @@ class CartProvider extends BaseProvider {
     // _isLoadingOrderSale = false;
     notifyListeners();
   }
-
 }

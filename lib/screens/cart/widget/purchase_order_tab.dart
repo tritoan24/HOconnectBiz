@@ -43,9 +43,9 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       color: const Color(0xFFF4F5F6),
       child: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          if (cartProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          // if (cartProvider.isLoading) {
+          //   return const Center(child: CircularProgressIndicator());
+          // }
 
           final orders = cartProvider.orderBuyList;
 
@@ -344,12 +344,9 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
                     title: 'Xác nhận mua hàng',
                     content: 'Bạn có chắc chắn muốn xác nhận mua đơn hàng này?',
                     onConfirm: () {
-                      cartProvider
-                          .updateStatusOrderBuy(order.id, 1, context)
-                          .then((_) {
-                        // Làm mới danh sách đơn hàng sau khi cập nhật
-                        cartProvider.fetcOrderBuy(context);
-                      });
+                      final cartProvider =
+                          Provider.of<CartProvider>(context, listen: false);
+                      cartProvider.updateStatusOrderBuy(order.id, 1, context);
                     },
                   );
                 },
@@ -376,12 +373,9 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
                     title: 'Hủy đơn hàng',
                     content: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
                     onConfirm: () {
-                      cartProvider
-                          .updateStatusOrderBuy(order.id, 3, context)
-                          .then((_) {
-                        // Làm mới danh sách đơn hàng sau khi cập nhật
-                        cartProvider.fetcOrderBuy(context);
-                      });
+                      final cartProvider =
+                          Provider.of<CartProvider>(context, listen: false);
+                      cartProvider.updateStatusOrderBuy(order.id, 3, context);
                     },
                   );
                 },
@@ -415,12 +409,9 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
               content:
                   'Bạn xác nhận đã nhận được hàng và hoàn thành đơn hàng này?',
               onConfirm: () {
-                cartProvider
-                    .updateStatusOrderBuy(order.id, 2, context)
-                    .then((_) {
-                  // Làm mới danh sách đơn hàng sau khi cập nhật
-                  cartProvider.fetcOrderBuy(context);
-                });
+                final cartProvider =
+                    Provider.of<CartProvider>(context, listen: false);
+                cartProvider.updateStatusOrderBuy(order.id, 2, context);
               },
             );
           },
