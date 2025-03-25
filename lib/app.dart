@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
-import 'screens/home/widget/notification.dart';
 import 'utils/router/router.dart';
 import 'utils/router/router.name.dart';
 import 'widgets/handling_permissions.dart';
-import 'widgets/loading_overlay.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
