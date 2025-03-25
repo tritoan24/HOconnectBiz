@@ -239,6 +239,8 @@ class _SanPhamDinhKemState extends State<SanPhamDinhKem> {
                               RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                               (Match m) => '${m[1]}.',
                             )}đ',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.roboto(
                           fontSize: 16,
                           color: Colors.red,

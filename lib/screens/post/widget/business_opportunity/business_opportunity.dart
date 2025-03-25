@@ -28,10 +28,10 @@ class BusinessOpportunity extends StatefulWidget {
   });
 
   @override
-  State<BusinessOpportunity> createState() => _BusinessOpportunityState();
+  State<BusinessOpportunity> createState() => BusinessOpportunityState();
 }
 
-class _BusinessOpportunityState extends State<BusinessOpportunity> {
+class BusinessOpportunityState extends State<BusinessOpportunity> {
   List<Map<String, String>> selectedBusinesses = [];
 
   List<String> selectedImages = []; // Currently selected images
@@ -59,6 +59,14 @@ class _BusinessOpportunityState extends State<BusinessOpportunity> {
         widget.initialBusinesses!.isNotEmpty) {
       selectedBusinesses = List.from(widget.initialBusinesses!);
     }
+  }
+
+  Map<String, dynamic> getImageData() {
+    return {
+      'newImages': newImages,
+      'deletedImages': deletedImages,
+      'selectedImages': selectedImages,
+    };
   }
 
   void _onImagesSelected(List<String> paths) {

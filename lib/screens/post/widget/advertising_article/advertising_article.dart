@@ -32,10 +32,10 @@ class AdvertisingArticle extends StatefulWidget {
   });
 
   @override
-  State<AdvertisingArticle> createState() => _AdvertisingArticleState();
+  State<AdvertisingArticle> createState() => AdvertisingArticleState();
 }
 
-class _AdvertisingArticleState extends State<AdvertisingArticle> {
+class AdvertisingArticleState extends State<AdvertisingArticle> {
   int content = 1;
   int category = 1;
 
@@ -50,44 +50,60 @@ class _AdvertisingArticleState extends State<AdvertisingArticle> {
   List<String> originalImages = []; // Original images from product
   List<String> newImages = []; // New images added during edit
 
-  final GlobalKey<_AdvertisingArticleState> _advertisingArticleKey =
-      GlobalKey<_AdvertisingArticleState>();
-
   @override
   void initState() {
     super.initState();
 
     // Initialize selected images from props
-    if (widget.initialImages != null && widget.initialImages!.isNotEmpty) {
+    if (widget.initialImages != null) {
       originalImages = List.from(widget.initialImages!);
       selectedImages = List.from(widget.initialImages!);
     }
 
     // Initialize selected products from props
-    if (widget.initialProducts != null && widget.initialProducts!.isNotEmpty) {
+    if (widget.initialProducts != null) {
       selectedProductsList = List.from(widget.initialProducts!);
     }
 
+    // Load products asynchronously
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false)
-          .getListProduct(context);
-      final products =
-          Provider.of<ProductProvider>(context, listen: false).products;
+          .getListProduct(context)
+          .then((_) {
+        final products =
+            Provider.of<ProductProvider>(context, listen: false).products;
 
-      // Initialize product selection maps
-      for (var product in products) {
-        // Check if product is in initial selected products
-        bool isSelected = false;
-        if (widget.initialProducts != null) {
-          isSelected = widget.initialProducts!.any((p) => p.id == product.id);
-        }
-        selectedProducts[product] = isSelected;
-        productQuantities[product] = 1;
-      }
-
-      // Update UI
-      setState(() {});
+        // // Initialize product selection maps using IDs for comparison
+        // setState(() {
+        //   for (var product in products) {
+        //     bool isSelected = false;
+        //     if (widget.initialProducts != null) {
+        //       isSelected =
+        //           widget.initialProducts!.any((p) => p.id == product.id);
+        //     }
+        //     selectedProducts[product] = isSelected;
+        //     productQuantities[product] = 1;
+        //   }
+        // });
+        setState(() {
+          for (var product in products) {
+            // Compare by ID, not by reference
+            selectedProducts[product] =
+                widget.initialProducts?.any((p) => p.id == product.id) ?? false;
+            productQuantities[product] = 1;
+          }
+        });
+      });
     });
+  }
+
+// Add method to AdvertisingArticle
+  Map<String, dynamic> getImageData() {
+    return {
+      'newImages': newImages,
+      'deletedImages': deletedImages,
+      'selectedImages': selectedImages,
+    };
   }
 
   // Updated image handling method

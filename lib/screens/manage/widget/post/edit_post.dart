@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../models/business_model.dart';
+import '../../../../models/create_post.dart';
 import '../../../../models/product_model.dart';
 import '../../../../providers/post_provider.dart';
 import '../../../../utils/enum/loai_bai_dang.dart';
@@ -45,6 +46,10 @@ class _EditPostState extends State<EditPost> {
   bool get isBusiness => widget.postType == 1;
 
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<AdvertisingArticleState> advertisingArticleKey = GlobalKey();
+  final GlobalKey<BusinessOpportunityState> businessOpportunityKey =
+      GlobalKey();
+
   late String loaiBaiDang;
   List<String> selectedImages = [];
   List<ProductModel> selectedProductsList = [];
@@ -118,62 +123,76 @@ class _EditPostState extends State<EditPost> {
       return;
     }
 
-    if (widget.isBusiness && selectedBusinesses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất một ngành nghề')),
+    Map<String, dynamic> imageData;
+    List<String> newImagePaths;
+    List<String> deletedImages;
+    List<String> currentImages;
+    List<File> newImageFiles;
+
+    // Get data based on post type
+    if (widget.isBusiness) {
+      // Business opportunity post
+      imageData = businessOpportunityKey.currentState!.getImageData();
+
+      // Extract business IDs
+      List<String> businessList = selectedBusinesses
+          .map((business) => business['id'] ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      newImagePaths = imageData['newImages'];
+      deletedImages = imageData['deletedImages'];
+      currentImages = imageData['selectedImages'];
+      newImageFiles = newImagePaths.map((path) => File(path)).toList();
+
+      // Create post data with business fields
+      final CreatePost postData = CreatePost(
+        title: title,
+        content: content,
+        category: 1, // Business opportunity category
+        business: businessList,
+        album: currentImages,
       );
-      return;
-    }
 
-    if (selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất một ảnh')),
+      context.read<PostProvider>().editPost(
+            context,
+            widget.postId,
+            postData,
+            files: newImageFiles,
+            deletedImages: deletedImages,
+          );
+    } else {
+      // Advertising article post
+      imageData = advertisingArticleKey.currentState!.getImageData();
+
+      // Extract product IDs
+      List<String> productList = selectedProductsList
+          .map((product) => product.id ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      newImagePaths = imageData['newImages'];
+      deletedImages = imageData['deletedImages'];
+      currentImages = imageData['selectedImages'];
+      newImageFiles = newImagePaths.map((path) => File(path)).toList();
+
+      // Create post data with product fields
+      final CreatePost postData = CreatePost(
+        title: title,
+        content: content,
+        category: 2, // Advertising article category
+        product: productList,
+        album: currentImages,
       );
-      return;
+
+      context.read<PostProvider>().editPost(
+            context,
+            widget.postId,
+            postData,
+            files: newImageFiles,
+            deletedImages: deletedImages,
+          );
     }
-
-    if (!widget.isBusiness && selectedProductsList.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất một sản phẩm')),
-      );
-      return;
-    }
-
-    // Prepare data for update
-    List<String> productList = selectedProductsList
-        .map((product) => product.id ?? '')
-        .where((id) => id.isNotEmpty)
-        .toList();
-
-    List<String> businessList = selectedBusinesses
-        .map((business) => business['id'] ?? '')
-        .where((id) => id.isNotEmpty)
-        .toList();
-
-    final post = {
-      'title': title,
-      'content': content,
-      'category': widget.isBusiness ? 1 : 2,
-      'product': productList,
-      'business': businessList,
-      'album': selectedImages,
-    };
-
-    // Get file objects from image paths
-    List<File> files = [];
-    for (String path in selectedImages) {
-      if (!path.startsWith('http')) {
-        files.add(File(path));
-      }
-    }
-
-    // // Call API to update post
-    // context.read<PostProvider>().updatePost(
-    //     post,
-    //     context,
-    //     widget.postId,
-    //     files: files
-    // );
   }
 
   @override
@@ -252,6 +271,7 @@ class _EditPostState extends State<EditPost> {
                   ),
                   if (widget.isBusiness) ...[
                     BusinessOpportunity(
+                      key: businessOpportunityKey,
                       formKey: _formKey,
                       onImagesChanged: _handleImagesChanged,
                       onBusinessChanged: _handleBusinessesChanged,
@@ -261,12 +281,13 @@ class _EditPostState extends State<EditPost> {
                   ],
                   if (!widget.isBusiness) ...[
                     AdvertisingArticle(
+                      key: advertisingArticleKey,
                       formKey: _formKey,
                       onImagesChanged: _handleImagesChanged,
                       onProductsChanged: _handleProductsChanged,
                       initialImages: selectedImages,
                       initialProducts: selectedProductsList,
-                    ),
+                    )
                   ],
                 ],
               ),
