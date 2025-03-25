@@ -343,6 +343,7 @@ Widget _buildStatusWidget(
     if (status == "Chờ vận chuyển") {
       return GestureDetector(
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -397,6 +398,7 @@ Widget _buildStatusWidget(
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -407,6 +409,7 @@ Widget _buildStatusWidget(
     } else if (status == "Thành công") {
       return GestureDetector(
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -441,6 +444,7 @@ Widget _buildStatusWidget(
     } else if (status == "Đang xử lý") {
       return GestureDetector(
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -495,6 +499,7 @@ Widget _buildStatusWidget(
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -511,6 +516,7 @@ Widget _buildStatusWidget(
     if (statusLowerCase == 'thành công') {
       return GestureDetector(
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -550,6 +556,7 @@ Widget _buildStatusWidget(
     } else if (status == "đang xử lý") {
       return GestureDetector(
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -583,6 +590,7 @@ Widget _buildStatusWidget(
     } else if (statusLowerCase == 'chờ vận chuyển') {
       return GestureDetector(
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -616,6 +624,7 @@ Widget _buildStatusWidget(
     } else if (statusLowerCase == "đang xử lý") {
       return GestureDetector(
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -671,6 +680,7 @@ Widget _buildStatusWidget(
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(
               context,
               MaterialPageRoute(
