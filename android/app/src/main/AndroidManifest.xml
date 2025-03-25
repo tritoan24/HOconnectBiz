@@ -6,6 +6,7 @@
     <!-- Quyền thông báo cho Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"

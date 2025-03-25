@@ -54,6 +54,13 @@ void main() {
     // Yêu cầu quyền thông báo cho iOS
     if (Platform.isIOS) {
       OneSignal.Notifications.requestPermission(true);
+    } else if (Platform.isAndroid) {
+      // Kiểm tra phiên bản Android
+      final isAndroid13Plus = await _isAndroid13OrHigher();
+      if (isAndroid13Plus) {
+        // Android 13+ requires explicit permission request
+        OneSignal.Notifications.requestPermission(true);
+      }
     }
 
     // Khởi tạo logger
