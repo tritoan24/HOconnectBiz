@@ -1167,47 +1167,69 @@ class _PostItemState extends State<PostItem> {
     debugPrint(
         "🔍 DEBUG PostItem: Quay lại từ màn comments với result=$result");
 
-    // Luôn cập nhật UI khi quay về từ màn hình comments để đảm bảo đồng bộ
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    final updatedPost = postProvider.getPostById(widget.postId);
+    // Kiểm tra xem context có còn mounted không và Provider có sẵn không
+    if (!context.mounted) {
+      debugPrint("⚠️ WARNING PostItem: Context không còn mounted");
+      return;
+    }
 
-    if (updatedPost != null) {
-      debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng isJoin mới: ${updatedPost.isJoin?.length}");
+    try {
+      // Luôn cập nhật UI khi quay về từ màn hình comments để đảm bảo đồng bộ
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final updatedPost = postProvider.getPostById(widget.postId);
 
-      // Cập nhật UI với dữ liệu mới
-      setState(() {
-        // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
-        likeCount = updatedPost.like?.length ?? 0;
-        commentCount = updatedPost.totalComment ?? 0;
-
-        // Cập nhật trạng thái isLiked nếu có idUserID
-        if (idUserID != null && idUserID!.isNotEmpty) {
-          isLiked = updatedPost.like?.contains(idUserID) ?? false;
-        }
-
-        // Cập nhật trạng thái isJoind
-        if (updatedPost.isJoin != null) {
-          isJoind =
-              updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
-          debugPrint(
-              "🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
-        }
-
+      if (updatedPost != null) {
+        debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
         debugPrint(
-            "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
-      });
-    } else {
-      debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
-      // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      _loadUserIdandStatusLikePost(authProvider);
-      _loadUserStatusJoinBusiness(authProvider);
+            "🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
+        debugPrint(
+            "🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
+        debugPrint(
+            "🔍 DEBUG PostItem: Số lượng isJoin mới: ${updatedPost.isJoin?.length}");
+
+        // Cập nhật UI với dữ liệu mới
+        setState(() {
+          // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
+          likeCount = updatedPost.like?.length ?? 0;
+          commentCount = updatedPost.totalComment ?? 0;
+
+          // Cập nhật trạng thái isLiked nếu có idUserID
+          if (idUserID != null && idUserID!.isNotEmpty) {
+            isLiked = updatedPost.like?.contains(idUserID) ?? false;
+          }
+
+          // Cập nhật trạng thái isJoind
+          if (updatedPost.isJoin != null) {
+            isJoind =
+                updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
+            debugPrint(
+                "🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
+          }
+
+          debugPrint(
+              "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
+        });
+      } else {
+        debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+        // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
+        if (context.mounted) {
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          _loadUserIdandStatusLikePost(authProvider);
+          _loadUserStatusJoinBusiness(authProvider);
+        }
+      }
+    } catch (e) {
+      debugPrint("⚠️ ERROR PostItem: Lỗi khi truy cập Provider: $e");
+      // Xử lý trường hợp Provider không tồn tại hoặc lỗi khác
+      if (context.mounted) {
+        try {
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          _loadUserIdandStatusLikePost(authProvider);
+          _loadUserStatusJoinBusiness(authProvider);
+        } catch (authError) {
+          debugPrint("⚠️ ERROR PostItem: Lỗi khi truy cập AuthProvider: $authError");
+        }
+      }
     }
 
     debugPrint("🔍 DEBUG PostItem: _navigateToComments hoàn tất");
