@@ -189,7 +189,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
                           totalRevenue: bo.revenue,
                           rating: bo.avgStar,
                           ratedBy: bo.totalReview,
-                          memberCount: bo.totalCompany,
+                          memberCount: bo.totalBo,
                           data: lists,
                           member: members,
                           author: author ?? AuthorBusiness.defaultAuthor(),

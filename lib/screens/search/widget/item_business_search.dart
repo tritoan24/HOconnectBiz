@@ -99,7 +99,7 @@ class BusinessSearchItem extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            business.avgStar.toStringAsFixed(1),
+                            business.boStar.toStringAsFixed(1),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -114,7 +114,7 @@ class BusinessSearchItem extends StatelessWidget {
                             width: 10,
                           ),
                           Text(
-                            "(${business.totalCompany} cơ hội kinh doanh)",
+                            "(${business.totalBo} cơ hội kinh doanh)",
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,

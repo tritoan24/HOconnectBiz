@@ -103,7 +103,7 @@ class ItemPostBussiness extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '(${bo.totalCompany} doanh nghiệp)',
+                    '(${bo.totalReview} doanh nghiệp)',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 13,

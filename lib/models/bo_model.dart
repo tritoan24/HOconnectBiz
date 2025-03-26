@@ -9,8 +9,9 @@ class Bo {
   final String companyName;
   final double revenue;
   final double avgStar;
+  final double boStar;
+  final int totalBo;
   final int totalReview;
-  final int totalCompany;
   final List<String> album;
   final bool? isBo;
   final bool? isFeatured;
@@ -27,9 +28,10 @@ class Bo {
     required this.companyName,
     required this.revenue,
     required this.avgStar,
+    required this.boStar,
     required this.totalReview,
-    required this.totalCompany,
     required this.album,
+    required this.totalBo,
     this.isBo,
     this.isFeatured,
     this.createdAt,
@@ -54,15 +56,16 @@ class Bo {
           ? json['author']['company_name'] ?? ''
           : '',
       revenue:
-      json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
+          json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
       avgStar:
-      json['avgStar'] is num ? (json['avgStar'] as num).toDouble() : 0.0,
+          json['avgStar'] is num ? (json['avgStar'] as num).toDouble() : 0.0,
+      boStar: json['boStar'] is num ? (json['boStar'] as num).toDouble() : 0.0,
+      totalBo: json['totalBo'] is int
+          ? json['totalBo']
+          : int.tryParse(json['totalBo'].toString()) ?? 0,
       totalReview: json['total_review'] is int
           ? json['total_review']
           : int.tryParse(json['total_review'].toString()) ?? 0,
-      totalCompany: json['total_company'] is int
-          ? json['total_company']
-          : int.tryParse(json['total_company'].toString()) ?? 0,
       album: json['album'] is List
           ? (json['album'] as List<dynamic>).whereType<String>().toList()
           : [],
@@ -76,35 +79,34 @@ class Bo {
 
   factory Bo.fromJsonAlt(Map<String, dynamic> json) {
     return Bo(
-        id: json['_id'] ?? '',
-        title: json['title'] ?? '',
-        category: json['category'] is int
-            ? json['category']
-            : int.tryParse(json['category'].toString()) ?? 0,
-        content: json['company_description'] ?? '',
-        thumbnail: json['avatar_image'] ?? '',
-        authorName: json['author'] is Map<String, dynamic>
-            ? json['author']['displayName'] ?? ''
-            : '',
-        authorAvatar: json['author'] is Map<String, dynamic>
-            ? json['author']['avatar_image'] ?? ''
-            : '',
-        companyName: json['company_name'] ?? '',
-        revenue:
-        json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
-    avgStar:
-    json['boStar'] is num ? (json['boStar'] as num).toDouble() : 0.0,
-    totalReview: json['total_review'] is int
-    ? json['total_review']
-        : int.tryParse(json['total_review'].toString()) ?? 0,
-    totalCompany: json['totalBo'] is int
-    ? json['totalBo']
-        : int.tryParse(json['totalBo'].toString()) ?? 0,
-    album: json['album'] is List
-    ? (json['album'] as List<dynamic>).whereType<String>().toList()
-        : [],
+      id: json['_id'] ?? '',
+      title: json['title'] ?? '',
+      category: json['category'] is int
+          ? json['category']
+          : int.tryParse(json['category'].toString()) ?? 0,
+      content: json['company_description'] ?? '',
+      thumbnail: json['avatar_image'] ?? '',
+      authorName: json['author'] is Map<String, dynamic>
+          ? json['author']['displayName'] ?? ''
+          : '',
+      authorAvatar: json['author'] is Map<String, dynamic>
+          ? json['author']['avatar_image'] ?? ''
+          : '',
+      companyName: json['company_name'] ?? '',
+      revenue:
+          json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
+      avgStar:
+          json['avgStar'] is num ? (json['avgStar'] as num).toDouble() : 0.0,
+      boStar: json['boStar'] is num ? (json['boStar'] as num).toDouble() : 0.0,
+      totalReview: json['total_review'] is int
+          ? json['total_review']
+          : int.tryParse(json['total_review'].toString()) ?? 0,
+      totalBo: json['totalBo'] is int
+          ? json['totalBo']
+          : int.tryParse(json['totalBo'].toString()) ?? 0,
+      album: json['album'] is List
+          ? (json['album'] as List<dynamic>).whereType<String>().toList()
+          : [],
     );
   }
 }
-
-

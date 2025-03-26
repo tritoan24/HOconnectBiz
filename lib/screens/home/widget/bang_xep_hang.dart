@@ -19,7 +19,7 @@ class BangXepHang extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Lấy top3 và others từ danh sách theo rank từ API
     final top3 = ranks.where((rank) => rank.rank <= 3).toList();
     final others = ranks.where((rank) => rank.rank > 3).toList();
@@ -124,10 +124,7 @@ class BangXepHang extends StatelessWidget {
                                 height: crownSize * 1.2,
                               ),
                               SizedBox(height: screenWidth * 0.025),
-                              buildTopItem(
-                                  context,
-                                  top3[0],
-                                  avatarSize * 1.2),
+                              buildTopItem(context, top3[0], avatarSize * 1.2),
                               SizedBox(height: screenWidth * 0.05),
                             ],
                           )
@@ -193,6 +190,8 @@ class BangXepHang extends StatelessWidget {
                     ),
                     Text(
                       "Tên doanh nghiệp",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: screenWidth * 0.035,
                         fontWeight: FontWeight.w600,
@@ -234,7 +233,8 @@ class BangXepHang extends StatelessWidget {
                                 );
                               },
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "Thứ hạng ${rank.rank}",

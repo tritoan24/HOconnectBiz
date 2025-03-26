@@ -125,7 +125,7 @@ class _QuanLyViewState extends State<QuanLyView> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  userProvider.author?.totalBo?.toString() ??
+                                  userProvider.author?.boStar?.toString() ??
                                       "0",
                                   style: const TextStyle(
                                     fontSize: 16,
