@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../providers/StatisticalProvider.dart';
 import '../../../providers/rank_provider.dart';
@@ -43,12 +44,16 @@ class _HomeState extends State<Home> {
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final rankProvider = Provider.of<RankProvider>(context, listen: false);
       final staticsticalProvider = Provider.of<StatisticalProvider>(context, listen: false);
+      final bannerProvider = Provider.of<BannerProvider>(context, listen: false);
 
       // Gọi các phương thức fetch data
       staticsticalProvider.fetchStatistics(context);
       rankProvider.fetchRanksRevenue(context);
       rankProvider.fetchRankBusiness(context);
       postProvider.fetchPosts(context);
+      
+      // Tải dữ liệu banner
+      bannerProvider.getListBanner(context);
     });
   }
 
@@ -193,21 +198,23 @@ class _HomeState extends State<Home> {
               const SizedBox(
                 height: 16,
               ),
-              imageUrl != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        imageUrl!,
-                        width: double.infinity,
-                        height: 153,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            AppIcons.getError(),
-                      ),
-                    )
-                  : Lottie.asset(
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  width: double.infinity,
+                  height: 153,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Center(
+                    child: Lottie.asset(
                       'assets/lottie/loading.json',
+                      width: 50,
+                      height: 50,
                     ),
+                  ),
+                  errorWidget: (context, url, error) => AppIcons.getError(),
+                ),
+              ),
 
               const SizedBox(
                 height: 40,

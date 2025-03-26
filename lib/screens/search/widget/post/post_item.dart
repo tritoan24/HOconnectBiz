@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/product_model.dart';
 import '../../../../models/business_model.dart';
 import '../../../../providers/post_provider.dart';
@@ -457,14 +458,14 @@ class _PostItemState extends State<PostItem> {
   Widget _buildAvatar() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(_kImageSize),
-      child: Image.network(
-        widget.avatar_image.isNotEmpty
+      child: CachedNetworkImage(
+        imageUrl: widget.avatar_image.isNotEmpty
             ? widget.avatar_image
             : UrlImage.errorImage,
         width: _kImageSize,
         height: _kImageSize,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
+        errorWidget: (context, url, error) =>
             AppIcons.getBrokenImage(size: _kImageSize),
       ),
     );
@@ -504,20 +505,11 @@ class _PostItemState extends State<PostItem> {
                   padding: const EdgeInsets.only(bottom: 5),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      imagesToShow[0],
+                    child: CachedNetworkImage(
+                      imageUrl: imagesToShow[0],
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Image.asset(
-                          'assets/icons/image_waiting.png',
-                          fit: BoxFit.cover,
-                          width: 30,
-                          height: 30,
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) =>
+                      errorWidget: (context, url, error) =>
                           AppIcons.getBrokenImage(size: _kProductImageSize),
                     ),
                   ),
@@ -541,19 +533,10 @@ class _PostItemState extends State<PostItem> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  imagesToShow[i],
+                                child: CachedNetworkImage(
+                                  imageUrl: imagesToShow[i],
                                   fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Image.asset(
-                                      'assets/icons/image_waiting.png',
-                                      width: 20,
-                                      height: 20,
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) =>
+                                  errorWidget: (context, url, error) =>
                                       AppIcons.getBrokenImage(
                                           size: _kProductImageSize),
                                 ),
@@ -660,26 +643,11 @@ class _PostItemState extends State<PostItem> {
         padding: const EdgeInsets.all(10),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            widget.images[0],
+          child: CachedNetworkImage(
+            imageUrl: widget.images[0],
             width: double.infinity,
             fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.grey[200],
-                child: Center(
-                  child: Image.asset(
-                    'assets/icons/image_waiting.png',
-                    width: 50,
-                    height: 50,
-                  ),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) =>
+            errorWidget: (context, url, error) =>
                 AppIcons.getBrokenImage(size: _kProductImageSize),
           ),
         ),
@@ -692,20 +660,12 @@ class _PostItemState extends State<PostItem> {
       padding: const EdgeInsets.all(5.0),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          imageUrl,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Image.asset(
-              'assets/icons/image_waiting.png',
-              width: 30,
-              height: 30,
-            );
-          },
-          errorBuilder: (context, error, stackTrace) =>
+          errorWidget: (context, url, error) =>
               AppIcons.getBrokenImage(size: _kProductImageSize),
         ),
       ),
@@ -766,14 +726,13 @@ class _PostItemState extends State<PostItem> {
 
   Widget _buildProductImage(ProductModel sanPham) {
     return sanPham.album.isNotEmpty
-        ? Image.network(
-            sanPham.album.first,
+        ? CachedNetworkImage(
+            imageUrl: sanPham.album.first,
             width: _kProductImageSize,
             height: _kProductImageSize,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return AppIcons.getBrokenImage(size: _kProductImageSize);
-            },
+            errorWidget: (context, url, error) =>
+                AppIcons.getBrokenImage(size: _kProductImageSize),
           )
         : AppIcons.getBrokenImage(size: _kProductImageSize);
   }
