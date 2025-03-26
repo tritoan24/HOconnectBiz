@@ -140,7 +140,7 @@ class AuthProvider extends BaseProvider {
       if (token != null && token.isNotEmpty) {
         // Cập nhật trạng thái đăng nhập
         _isLoggedIn = true;
-        
+
         // Get user ID for socket connection
         final userId = await getuserID();
 
@@ -161,10 +161,10 @@ class AuthProvider extends BaseProvider {
             .getListProduct(context));
 
         final postProvider = Provider.of<PostProvider>(context, listen: false);
-        final rankProvider = Provider.of<RankProvider>(context, listen: false);
-
-        futures.add(rankProvider.fetchRanksRevenue(context));
-        futures.add(rankProvider.fetchRankBusiness(context));
+        // final rankProvider = Provider.of<RankProvider>(context, listen: false);
+        //
+        // futures.add(rankProvider.fetchRanksRevenue(context));
+        // futures.add(rankProvider.fetchRankBusiness(context));
 
         futures.add(postProvider.fetchPostsFeatured(context));
         futures.add(postProvider.fetchPostsByUser(context));
@@ -176,14 +176,14 @@ class AuthProvider extends BaseProvider {
         if (context.mounted) {
           // Xóa lỗi trước khi chuyển màn hình
           clearState();
-          
+
           // Sửa: Chuyển hướng đến đúng route
           context.go(AppRoutes.trangChu);
         }
       } else {
         // Cập nhật trạng thái đăng nhập
         _isLoggedIn = false;
-        
+
         // Ensure minimum 3 seconds even for login routing
         final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
         final remainingMs = 3000 - elapsedMs;
@@ -199,7 +199,7 @@ class AuthProvider extends BaseProvider {
     } catch (e) {
       // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
       _isLoggedIn = false;
-      
+
       setError("Lỗi điều hướng: $e");
       // Nếu có lỗi, chuyển về trang login
       if (context.mounted) {
@@ -235,10 +235,10 @@ class AuthProvider extends BaseProvider {
           final idUser = user!.idUser!;
           await _saveToken(token);
           await _saveUserId(idUser);
-          
+
           // Cập nhật trạng thái đăng nhập
           _isLoggedIn = true;
-          
+
           OneSignal.login(username);
           socketService.connect(idUser);
 
@@ -253,11 +253,11 @@ class AuthProvider extends BaseProvider {
 
           final postProvider =
               Provider.of<PostProvider>(context, listen: false);
-          final rankProvider =
-              Provider.of<RankProvider>(context, listen: false);
-
-          futures.add(rankProvider.fetchRanksRevenue(context));
-          futures.add(rankProvider.fetchRankBusiness(context));
+          // final rankProvider =
+          //     Provider.of<RankProvider>(context, listen: false);
+          //
+          // futures.add(rankProvider.fetchRanksRevenue(context));
+          // futures.add(rankProvider.fetchRankBusiness(context));
 
           futures.add(postProvider.fetchPostsFeatured(context));
           futures.add(postProvider.fetchPostsByUser(context));
@@ -357,7 +357,7 @@ class AuthProvider extends BaseProvider {
         apiCall: () async {
           // Xóa dữ liệu từ cả hai storage
           await _clearAllData();
-          
+
           // Cập nhật trạng thái đăng nhập
           _isLoggedIn = false;
 
@@ -756,11 +756,11 @@ class AuthProvider extends BaseProvider {
 
           final postProvider =
               Provider.of<PostProvider>(context, listen: false);
-          final rankProvider =
-              Provider.of<RankProvider>(context, listen: false);
-
-          futures.add(rankProvider.fetchRanksRevenue(context));
-          futures.add(rankProvider.fetchRankBusiness(context));
+          // final rankProvider =
+          //     Provider.of<RankProvider>(context, listen: false);
+          //
+          // futures.add(rankProvider.fetchRanksRevenue(context));
+          // futures.add(rankProvider.fetchRankBusiness(context));
 
           futures.add(postProvider.fetchPostsFeatured(context));
           futures.add(postProvider.fetchPostsByUser(context));
