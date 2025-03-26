@@ -19,15 +19,28 @@ class BangXepHang extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final top3 = ranks.where((rank) => rank.rank <= 3).toList();
-    final others = ranks.where((rank) => rank.rank > 3).toList();
+    
+    // ĐẢM BẢO MỖI RANK CHỈ XUẤT HIỆN MỘT LẦN: Gom các rank vào một tập hợp theo ID
+    final Map<String, Rank> uniqueRanks = {};
+    for (var rank in ranks) {
+      if (!uniqueRanks.containsKey(rank.id) || uniqueRanks[rank.id]!.rank > rank.rank) {
+        uniqueRanks[rank.id] = rank;
+      }
+    }
+    
+    // Chuyển Map thành List và sắp xếp theo thứ hạng
+    final sortedRanks = uniqueRanks.values.toList()
+      ..sort((a, b) => a.rank.compareTo(b.rank));
+    
+    // Lấy top3 và others từ danh sách đã lọc và sắp xếp
+    final top3 = sortedRanks.where((rank) => rank.rank <= 3).toList();
+    final others = sortedRanks.where((rank) => rank.rank > 3).toList();
 
     // Calculate responsive sizes
-    final podiumHeight =
-        screenWidth * 0.7; // Adjust podium height based on screen width
-    final avatarSize = screenWidth * 0.15; // Make avatar size responsive
-    final crownSize = screenWidth * 0.07; // Make crown size responsive
-    final topPadding = screenWidth * 0.04; // Responsive padding
+    final podiumHeight = screenWidth * 0.7;
+    final avatarSize = screenWidth * 0.15;
+    final crownSize = screenWidth * 0.07;
+    final topPadding = screenWidth * 0.04;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,

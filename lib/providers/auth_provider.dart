@@ -30,6 +30,15 @@ class AuthProvider extends BaseProvider {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final socketService = SocketService();
 
+  // Thêm getter isLoggedIn
+  bool _isLoggedIn = false;
+  bool get isLoggedIn => _isLoggedIn;
+
+  // Thêm phương thức getToken public
+  Future<String?> getToken() async {
+    return _getToken();
+  }
+
   Future<void> _saveToken(String token) async {
     try {
       // Lưu vào FlutterSecureStorage
@@ -129,6 +138,9 @@ class AuthProvider extends BaseProvider {
       final token = await _getToken();
 
       if (token != null && token.isNotEmpty) {
+        // Cập nhật trạng thái đăng nhập
+        _isLoggedIn = true;
+        
         // Get user ID for socket connection
         final userId = await getuserID();
 
@@ -164,9 +176,14 @@ class AuthProvider extends BaseProvider {
         if (context.mounted) {
           // Xóa lỗi trước khi chuyển màn hình
           clearState();
-          appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+          
+          // Sửa: Chuyển hướng đến đúng route
+          context.go(AppRoutes.trangChu);
         }
       } else {
+        // Cập nhật trạng thái đăng nhập
+        _isLoggedIn = false;
+        
         // Ensure minimum 3 seconds even for login routing
         final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
         final remainingMs = 3000 - elapsedMs;
@@ -176,14 +193,17 @@ class AuthProvider extends BaseProvider {
 
         if (context.mounted) {
           clearState();
-          appRouter.go(AppRoutes.login);
+          context.go(AppRoutes.login);
         }
       }
     } catch (e) {
+      // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
+      _isLoggedIn = false;
+      
       setError("Lỗi điều hướng: $e");
       // Nếu có lỗi, chuyển về trang login
       if (context.mounted) {
-        appRouter.go(AppRoutes.login);
+        context.go(AppRoutes.login);
       }
     } finally {
       // Kết thúc loading trong mọi trường hợp
@@ -215,6 +235,10 @@ class AuthProvider extends BaseProvider {
           final idUser = user!.idUser!;
           await _saveToken(token);
           await _saveUserId(idUser);
+          
+          // Cập nhật trạng thái đăng nhập
+          _isLoggedIn = true;
+          
           OneSignal.login(username);
           socketService.connect(idUser);
 
@@ -246,7 +270,7 @@ class AuthProvider extends BaseProvider {
             hideLoadingOnce();
             // Xóa lỗi trước khi chuyển màn hình
             clearState();
-            context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+            context.go(AppRoutes.trangChu);
           }
         },
       );
@@ -333,6 +357,9 @@ class AuthProvider extends BaseProvider {
         apiCall: () async {
           // Xóa dữ liệu từ cả hai storage
           await _clearAllData();
+          
+          // Cập nhật trạng thái đăng nhập
+          _isLoggedIn = false;
 
           // Lấy registerType từ SharedPreferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -391,7 +418,7 @@ class AuthProvider extends BaseProvider {
                 await prefs.remove('register_type');
                 developer.log('Đã xóa register_type', name: 'LOGOUT_GOOGLE');
 
-                developer.log('Quá trình đăng xuất Google ho��n tất',
+                developer.log('Quá trình đăng xuất Google hoàn tất',
                     name: 'LOGOUT_GOOGLE');
               } else {
                 developer.log('Không tìm thấy phiên đăng nhập Google hiện tại',
