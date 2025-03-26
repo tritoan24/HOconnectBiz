@@ -20,21 +20,9 @@ class BangXepHang extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     
-    // ĐẢM BẢO MỖI RANK CHỈ XUẤT HIỆN MỘT LẦN: Gom các rank vào một tập hợp theo ID
-    final Map<String, Rank> uniqueRanks = {};
-    for (var rank in ranks) {
-      if (!uniqueRanks.containsKey(rank.id) || uniqueRanks[rank.id]!.rank > rank.rank) {
-        uniqueRanks[rank.id] = rank;
-      }
-    }
-    
-    // Chuyển Map thành List và sắp xếp theo thứ hạng
-    final sortedRanks = uniqueRanks.values.toList()
-      ..sort((a, b) => a.rank.compareTo(b.rank));
-    
-    // Lấy top3 và others từ danh sách đã lọc và sắp xếp
-    final top3 = sortedRanks.where((rank) => rank.rank <= 3).toList();
-    final others = sortedRanks.where((rank) => rank.rank > 3).toList();
+    // Lấy top3 và others từ danh sách theo rank từ API
+    final top3 = ranks.where((rank) => rank.rank <= 3).toList();
+    final others = ranks.where((rank) => rank.rank > 3).toList();
 
     // Calculate responsive sizes
     final podiumHeight = screenWidth * 0.7;
@@ -132,16 +120,14 @@ class BangXepHang extends StatelessWidget {
                             children: [
                               SvgPicture.asset(
                                 "assets/icons/i_vuongniem.svg",
-                                width: crownSize *
-                                    1.2, // Make top 1 crown slightly larger
+                                width: crownSize * 1.2,
                                 height: crownSize * 1.2,
                               ),
                               SizedBox(height: screenWidth * 0.025),
                               buildTopItem(
                                   context,
                                   top3[0],
-                                  avatarSize *
-                                      1.2), // Make top 1 avatar slightly larger
+                                  avatarSize * 1.2),
                               SizedBox(height: screenWidth * 0.05),
                             ],
                           )
@@ -215,56 +201,78 @@ class BangXepHang extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: screenWidth * 0.04),
-                ...others.map((rank) => Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: screenWidth * 0.02),
-                          child: GestureDetector(
-                            onTap: () {
-                              context.push(AppRoutes.thongTinDoanhNghiep
-                                  .replaceFirst(":isLeading", "true"));
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Thứ hạng ${rank.rank}",
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.035,
-                                    fontWeight: FontWeight.w400,
+                if (others.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Center(
+                      child: Text(
+                        "Không có dữ liệu xếp hạng",
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  ...others.map((rank) => Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: screenWidth * 0.02),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BusinessInformation(
+                                      idUser: rank.id,
+                                      isMe: false,
+                                    ),
                                   ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    rank.companyName.isNotEmpty
-                                        ? rank.companyName
-                                        : rank.displayName,
+                                );
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Thứ hạng ${rank.rank}",
                                     style: TextStyle(
                                       fontSize: screenWidth * 0.035,
                                       fontWeight: FontWeight.w400,
                                     ),
-                                    textAlign: TextAlign.right,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: screenWidth * 0.005),
-                        if (others.indexOf(rank) < 4)
-                          SizedBox(
-                            height: 1,
-                            width: screenWidth,
-                            child: const DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Color(0xffEDF1F3),
+                                  Flexible(
+                                    child: Text(
+                                      rank.companyName.isNotEmpty
+                                          ? rank.companyName
+                                          : rank.displayName,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.035,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                      ],
-                    )),
+                          SizedBox(height: screenWidth * 0.005),
+                          if (others.indexOf(rank) < others.length - 1)
+                            SizedBox(
+                              height: 1,
+                              width: screenWidth,
+                              child: const DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Color(0xffEDF1F3),
+                                ),
+                              ),
+                            ),
+                        ],
+                      )),
               ],
             ),
           ),

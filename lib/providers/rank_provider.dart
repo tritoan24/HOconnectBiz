@@ -25,31 +25,18 @@ class RankProvider with ChangeNotifier {
           await _rankRepository.getRankRevenue(context);
 
       if (response.isSuccess && response.data is List) {
-        // Lấy danh sách rank từ API
-        List<Rank> ranks = (response.data as List)
+        // Chỉ chuyển đổi dữ liệu từ API sang model, không thêm xử lý
+        _ranksRevenue = (response.data as List)
             .map((json) => Rank.fromJson(json as Map<String, dynamic>))
             .toList();
-        
-        // Xử lý lọc user trùng lặp
-        Map<String, Rank> uniqueRanks = {};
-        for (var rank in ranks) {
-          // Nếu user chưa có trong map hoặc có rank thấp hơn, thì cập nhật
-          if (!uniqueRanks.containsKey(rank.id) || uniqueRanks[rank.id]!.rank > rank.rank) {
-            uniqueRanks[rank.id] = rank;
-          }
-        }
-        
-        // Chuyển map thành list và sắp xếp theo rank
-        _ranksRevenue = uniqueRanks.values.toList()
-          ..sort((a, b) => a.rank.compareTo(b.rank));
-        
-        print('Ranks Revenue fetched: ${_ranksRevenue.length} items after removing duplicates');
       } else {
         _errorMessage = response.message ?? 'Không có dữ liệu';
+        _ranksRevenue = [];
       }
     } catch (e) {
       _errorMessage = "Lỗi khi tải dữ liệu: $e";
       print(_errorMessage);
+      _ranksRevenue = [];
     }
 
     _isLoading = false;
@@ -65,31 +52,18 @@ class RankProvider with ChangeNotifier {
           await _rankRepository.getRankBusiness(context);
 
       if (response.isSuccess && response.data is List) {
-        // Lấy danh sách rank từ API
-        List<Rank> ranks = (response.data as List)
+        // Chỉ chuyển đổi dữ liệu từ API sang model, không thêm xử lý
+        _ranksBusiness = (response.data as List)
             .map((json) => Rank.fromJson(json as Map<String, dynamic>))
             .toList();
-            
-        // Xử lý lọc user trùng lặp
-        Map<String, Rank> uniqueRanks = {};
-        for (var rank in ranks) {
-          // Nếu user chưa có trong map hoặc có rank thấp hơn, thì cập nhật
-          if (!uniqueRanks.containsKey(rank.id) || uniqueRanks[rank.id]!.rank > rank.rank) {
-            uniqueRanks[rank.id] = rank;
-          }
-        }
-        
-        // Chuyển map thành list và sắp xếp theo rank
-        _ranksBusiness = uniqueRanks.values.toList()
-          ..sort((a, b) => a.rank.compareTo(b.rank));
-        
-        print('Ranks Business fetched: ${_ranksBusiness.length} items after removing duplicates');
       } else {
         _errorMessage = response.message ?? 'Không có dữ liệu';
+        _ranksBusiness = [];
       }
     } catch (e) {
       _errorMessage = "Lỗi khi tải dữ liệu: $e";
       print(_errorMessage);
+      _ranksBusiness = [];
     }
 
     _isLoading = false;
