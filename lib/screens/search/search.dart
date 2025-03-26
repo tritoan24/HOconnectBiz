@@ -9,6 +9,7 @@ import 'package:clbdoanhnhansg/screens/search/widget/item_business_search.dart';
 import 'package:clbdoanhnhansg/providers/bo_provider.dart';
 import 'package:clbdoanhnhansg/utils/icons/app_icons.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:async';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -21,6 +22,9 @@ class _SearchViewState extends State<SearchView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   TextEditingController _searchController = TextEditingController();
+  
+  // Thêm timer cho debounce
+  Timer? _debounce;
 
   // Set default category
   int _currentCategory = 1;
@@ -50,6 +54,7 @@ class _SearchViewState extends State<SearchView>
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -59,6 +64,12 @@ class _SearchViewState extends State<SearchView>
       setState(() {
         _currentCategory = _tabController.index + 1;
       });
+      
+      // Reset tìm kiếm khi chuyển tab
+      if (_searchController.text.isNotEmpty) {
+        _searchController.clear();
+        _performSearch();
+      }
     }
   }
 
@@ -79,6 +90,14 @@ class _SearchViewState extends State<SearchView>
         postProvider.fetchPosts(context);
       }
     }
+  }
+  
+  // Thêm debounce cho tìm kiếm
+  void _onSearchChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _performSearch();
+    });
   }
 
   String formatDateTime(DateTime? dateTime) {
@@ -119,6 +138,19 @@ class _SearchViewState extends State<SearchView>
                       border: InputBorder.none,
                       icon: AppIcons.getSearch(color: Colors.grey),
                     ),
+                    onTap: () {
+                      // Refresh dữ liệu khi người dùng click vào ô tìm kiếm
+                      if (_tabController.index == 0) {
+                        // Tab doanh nghiệp - tải lại danh sách
+                        final boProvider = Provider.of<BoProvider>(context, listen: false);
+                        boProvider.fetchBusinessesSearch(context);
+                      } else {
+                        // Tab bài viết - tải lại danh sách
+                        final postProvider = Provider.of<PostProvider>(context, listen: false);
+                        postProvider.fetchPosts(context);
+                      }
+                    },
+                    onChanged: _onSearchChanged,
                     onFieldSubmitted: (value) {
                       if (value.trim().isNotEmpty) {
                         _performSearch();
@@ -263,7 +295,7 @@ class _SearchViewState extends State<SearchView>
                         likes: post.like ?? [],
                         comments: post.totalComment ?? 0,
                         isJoin: post.isJoin ?? [],
-                        idUser: post.author!.id,
+                        idUser: post.author?.id ?? '',
                       );
                     },
                   );
@@ -295,7 +327,7 @@ class _SearchViewState extends State<SearchView>
                       likes: post.like ?? [],
                       comments: post.totalComment ?? 0,
                       isJoin: post.isJoin ?? [],
-                      idUser: post.author!.id,
+                      idUser: post.author?.id ?? '',
                     );
                   },
                 );

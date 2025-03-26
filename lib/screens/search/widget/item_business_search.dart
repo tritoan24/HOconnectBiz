@@ -38,25 +38,31 @@ class BusinessSearchItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo doanh nghiệp
-                business.thumbnail.isNotEmpty
-                    ? Image.network(
-                        business.thumbnail,
-                        width: 40,
-                        height: 40,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            UrlImage.imageUserDefault,
-                            width: 40,
-                            height: 40,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        UrlImage.imageUserDefault,
-                        width: 40,
-                        height: 40,
-                      ),
+                // Logo doanh nghiệp - sửa lại việc hiển thị ảnh
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: business.thumbnail.isNotEmpty
+                      ? Image.network(
+                          business.thumbnail,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              UrlImage.imageUserDefault,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          UrlImage.imageUserDefault,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                ),
                 const SizedBox(
                   width: 10,
                 ),
@@ -66,21 +72,23 @@ class BusinessSearchItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        business.companyName.isEmpty
-                            ? "Chưa cập nhật"
-                            : business.companyName,
+                        business.companyName.isNotEmpty
+                            ? business.companyName
+                            : "Chưa cập nhật",
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(
                         height: 10,
                       ),
                       Text(
-                        business.content.isEmpty
-                            ? "Chưa cập nhật"
-                            : business.content,
+                        business.content.isNotEmpty
+                            ? business.content
+                            : "Chưa cập nhật",
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,

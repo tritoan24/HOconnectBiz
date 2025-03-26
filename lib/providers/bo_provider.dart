@@ -401,7 +401,7 @@ class BoProvider with ChangeNotifier {
 
       if (response != null && response['data'] is List) {
         _searchResults = (response['data'] as List)
-            .map((json) => Bo.fromJson(json as Map<String, dynamic>))
+            .map((json) => Bo.fromJsonAlt(json as Map<String, dynamic>))
             .toList();
       } else {
         _searchResults = [];
@@ -421,15 +421,17 @@ class BoProvider with ChangeNotifier {
   }
 
   Future<void> fetchBusinessesSearch(BuildContext context) async {
-
-
     _isSearching = true;
     _searchErrorMessage = '';
+    
+    // Xóa dữ liệu cũ ngay lập tức để hiển thị loading
+    _searchResults = [];
     notifyListeners();
 
     try {
       Map<String, dynamic> body = {
         'keyword': '',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,  // Thêm timestamp để tránh cache
       };
 
       final response = await _apiClient.postRequest(

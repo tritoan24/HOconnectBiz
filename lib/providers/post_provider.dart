@@ -157,6 +157,9 @@ class PostProvider extends BaseProvider {
 
     resetPagination();
     _isLoading = true;
+    
+    // Xóa dữ liệu cũ và thông báo ngay để hiển thị trạng thái loading
+    _posts = [];
     notifyListeners();
 
     try {
@@ -192,7 +195,11 @@ class PostProvider extends BaseProvider {
     _isLoadingPage = true;
 
     try {
-      Map<String, dynamic> body = {"page": _currentPage, "limit": _pageSize};
+      Map<String, dynamic> body = {
+        "page": _currentPage,
+        "limit": _pageSize,
+        "timestamp": DateTime.now().millisecondsSinceEpoch, // Thêm timestamp để tránh cache
+      };
 
       final response = await ApiClient().postRequest(
         ApiEndpoints.postNew,
@@ -308,12 +315,16 @@ class PostProvider extends BaseProvider {
     }
 
     _isLoading = true;
+    
+    // Xóa kết quả tìm kiếm cũ và thông báo ngay
+    _searchResults = [];
     notifyListeners();
 
     try {
       // Create request body
       Map<String, dynamic> body = {
         'keyword': keyword,
+        'timestamp': DateTime.now().millisecondsSinceEpoch, // Thêm timestamp để tránh cache
       };
 
       // Send POST request to API
