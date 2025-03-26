@@ -112,3 +112,43 @@ coverage/
 **/ios/Runner/GeneratedPluginRegistrant.*
 **/ios/build/
 **/ios/Runner.xcarchive
+
+# macOS related
+/macos/
+**/macos/
+**/macos/Flutter/ephemeral
+**/macos/Flutter/GeneratedPluginRegistrant.*
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/Flutter-Debug.xcconfig
+**/macos/Flutter/Flutter-Release.xcconfig
+**/macos/Flutter/Flutter-Profile.xcconfig
+**/macos/**/Pods/
+**/macos/**/.symlinks/
+**/macos/**/build/
+
+# Windows related
+/windows/
+**/windows/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+**/windows/**/Generated.props
+**/windows/**/Generated.targets
+
+# Linux related
+/linux/
+**/linux/
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+
+# Temporary files and directories
+/temp_icons/
+**/temp_icons/
+*.tmp
+*.temp
+*.bak
+*.cache
+*.dill
+*.dill.track.dill
