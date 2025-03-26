@@ -110,29 +110,29 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
                               },
                             ),
                     ),
-                    widget.isInBusiness == true
-                        ? const SizedBox.shrink()
-                        : Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: ButtonWidget16(
-                              label: widget.userStar != null
-                                  ? 'Bạn đã đánh giá'
-                                  : 'Đánh giá cơ hội kinh doanh',
-                              onPressed: () {
-                                widget.userStar != null
-                                    ? null
-                                    : Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => RatingScreen(
-                                            businessOpportunityId:
-                                                widget.idPost,
-                                          ),
-                                        ),
-                                      ).then((_) {});
-                              },
-                            ),
-                          )
+                    // widget.isInBusiness == true
+                    //     ? const SizedBox.shrink()
+                    //     : Padding(
+                    //         padding: const EdgeInsets.all(16),
+                    //         child: ButtonWidget16(
+                    //           label: widget.userStar != null
+                    //               ? 'Bạn đã đánh giá'
+                    //               : 'Đánh giá cơ hội kinh doanh',
+                    //           onPressed: () {
+                    //             widget.userStar != null
+                    //                 ? null
+                    //                 : Navigator.push(
+                    //                     context,
+                    //                     MaterialPageRoute(
+                    //                       builder: (context) => RatingScreen(
+                    //                         businessOpportunityId:
+                    //                             widget.idPost,
+                    //                       ),
+                    //                     ),
+                    //                   ).then((_) {});
+                    //           },
+                    //         ),
+                    //       )
                   ],
                 )));
   }
