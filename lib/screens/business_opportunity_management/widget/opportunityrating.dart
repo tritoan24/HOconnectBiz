@@ -91,7 +91,8 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
                 child: Column(
                   children: [
                     Expanded(
-                      child: widget.ratings[0].review == null
+                      child: widget.ratings.isEmpty ||
+                              widget.ratings[0].review == null
                           ? const Center(
                               child: Text('Chưa có đánh giá nào'),
                             )

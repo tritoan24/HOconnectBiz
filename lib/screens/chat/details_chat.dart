@@ -405,13 +405,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
-              backgroundImage: (message.sender?.avatarImage != null &&
-                      message.sender!.avatarImage.isNotEmpty)
-                  ? NetworkImage(message.sender!.avatarImage)
+              backgroundImage: (message.receiver?.avatarImage != null &&
+                      message.receiver!.avatarImage.isNotEmpty)
+                  ? NetworkImage(message.receiver!.avatarImage)
                   : null,
               radius: 12,
-              child: (message.sender?.avatarImage == null ||
-                      message.sender!.avatarImage.isEmpty)
+              child: (message.receiver?.avatarImage == null ||
+                      message.receiver!.avatarImage.isEmpty)
                   ? const Icon(Icons.person, size: 14)
                   : null,
             ),

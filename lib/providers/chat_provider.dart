@@ -284,50 +284,41 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Xử lý dữ liệu contact từ socket
   void handleContactData(Map<String, dynamic> data) {
     try {
       if (data['data'] != null && data['data'] is Map<String, dynamic>) {
         var innerData = data['data'];
+        String contactUserId = '';
 
         if (innerData['data'] != null && innerData['data'] is List) {
-          // Chuyển đổi dữ liệu từ socket thành danh sách Contact
           List<Contact> newContacts = (innerData['data'] as List).where((item) {
-            // Kiểm tra xem _currentUserId có trong memberIds không
             List<String> memberIds = item['members'] != null
                 ? List<String>.from(
                     item['members'].map((member) => member.toString()))
                 : [];
+            // Lấy ID của contact (ID khác với _currentUserId)
+            contactUserId = memberIds.firstWhere(
+                (memberId) => memberId != _currentUserId,
+                orElse: () => '' // Trả về chuỗi rỗng nếu không tìm thấy
+                );
 
             return memberIds.contains(_currentUserId);
           }).map((item) {
-            // Tạo lastMessage từ dữ liệu
             LastMessage lastMessage = LastMessage(
               content: item['lastMessage']?['content'] ?? '',
               createdAt: item['lastMessage']?['createdAt'] ??
                   DateTime.now().toIso8601String(),
             );
 
-            // Lấy contactId
             final contactId = item['contactId'] ?? '';
-
-            //lấy id của contact
             final id = item['_id'] ?? '';
 
-            // In ra danh sách contactId của các contact hiện có
-            print('Danh sách contactId hiện tại:');
-            _contacts.forEach((contact) {
-              print(
-                  'Contact: ${contact.displayName}, ContactId: ${contact.contactId}');
-            });
-
-// Kiểm tra xem contact đã tồn tại chưa
             int existingIndex = _contacts
                 .indexWhere((contact) => contact.contactId == contactId);
 
             if (existingIndex != -1) {
-              // Nếu contact đã tồn tại, chỉ cập nhật tin nhắn cuối
-              _contacts[existingIndex] = Contact(
+              // Xóa contact hiện tại khỏi danh sách
+              Contact updatedContact = Contact(
                 id: _contacts[existingIndex].id,
                 contactId: contactId,
                 displayName: _contacts[existingIndex].displayName,
@@ -337,19 +328,35 @@ class ChatProvider with ChangeNotifier {
                 type: _contacts[existingIndex].type,
                 lastMessage: lastMessage,
               );
+
+              // Xóa contact cũ
+              _contacts.removeAt(existingIndex);
+
+              // Thêm contact vào đầu danh sách
+              _contacts.insert(0, updatedContact);
+
               print(
-                  "🔄 Đã cập nhật tin nhắn cuối cho contact: ${_contacts[existingIndex].displayName}");
-              return _contacts[existingIndex];
+                  "🔄 Đã cập nhật và đẩy contact lên đầu danh sách: ${updatedContact.displayName}");
+
+              return updatedContact;
             } else {
               // Nếu là contact mới, tạo contact mới
+              // Tạo contact mới
               return Contact(
-                id: item['_id'] ?? '',
+                id: contactUserId,
                 contactId: contactId,
-                displayName: item['displayName'] ?? 'No Name',
-                avatarImage:
-                    item['avatar_image'] ?? UrlImage.defaultContactImage,
-                username: item['username'] ?? '',
-                userId: item['user_id']?.toString() ?? '',
+                displayName: item['receiver']['_id'] == _currentUserId
+                    ? item['sender']['displayName']
+                    : item['receiver']['displayName'],
+                avatarImage: item['receiver']['_id'] == _currentUserId
+                    ? item['sender']['avatar_image']
+                    : item['receiver']['avatar_image'],
+                username: item['receiver']['_id'] == _currentUserId
+                    ? item['sender']['_id']
+                    : item['receiver']['_id'],
+                userId: item['receiver']['_id'] == _currentUserId
+                    ? item['sender']['_id']
+                    : item['receiver']['_id'],
                 type: item['type'] ?? '',
                 lastMessage: lastMessage,
               );
@@ -370,7 +377,7 @@ class ChatProvider with ChangeNotifier {
                 "👥 Đã thêm ${uniqueNewContacts.length} contact mới vào đầu danh sách");
             notifyListeners();
           } else {
-            print("ℹ️ Chỉ cập nhật tin nhắn cuối, không có contact mới");
+            print("ℹ️ Đã cập nhật contact");
             notifyListeners();
           }
         }
