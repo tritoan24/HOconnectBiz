@@ -774,7 +774,7 @@ class _PostItemState extends State<PostItem> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (!isBusiness & !widget.isMe) _buildPurchaseButton(context, sanPham),
+        if (!isBusiness && !widget.isMe && widget.idUser != idUserID) _buildPurchaseButton(context, sanPham),
       ],
     );
   }
@@ -932,7 +932,28 @@ class _PostItemState extends State<PostItem> {
                     ),
                   ),
                 )
-              : GestureDetector(
+              : (widget.idUser == idUserID) 
+                ? Container(
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300], // Màu xám nhạt
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Text(
+                          "Bài viết của bạn",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : GestureDetector(
                   onTap: () {
                     setState(() {
                       isJoind = true;
