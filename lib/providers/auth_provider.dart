@@ -151,25 +151,42 @@ class AuthProvider extends BaseProvider {
 
         if (!context.mounted) return;
 
-        // Tạo danh sách các Future để theo dõi
+        try {
+          // Try to fetch user data specifically
+          await Provider.of<UserProvider>(context, listen: false)
+              .fetchUser(context);
+        } catch (userError) {
+          // If user fetch fails, log the user out
+          debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
+
+          // Cập nhật trạng thái đăng nhập
+          _isLoggedIn = false;
+
+          // Clear token (optional)
+          await _clearAllData();
+
+          if (context.mounted) {
+            clearState();
+            context.go(AppRoutes.login);
+          }
+          return; // Exit early
+        }
+
+        if (!context.mounted) return;
+
+        // Proceed with other data fetching since user fetch succeeded
         final futures = <Future>[];
 
-        // Thêm các tác vụ fetch dữ liệu vào danh sách
-        futures.add(Provider.of<UserProvider>(context, listen: false)
-            .fetchUser(context));
+        // Add remaining fetch tasks
         futures.add(Provider.of<ProductProvider>(context, listen: false)
             .getListProduct(context));
 
         final postProvider = Provider.of<PostProvider>(context, listen: false);
-        // final rankProvider = Provider.of<RankProvider>(context, listen: false);
-        //
-        // futures.add(rankProvider.fetchRanksRevenue(context));
-        // futures.add(rankProvider.fetchRankBusiness(context));
 
         futures.add(postProvider.fetchPostsFeatured(context));
         futures.add(postProvider.fetchPostsByUser(context));
 
-        // Chờ tất cả các tác vụ hoàn thành
+        // Wait for the remaining futures
         await Future.wait(futures);
 
         // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
@@ -177,7 +194,7 @@ class AuthProvider extends BaseProvider {
           // Xóa lỗi trước khi chuyển màn hình
           clearState();
 
-          // Sửa: Chuyển hướng đến đúng route
+          // Chuyển hướng đến đúng route
           context.go(AppRoutes.trangChu);
         }
       } else {
