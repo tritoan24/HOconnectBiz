@@ -109,7 +109,7 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> _clearAllData() async {
+  Future<void> clearAllData() async {
     try {
       // Xóa dữ liệu từ FlutterSecureStorage
       await _storage.delete(key: 'auth_token');
@@ -152,25 +152,16 @@ class AuthProvider extends BaseProvider {
         } catch (userError) {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
-          if (Platform.isIOS) {
-            await _clearAllDataIOS();
-          }
 
           // Rethrow lỗi để splash_screen có thể xử lý
           throw userError;
         }
       } else {
         _isLoggedIn = false;
-        if (Platform.isIOS) {
-          await _clearAllDataIOS();
-        }
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
-      if (Platform.isIOS) {
-        await _clearAllDataIOS();
-      }
 
       // Rethrow lỗi để splash_screen có thể xử lý
       throw e;
@@ -180,7 +171,7 @@ class AuthProvider extends BaseProvider {
   }
 
 // Thêm hàm xóa dữ liệu trên iOS
-  Future<void> _clearAllDataIOS() async {
+  Future<void> clearAllDataIOS() async {
     if (Platform.isIOS) {
       try {
         // Xóa toàn bộ Keychain trên iOS
@@ -438,7 +429,7 @@ class AuthProvider extends BaseProvider {
       await executeApiCall(
         apiCall: () async {
           // Xóa dữ liệu từ cả hai storage
-          await _clearAllData();
+          await clearAllData();
 
           // Cập nhật trạng thái đăng nhập
           _isLoggedIn = false;

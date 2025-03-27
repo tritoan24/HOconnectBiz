@@ -308,6 +308,7 @@ class ChatProvider with ChangeNotifier {
               content: item['lastMessage']?['content'] ?? '',
               createdAt: item['lastMessage']?['createdAt'] ??
                   DateTime.now().toIso8601String(),
+              isRead: item['lastMessage']?['isRead'] ?? false,
             );
 
             final contactId = item['contactId'] ?? '';

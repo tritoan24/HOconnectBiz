@@ -55,6 +55,7 @@ class ApiResponse<T> {
         tempJson.remove('status');
         tempJson.remove('message');
         tempJson.remove('total');
+
         data = tempJson;
       }
 

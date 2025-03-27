@@ -53,15 +53,20 @@ class _BuyProductState extends State<BuyProduct> {
           children: [
             // Hiển thị ảnh sản phẩm (nếu có ảnh trong album, dùng ảnh đầu tiên)
             widget.product.album.isNotEmpty
-                ? Image.network(
-                    widget.product.album.first,
-                    // fit: BoxFit.cover, // Đảm bảo ảnh vừa khung
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      // Căn giữa icon lỗi
-                      child: AppIcons.getIcon(
-                        Icons.broken_image,
-                        size: 100,
-                        color: Colors.grey, // Màu cho icon lỗi
+                ? Center(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Image.network(
+                        widget.product.album.first,
+                        fit: BoxFit
+                            .contain, // Hiển thị toàn bộ ảnh mà không bị cắt
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: AppIcons.getIcon(
+                            Icons.broken_image,
+                            size: 100,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
                   )

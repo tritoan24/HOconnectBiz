@@ -359,18 +359,14 @@ class _RatingScreenState extends State<RatingScreen> {
                         ),
                       ),
                     const SizedBox(height: 24),
-                    // Khoảng cách để nút "Gửi đánh giá" không bị che
-                    widget.isBusiness == null || widget.isBusiness == false
-                        ? SizedBox()
-                        : ButtonWidget16(
-                            label:
-                                isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá',
-                            onPressed: (selectedRating != null &&
-                                    selectedRating! > 0 &&
-                                    !isSubmitting)
-                                ? _submitRating
-                                : null,
-                          ),
+                    ButtonWidget16(
+                      label: isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá',
+                      onPressed: (selectedRating != null &&
+                              selectedRating! > 0 &&
+                              !isSubmitting)
+                          ? _submitRating
+                          : null,
+                    ),
                     const SizedBox(height: 16),
                     // Đệm dưới cùng để tránh bàn phím che nút
                   ],

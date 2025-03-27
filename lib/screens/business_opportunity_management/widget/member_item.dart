@@ -114,10 +114,12 @@ class StatusTag extends StatelessWidget {
 
 class MemberCard extends StatelessWidget {
   final IsJoin member;
+  final bool isLast; // Thêm biến kiểm tra thành viên cuối cùng
 
   const MemberCard({
     super.key,
     required this.member,
+    required this.isLast, // Nhận giá trị từ danh sách
   });
 
   @override
@@ -135,9 +137,7 @@ class MemberCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 20,
                   backgroundImage: NetworkImage(member.user!.avatarImage),
-                  onBackgroundImageError: (_, __) {
-                    // Nếu có lỗi, ảnh sẽ tự động chuyển sang mặc định
-                  },
+                  onBackgroundImageError: (_, __) {},
                   child: ClipOval(
                     child: Image.network(
                       member.user!.avatarImage,
@@ -187,8 +187,12 @@ class MemberCard extends StatelessWidget {
               label: "Trích quỹ",
               value: member.deduction!.toDouble(),
             ),
-            const SizedBox(height: 13),
-            const HorizontalDivider(),
+            if (!isLast) ...[
+              // Chỉ hiển thị nếu không phải là thành viên cuối cùng
+              const SizedBox(height: 13),
+              const HorizontalDivider(),
+              const SizedBox(height: 13),
+            ],
             const SizedBox(height: 13),
           ],
         ),

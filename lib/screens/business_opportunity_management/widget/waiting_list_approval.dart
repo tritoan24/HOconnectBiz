@@ -13,7 +13,7 @@ import '../../../screens/business_opportunity_management/widget/details_post_bus
 
 class CompanyBottomSheet {
   static void show(BuildContext context,
-      {required List<IsJoin> isJoin, String? postId}) {
+      {required List<IsJoin> isJoin, String? postId, bool isPostItem = false}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -29,6 +29,7 @@ class CompanyBottomSheet {
           scrollController: scrollController,
           isJoin: isJoin,
           postId: postId ?? '',
+          isItemPost: isPostItem,
         ),
       ),
     );
@@ -39,12 +40,14 @@ class _CompanyList extends StatefulWidget {
   final ScrollController scrollController;
   final List<IsJoin> isJoin;
   final String postId;
+  final bool? isItemPost;
 
   const _CompanyList({
     Key? key,
     required this.scrollController,
     required this.isJoin,
     required this.postId,
+    this.isItemPost = false,
   }) : super(key: key);
 
   @override
@@ -88,7 +91,9 @@ class _CompanyListState extends State<_CompanyList> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Xóa trạng thái điều hướng sau khi đã đặt lịch điều hướng
         businessProvider.clearNavigation();
-        Navigator.pop(context);
+        if (widget.isItemPost == false) {
+          Navigator.pop(context);
+        }
 
         Navigator.push(
           context,

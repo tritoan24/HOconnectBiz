@@ -282,8 +282,8 @@ class _HeaderSection extends StatelessWidget {
                       child: Image.network(
                         ownerAvatar,
                         fit: BoxFit.cover,
-                        width: 40,
-                        height: 40,
+                        width: 35,
+                        height: 35,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
                             UrlImage.errorImage,
@@ -453,7 +453,7 @@ class _HeaderSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              memberCount.toString(),
+              data.length.toString(),
               style: TextStyles.textStyleNormal12W400White,
             ),
           ),
@@ -618,8 +618,17 @@ class _MemberListSectionState extends State<MemberListSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Other members list
-        ...otherMembers.map((member) => MemberCard(member: member)),
+        // Duyệt danh sách và lấy cả index
+        ...otherMembers.asMap().entries.map((entry) {
+          int index = entry.key; // Lấy index của phần tử
+          IsJoin member = entry.value; // Lấy giá trị của phần tử
+
+          return MemberCard(
+            member: member,
+            isLast: index ==
+                otherMembers.length - 1, // Kiểm tra nếu là thành viên cuối
+          );
+        }).toList(), // Chuyển đổi Iterable thành List
       ],
     );
   }
