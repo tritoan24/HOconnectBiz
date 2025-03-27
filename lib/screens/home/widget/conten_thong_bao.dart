@@ -25,19 +25,20 @@ class ContenThongBao extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            child: ClipOval(
-              child: Image.network(
-                notification.uId.avatarImage,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset(
-                    UrlImage.imageUserDefault,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
+          ClipOval(
+            child: Image.network(
+              notification.uId.avatarImage,
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  UrlImage.imageUserDefault,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           const SizedBox(width: 10),
