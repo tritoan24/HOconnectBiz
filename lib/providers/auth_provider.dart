@@ -152,16 +152,44 @@ class AuthProvider extends BaseProvider {
         } catch (userError) {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
-          await _clearAllData();
+          if (Platform.isIOS) {
+            await _clearAllDataIOS();
+          }
+
+          // Rethrow lỗi để splash_screen có thể xử lý
+          throw userError;
         }
       } else {
         _isLoggedIn = false;
+        if (Platform.isIOS) {
+          await _clearAllDataIOS();
+        }
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
+      if (Platform.isIOS) {
+        await _clearAllDataIOS();
+      }
+
+      // Rethrow lỗi để splash_screen có thể xử lý
+      throw e;
     } finally {
       setLoading(false);
+    }
+  }
+
+// Thêm hàm xóa dữ liệu trên iOS
+  Future<void> _clearAllDataIOS() async {
+    if (Platform.isIOS) {
+      try {
+        // Xóa toàn bộ Keychain trên iOS
+        await _storage.deleteAll();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+      } catch (e) {
+        print('Lỗi xóa dữ liệu iOS: $e');
+      }
     }
   }
   //

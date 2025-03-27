@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
+import '../providers/user_provider.dart';
 import '../utils/router/router.name.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToNextScreen() async {
     try {
+      // Delay ngắn để hiển thị splash screen
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
 
@@ -35,63 +37,68 @@ class _SplashScreenState extends State<SplashScreen> {
       await authProvider.checkLoginStatusWithoutRedirect(context);
 
       if (authProvider.isLoggedIn) {
-        // Tách riêng các API khác với fetchPostsByUser
         final productProvider =
             Provider.of<ProductProvider>(context, listen: false);
         final postProvider = Provider.of<PostProvider>(context, listen: false);
 
-        // Gọi các API không quan trọng - chạy song song
-        final basicFutures = <Future>[];
-        basicFutures.add(productProvider.getListProduct(context));
-        basicFutures.add(postProvider.fetchPostsFeatured(context));
-
-        // Chạy API quan trọng riêng để kiểm tra kết quả
-        bool userPostsSuccess = false;
         try {
-          await postProvider.fetchPostsByUser(context);
-          userPostsSuccess = true;
-        } catch (postError) {
-          print('Lỗi khi lấy bài viết của người dùng: $postError');
-          userPostsSuccess = false;
-        }
+          // Sử dụng Future.wait với timeout để quản lý các API song song
+          await Future.wait([
+            productProvider.getListProduct(context),
+            postProvider.fetchPostsFeatured(context),
+            _fetchUserPosts(postProvider),
+          ], eagerError: true)
+              .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw TimeoutException('Kết nối mạng quá chậm'),
+          );
 
-        // Đợi các API khác hoàn thành
-        await Future.wait(basicFutures);
-
-        // Chỉ cho phép vào Home nếu fetchPostsByUser thành công
-        if (mounted) {
-          if (userPostsSuccess) {
-            context.go(AppRoutes.trangChu);
-          } else {
-            // Xử lý khi API trả về status 0 - chuyển đến Login
-            setState(() {
-              _hasError = true;
-              _errorMessage = 'Không thể lấy thông tin bài viết của bạn';
-            });
-
-            // Chuyển đến Login sau 3 giây
-            Future.delayed(const Duration(seconds: 3), () {
-              if (mounted) context.go(AppRoutes.login);
-            });
-          }
+          // Nếu tất cả API đều thành công
+          if (mounted) context.go(AppRoutes.trangChu);
+        } on TimeoutException catch (e) {
+          await _handleApiError(
+              'Kết nối mạng chậm. Vui lòng kiểm tra đường truyền.');
+        } on Exception catch (e) {
+          await _handleApiError('Không thể tải dữ liệu. Vui lòng thử lại.');
         }
       } else {
+        // Không đăng nhập thì chuyển đến màn hình đăng nhập
         context.go(AppRoutes.login);
       }
     } catch (e) {
-      print('Lỗi khi chuyển hướng: $e');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = 'Đã xảy ra lỗi: ${e.toString()}';
-        });
-
-        // Sau 3 giây nếu có lỗi, chuyển sang màn hình login
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) context.go(AppRoutes.login);
-        });
-      }
+      // Xử lý các lỗi không mong muốn
+      await _handleApiError('Đã xảy ra lỗi không xác định: ${e.toString()}');
     }
+  }
+
+// Phương thức riêng để fetch bài viết người dùng
+  Future<void> _fetchUserPosts(PostProvider postProvider) async {
+    try {
+      await postProvider.fetchPostsByUser(context);
+    } catch (postError) {
+      // Log lỗi chi tiết
+      debugPrint('Chi tiết lỗi lấy bài viết: $postError');
+      throw Exception('Không thể lấy bài viết của bạn');
+    }
+  }
+
+// Phương thức xử lý lỗi tập trung
+  Future<void> _handleApiError(String errorMessage) async {
+    if (!mounted) return;
+
+    // Cập nhật trạng thái lỗi
+    setState(() {
+      _hasError = true;
+      _errorMessage = errorMessage;
+    });
+
+    // Log lỗi
+    debugPrint(errorMessage);
+
+    // Chuyển đến màn hình đăng nhập sau 3 giây
+    await Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) context.go(AppRoutes.login);
+    });
   }
 
   @override
@@ -112,18 +119,6 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 24),
-            if (_hasError)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  _errorMessage,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                  ),
-                ),
-              )
           ],
         ),
       ),

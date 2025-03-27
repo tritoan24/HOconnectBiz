@@ -40,10 +40,11 @@ class UserProvider extends BaseProvider {
       print('User fetched successfully: ${_user?.displayName}');
     } catch (e) {
       print('Error in UserProvider: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Đã xảy ra lỗi khi lấy thông tin người dùng: $e')),
-      );
+      // Đừng hiển thị Snackbar ở đây để tránh hiển thị nhiều lần
+      _isLoading = false;
+      notifyListeners();
+      // Rethrow lỗi để hàm gọi có thể xử lý
+      throw e;
     }
 
     _isLoading = false;
