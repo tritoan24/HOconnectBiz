@@ -109,7 +109,7 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> _clearAllData() async {
+  Future<void> clearAllData() async {
     try {
       // Xóa dữ liệu từ FlutterSecureStorage
       await _storage.delete(key: 'auth_token');
@@ -438,7 +438,7 @@ class AuthProvider extends BaseProvider {
       await executeApiCall(
         apiCall: () async {
           // Xóa dữ liệu từ cả hai storage
-          await _clearAllData();
+          await clearAllData();
 
           // Cập nhật trạng thái đăng nhập
           _isLoggedIn = false;

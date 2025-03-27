@@ -5,6 +5,7 @@ import 'package:clbdoanhnhansg/screens/account/login.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/base/base_provider.dart';
 import '../models/auth_model.dart';
@@ -40,11 +41,38 @@ class UserProvider extends BaseProvider {
       print('User fetched successfully: ${_user?.displayName}');
     } catch (e) {
       print('Error in UserProvider: $e');
-      // Đừng hiển thị Snackbar ở đây để tránh hiển thị nhiều lần
       _isLoading = false;
       notifyListeners();
-      // Rethrow lỗi để hàm gọi có thể xử lý
-      throw e;
+
+      // Check if the error response has status = 0 (invalid token)
+      bool hasInvalidToken = false;
+      String errorStr = e.toString();
+
+      if (errorStr.contains('"status":0') ||
+          errorStr.contains('"status": 0') ||
+          errorStr.contains('Token không đúng')) {
+        hasInvalidToken = true;
+      } else if (e is Map<String, dynamic> && e['status'] == 0) {
+        hasInvalidToken = true;
+      }
+
+      // Handle invalid token
+      if (hasInvalidToken) {
+        print('⚠️ Invalid token detected. Clearing authentication data.');
+
+        if (context.mounted) {
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
+          await authProvider.clearAllData();
+          // authProvider._isLoggedIn = false;
+
+          // Redirect to login screen
+          context.go(AppRoutes.login);
+          return; // Don't rethrow after handling invalid token
+        }
+      }
+
+      throw e; // Rethrow other errors
     }
 
     _isLoading = false;
