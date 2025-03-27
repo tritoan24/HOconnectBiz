@@ -143,7 +143,6 @@ class _InputFileImagesState extends State<InputFileImages> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
                 ...selectedImages.map((image) {
                   bool isNetworkImage = isValidImageFile(image.path) &&
                       (image.path.startsWith('http://') ||
@@ -151,7 +150,7 @@ class _InputFileImagesState extends State<InputFileImages> {
 
                   return Row(
                     children: [
-                      const SizedBox(width: 5), // 5px horizontal spacing
+                      const SizedBox(width: 7), // 5px horizontal spacing
                       Stack(
                         children: [
                           ClipRRect(
