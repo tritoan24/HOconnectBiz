@@ -244,7 +244,8 @@ class _CreateOrderState extends State<CreateOrder> {
                                       child: poductsList.isEmpty
                                           ? const Center(
                                               child:
-                                                  CircularProgressIndicator())
+                                                  Text('Không có sản phẩm nào'),
+                                            )
                                           : ListView.builder(
                                               itemCount: poductsList.length,
                                               itemBuilder: (context, index) {

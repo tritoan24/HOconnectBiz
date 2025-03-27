@@ -191,6 +191,9 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
                 statusText, widget.donHang.id, widget.hideButtons, context);
           },
         ),
+        const SizedBox(
+          height: 10,
+        ),
       ]),
     );
   }
