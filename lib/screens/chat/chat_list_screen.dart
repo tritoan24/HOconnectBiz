@@ -279,7 +279,12 @@ class MessageTile extends StatelessWidget {
                   top: 4), // Adds 4px spacing above the subtitle
               child: Text(
                 contact.lastMessage.content,
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(
+                  color: contact.lastMessage.isRead ?? false
+                      ? Colors.black
+                      : Colors.grey,
+                  fontSize: 12,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
