@@ -125,14 +125,19 @@ class AuthProvider extends BaseProvider {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('user_id');
+    }
+  }
 
+  // Thêm hàm xóa dữ liệu trên iOS
+  Future<void> _clearAllDataIOS() async {
+    if (Platform.isIOS) {
       try {
-        // More aggressive fallback if needed
+        // Xóa toàn bộ Keychain trên iOS
         await _storage.deleteAll();
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
-      } catch (fallbackError) {
-        print('Lỗi xóa dữ liệu nâng cao: $fallbackError');
+      } catch (e) {
+        print('Lỗi xóa dữ liệu iOS: $e');
       }
     }
   }
@@ -162,15 +167,19 @@ class AuthProvider extends BaseProvider {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
           await _clearAllData();
+          await _clearAllDataIOS();
         }
       } else {
         _isLoggedIn = false;
+        await _clearAllDataIOS();
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
+      await _clearAllDataIOS();
     } finally {
       setLoading(false);
+      await _clearAllDataIOS();
     }
   }
   //
