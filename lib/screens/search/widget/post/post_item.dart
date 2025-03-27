@@ -934,23 +934,55 @@ class _PostItemState extends State<PostItem> {
                   ),
                 )
               : (widget.idUser == idUserID)
-                  ? Container(
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300], // Màu xám nhạt
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 15.0),
-                          child: Text(
-                            "Bài viết của bạn",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                  ? GestureDetector(
+                      onTap: () {
+                        CompanyBottomSheet.show(
+                          context,
+                          isJoin: widget.isJoin ?? [],
+                          postId: widget.postId,
+                        );
+                      },
+                      child: SizedBox(
+                        height: 36,
+                        child: Row(
+                          children: [
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/icons/icon_list.svg",
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  right: -8,
+                                  top: -8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      "${widget.isJoin?.where((join) => join.isAccept == false).length}",
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0),
+                                child: Text("Chờ phê duyệt",
+                                    style: TextStyles.textStyleNormal12W500),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     )
