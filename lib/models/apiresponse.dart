@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 class ApiResponse<T> {
   final String? token;
   final String? message;
-  final int? status;
   final bool isSuccess;
   final T? data;
   final int? total;
@@ -13,7 +12,6 @@ class ApiResponse<T> {
   ApiResponse({
     this.token,
     this.message,
-    this.status,
     required this.isSuccess,
     this.data,
     this.total,
@@ -31,8 +29,6 @@ class ApiResponse<T> {
           data: null,
         );
       }
-
-      int status = json['status'] ?? -1;
 
       // Kiểm tra nếu response có trường status
       final bool success = json.containsKey('status')

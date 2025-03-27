@@ -63,7 +63,7 @@ class UserProvider extends BaseProvider {
         if (context.mounted) {
           final authProvider =
               Provider.of<AuthProvider>(context, listen: false);
-          await authProvider.clearAllData();
+          await authProvider.logout(context);
           await authProvider.clearAllDataIOS();
           // authProvider._isLoggedIn = false;
 

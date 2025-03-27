@@ -152,25 +152,16 @@ class AuthProvider extends BaseProvider {
         } catch (userError) {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
-          if (Platform.isIOS) {
-            await clearAllDataIOS();
-          }
 
           // Rethrow lỗi để splash_screen có thể xử lý
           throw userError;
         }
       } else {
         _isLoggedIn = false;
-        if (Platform.isIOS) {
-          await clearAllDataIOS();
-        }
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
-      if (Platform.isIOS) {
-        await clearAllDataIOS();
-      }
 
       // Rethrow lỗi để splash_screen có thể xử lý
       throw e;
