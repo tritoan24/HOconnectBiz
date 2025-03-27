@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/post_provider.dart';
+import '../providers/product_provider.dart';
 import '../utils/router/router.name.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,33 +28,53 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToNextScreen() async {
     try {
-      // Đợi 2 giây để hiển thị splash screen
       await Future.delayed(const Duration(seconds: 2));
-
       if (!mounted) return;
 
-      // Đặt một timer để đảm bảo không bị kẹt ở splash screen
-      Timer timeoutTimer = Timer(const Duration(seconds: 8), () {
-        if (mounted) {
-          setState(() {
-            _hasError = true;
-            _errorMessage = 'Không thể kết nối tới máy chủ. Vui lòng thử lại.';
-          });
-        }
-      });
-
-      // Kiểm tra xem đã đăng nhập chưa
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.checkLoginStatus(context);
+      await authProvider.checkLoginStatusWithoutRedirect(context);
 
-      // Hủy timer vì đã xử lý xong
-      timeoutTimer.cancel();
-
-      if (!mounted) return;
-
-      // Chuyển hướng dựa trên trạng thái đăng nhập
       if (authProvider.isLoggedIn) {
-        context.go(AppRoutes.trangChu);
+        // Tách riêng các API khác với fetchPostsByUser
+        final productProvider =
+            Provider.of<ProductProvider>(context, listen: false);
+        final postProvider = Provider.of<PostProvider>(context, listen: false);
+
+        // Gọi các API không quan trọng - chạy song song
+        final basicFutures = <Future>[];
+        basicFutures.add(productProvider.getListProduct(context));
+        basicFutures.add(postProvider.fetchPostsFeatured(context));
+
+        // Chạy API quan trọng riêng để kiểm tra kết quả
+        bool userPostsSuccess = false;
+        try {
+          await postProvider.fetchPostsByUser(context);
+          userPostsSuccess = true;
+        } catch (postError) {
+          print('Lỗi khi lấy bài viết của người dùng: $postError');
+          userPostsSuccess = false;
+        }
+
+        // Đợi các API khác hoàn thành
+        await Future.wait(basicFutures);
+
+        // Chỉ cho phép vào Home nếu fetchPostsByUser thành công
+        if (mounted) {
+          if (userPostsSuccess) {
+            context.go(AppRoutes.trangChu);
+          } else {
+            // Xử lý khi API trả về status 0 - chuyển đến Login
+            setState(() {
+              _hasError = true;
+              _errorMessage = 'Không thể lấy thông tin bài viết của bạn';
+            });
+
+            // Chuyển đến Login sau 3 giây
+            Future.delayed(const Duration(seconds: 3), () {
+              if (mounted) context.go(AppRoutes.login);
+            });
+          }
+        }
       } else {
         context.go(AppRoutes.login);
       }
@@ -66,9 +88,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         // Sau 3 giây nếu có lỗi, chuyển sang màn hình login
         Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) {
-            context.go(AppRoutes.login);
-          }
+          if (mounted) context.go(AppRoutes.login);
         });
       }
     }

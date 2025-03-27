@@ -34,11 +34,11 @@ class _MyAppState extends State<MyApp> {
       await PermissionService.requestPermissions(context);
     }
 
-    // Đợi kiểm tra trạng thái đăng nhập
-    if (context.mounted) {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .checkLoginStatus(context);
-    }
+    // // Đợi kiểm tra trạng thái đăng nhập
+    // if (context.mounted) {
+    //   await Provider.of<AuthProvider>(context, listen: false)
+    //       .checkLoginStatus(context);
+    // }
   }
 
   Future<void> _initializeApp() async {

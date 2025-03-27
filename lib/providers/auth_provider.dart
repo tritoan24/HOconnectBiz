@@ -125,108 +125,154 @@ class AuthProvider extends BaseProvider {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('user_id');
+
+      try {
+        // More aggressive fallback if needed
+        await _storage.deleteAll();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+      } catch (fallbackError) {
+        print('Lỗi xóa dữ liệu nâng cao: $fallbackError');
+      }
     }
   }
 
-  Future<void> checkLoginStatus(BuildContext context) async {
+// Thêm phương thức này vào lớp AuthProvider trong file auth_provider.dart
+  Future<void> checkLoginStatusWithoutRedirect(BuildContext context) async {
     try {
-      // Bắt đầu loading
       setLoading(true);
-      // Record start time
-      final startTime = DateTime.now();
 
       final token = await _getToken();
 
       if (token != null && token.isNotEmpty) {
-        // Cập nhật trạng thái đăng nhập
-        _isLoggedIn = true;
-
-        // Get user ID for socket connection
-        final userId = await getuserID();
-
-        if (userId != null) {
-          // Connect to socket if we have a user ID
-          socketService.connect(userId);
-        }
-
-        if (!context.mounted) return;
-
         try {
-          // Try to fetch user data specifically
+          // Kiểm tra token có hợp lệ không bằng cách fetch user
           await Provider.of<UserProvider>(context, listen: false)
               .fetchUser(context);
-        } catch (userError) {
-          // If user fetch fails, log the user out
-          debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
 
-          // Cập nhật trạng thái đăng nhập
-          _isLoggedIn = false;
+          // Nếu fetch user thành công, có nghĩa token vẫn hợp lệ
+          _isLoggedIn = true;
 
-          // Clear token (optional)
-          await _clearAllData();
-
-          if (context.mounted) {
-            clearState();
-            context.go(AppRoutes.login);
+          // Kết nối socket
+          final userId = await getuserID();
+          if (userId != null) {
+            socketService.connect(userId);
           }
-          return; // Exit early
-        }
-
-        if (!context.mounted) return;
-
-        // Proceed with other data fetching since user fetch succeeded
-        final futures = <Future>[];
-
-        // Add remaining fetch tasks
-        futures.add(Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context));
-
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
-
-        futures.add(postProvider.fetchPostsFeatured(context));
-        futures.add(postProvider.fetchPostsByUser(context));
-
-        // Wait for the remaining futures
-        await Future.wait(futures);
-
-        // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
-        if (context.mounted) {
-          // Xóa lỗi trước khi chuyển màn hình
-          clearState();
-
-          // Chuyển hướng đến đúng route
-          context.go(AppRoutes.trangChu);
+        } catch (userError) {
+          debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
+          _isLoggedIn = false;
+          await _clearAllData();
         }
       } else {
-        // Cập nhật trạng thái đăng nhập
         _isLoggedIn = false;
-
-        // Ensure minimum 3 seconds even for login routing
-        final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
-        final remainingMs = 3000 - elapsedMs;
-        if (remainingMs > 0) {
-          await Future.delayed(Duration(milliseconds: remainingMs));
-        }
-
-        if (context.mounted) {
-          clearState();
-          context.go(AppRoutes.login);
-        }
       }
     } catch (e) {
-      // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
       _isLoggedIn = false;
-
-      setError("Lỗi điều hướng: $e");
-      // Nếu có lỗi, chuyển về trang login
-      if (context.mounted) {
-        context.go(AppRoutes.login);
-      }
+      setError("Lỗi kiểm tra đăng nhập: $e");
     } finally {
-      // Kết thúc loading trong mọi trường hợp
       setLoading(false);
     }
   }
+  //
+  // Future<void> checkLoginStatus(BuildContext context) async {
+  //   try {
+  //     // Bắt đầu loading
+  //     setLoading(true);
+  //     // Record start time
+  //     final startTime = DateTime.now();
+  //
+  //     final token = await _getToken();
+  //
+  //     if (token != null && token.isNotEmpty) {
+  //       // Cập nhật trạng thái đăng nhập
+  //       _isLoggedIn = true;
+  //
+  //       // Get user ID for socket connection
+  //       final userId = await getuserID();
+  //
+  //       if (userId != null) {
+  //         // Connect to socket if we have a user ID
+  //         socketService.connect(userId);
+  //       }
+  //
+  //       if (!context.mounted) return;
+  //
+  //       try {
+  //         // Try to fetch user data specifically
+  //         await Provider.of<UserProvider>(context, listen: false)
+  //             .fetchUser(context);
+  //       } catch (userError) {
+  //         // If user fetch fails, log the user out
+  //         debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
+  //
+  //         // Cập nhật trạng thái đăng nhập
+  //         _isLoggedIn = false;
+  //
+  //         // Clear token (optional)
+  //         await _clearAllData();
+  //
+  //         if (context.mounted) {
+  //           clearState();
+  //           context.go(AppRoutes.login);
+  //         }
+  //         return; // Exit early
+  //       }
+  //
+  //       if (!context.mounted) return;
+  //
+  //       // Proceed with other data fetching since user fetch succeeded
+  //       final futures = <Future>[];
+  //
+  //       // Add remaining fetch tasks
+  //       futures.add(Provider.of<ProductProvider>(context, listen: false)
+  //           .getListProduct(context));
+  //
+  //       final postProvider = Provider.of<PostProvider>(context, listen: false);
+  //
+  //       futures.add(postProvider.fetchPostsFeatured(context));
+  //       futures.add(postProvider.fetchPostsByUser(context));
+  //
+  //       // Wait for the remaining futures
+  //       await Future.wait(futures);
+  //
+  //       // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
+  //       if (context.mounted) {
+  //         // Xóa lỗi trước khi chuyển màn hình
+  //         clearState();
+  //
+  //         // Chuyển hướng đến đúng route
+  //         context.go(AppRoutes.trangChu);
+  //       }
+  //     } else {
+  //       // Cập nhật trạng thái đăng nhập
+  //       _isLoggedIn = false;
+  //
+  //       // Ensure minimum 3 seconds even for login routing
+  //       final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
+  //       final remainingMs = 3000 - elapsedMs;
+  //       if (remainingMs > 0) {
+  //         await Future.delayed(Duration(milliseconds: remainingMs));
+  //       }
+  //
+  //       if (context.mounted) {
+  //         clearState();
+  //         context.go(AppRoutes.login);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
+  //     _isLoggedIn = false;
+  //
+  //     setError("Lỗi điều hướng: $e");
+  //     // Nếu có lỗi, chuyển về trang login
+  //     if (context.mounted) {
+  //       context.go(AppRoutes.login);
+  //     }
+  //   } finally {
+  //     // Kết thúc loading trong mọi trường hợp
+  //     setLoading(false);
+  //   }
+  // }
 
   Future<void> login(
       BuildContext context, String username, String password) async {
