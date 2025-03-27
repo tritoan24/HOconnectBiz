@@ -347,7 +347,7 @@ class _PostItemState extends State<PostItem> {
 
   Widget _buildTitleAndContent() {
     return GestureDetector(
-      onTap: () => _navigateToDetailScreen(0),
+      onTap: () => _navigateToComments(context, widget.isMe),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
         child: Column(
@@ -774,7 +774,8 @@ class _PostItemState extends State<PostItem> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (!isBusiness && !widget.isMe && widget.idUser != idUserID) _buildPurchaseButton(context, sanPham),
+        if (!isBusiness && !widget.isMe && widget.idUser != idUserID)
+          _buildPurchaseButton(context, sanPham),
       ],
     );
   }
@@ -932,66 +933,66 @@ class _PostItemState extends State<PostItem> {
                     ),
                   ),
                 )
-              : (widget.idUser == idUserID) 
-                ? Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300], // Màu xám nhạt
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text(
-                          "Bài viết của bạn",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
+              : (widget.idUser == idUserID)
+                  ? Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300], // Màu xám nhạt
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 15.0),
+                          child: Text(
+                            "Bài viết của bạn",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isJoind = true;
+                        });
+
+                        // Gọi API để đăng ký tham gia
+                        businessProvider.joinBusiness(widget.postId, context);
+
+                        // Phát ra thông báo để cập nhật các màn hình khác
+                        PostItemChangedNotification(widget.postId, isLiked,
+                                isJoined: true)
+                            .dispatch(context);
+
+                        // Cập nhật trạng thái isJoin trong post provider
+                        Provider.of<PostProvider>(context, listen: false)
+                            .updatePostJoinStatus(widget.postId, context);
+                      },
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.blue, // Màu xanh đậm
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Text(
+                              "Đăng ký tham gia",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  )
-                : GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isJoind = true;
-                    });
-
-                    // Gọi API để đăng ký tham gia
-                    businessProvider.joinBusiness(widget.postId, context);
-
-                    // Phát ra thông báo để cập nhật các màn hình khác
-                    PostItemChangedNotification(widget.postId, isLiked,
-                            isJoined: true)
-                        .dispatch(context);
-
-                    // Cập nhật trạng thái isJoin trong post provider
-                    Provider.of<PostProvider>(context, listen: false)
-                        .updatePostJoinStatus(widget.postId, context);
-                  },
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.blue, // Màu xanh đậm
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text(
-                          "Đăng ký tham gia",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
     );
   }
 
@@ -1210,10 +1211,12 @@ class _PostItemState extends State<PostItem> {
               "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
         });
       } else {
-        debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+        debugPrint(
+            "⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
         // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
         if (context.mounted) {
-          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
           _loadUserIdandStatusLikePost(authProvider);
           _loadUserStatusJoinBusiness(authProvider);
         }
@@ -1223,11 +1226,13 @@ class _PostItemState extends State<PostItem> {
       // Xử lý trường hợp Provider không tồn tại hoặc lỗi khác
       if (context.mounted) {
         try {
-          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
           _loadUserIdandStatusLikePost(authProvider);
           _loadUserStatusJoinBusiness(authProvider);
         } catch (authError) {
-          debugPrint("⚠️ ERROR PostItem: Lỗi khi truy cập AuthProvider: $authError");
+          debugPrint(
+              "⚠️ ERROR PostItem: Lỗi khi truy cập AuthProvider: $authError");
         }
       }
     }
