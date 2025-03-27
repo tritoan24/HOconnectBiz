@@ -257,7 +257,6 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                       debugPrint("Gửi OTP: $otpCode");
                                       auth.inputOtp(
                                           context, widget.email, otpCode);
-                                      // Không cần clearState ở đây vì đã xử lý trong inputOtp
                                     }
                                   : null,
                               style: ElevatedButton.styleFrom(

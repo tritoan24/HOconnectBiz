@@ -542,7 +542,7 @@ class AuthProvider extends BaseProvider {
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.go(AppRoutes.nhapMaOTP, extra: {'email': email});
+        context.push(AppRoutes.nhapMaOTP, extra: {'email': email});
       },
     );
   }
