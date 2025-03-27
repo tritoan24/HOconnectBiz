@@ -83,7 +83,7 @@ class _HomeState extends State<Home> {
             child: Image.asset(
               "assets/images/logo.png",
               width: 150,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
             ),
           ),
         ),

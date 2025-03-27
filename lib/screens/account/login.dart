@@ -197,13 +197,13 @@ class _LoginViewState extends State<LoginView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: screenSize.height * 0.05),
+                            SizedBox(height: screenSize.height * 0.04),
                             Center(
                               child: Image.asset(
                                 "assets/images/logo.png",
-                                width: isSmallScreen ? 120 : 144,
-                                height: isSmallScreen ? 65 : 80,
-                                fit: BoxFit.contain,
+                                width: isSmallScreen ? 120 : 174,
+                                height: isSmallScreen ? 65 : 70,
+                                fit: BoxFit.cover,
                               ),
                             ),
                             SizedBox(height: screenSize.height * 0.04),
@@ -217,7 +217,8 @@ class _LoginViewState extends State<LoginView> {
                               "Nhập tài khoản và mật khẩu để đăng nhập",
                               style: TextStyle(
                                   fontSize: isSmallScreen ? 11 : 12,
-                                  fontWeight: FontWeight.w400),
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff6C7278)),
                             ),
                             SizedBox(height: screenSize.height * 0.025),
                             InputText(

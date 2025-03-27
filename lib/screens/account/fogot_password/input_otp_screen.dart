@@ -89,13 +89,13 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: size.height * 0.05),
+                      SizedBox(height: size.height * 0.03),
                       Center(
                         child: Image.asset(
                           "assets/images/logo.png",
-                          width: size.width * 0.4,
-                          height: size.height * 0.1,
-                          fit: BoxFit.contain,
+                          width: size.width * 0.5,
+                          height: size.height * 0.2,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       SizedBox(height: size.height * 0.03),
@@ -154,7 +154,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                   focusedBorderColor: Colors.blue,
                                   showFieldAsBox: true,
                                   // Giảm kích thước ô để tránh bị tràn
-                                  fieldWidth: 66,
+                                  fieldWidth: size.width * 0.15,
                                   // Giảm padding, tạo khoảng cách hợp lý
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 4.0),
