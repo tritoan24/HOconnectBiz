@@ -128,20 +128,6 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  // Thêm hàm xóa dữ liệu trên iOS
-  Future<void> _clearAllDataIOS() async {
-    if (Platform.isIOS) {
-      try {
-        // Xóa toàn bộ Keychain trên iOS
-        await _storage.deleteAll();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
-      } catch (e) {
-        print('Lỗi xóa dữ liệu iOS: $e');
-      }
-    }
-  }
-
 // Thêm phương thức này vào lớp AuthProvider trong file auth_provider.dart
   Future<void> checkLoginStatusWithoutRedirect(BuildContext context) async {
     try {
@@ -167,19 +153,15 @@ class AuthProvider extends BaseProvider {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
           await _clearAllData();
-          await _clearAllDataIOS();
         }
       } else {
         _isLoggedIn = false;
-        await _clearAllDataIOS();
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
-      await _clearAllDataIOS();
     } finally {
       setLoading(false);
-      await _clearAllDataIOS();
     }
   }
   //
