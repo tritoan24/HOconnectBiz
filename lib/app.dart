@@ -58,14 +58,58 @@ class _MyAppState extends State<MyApp> {
       if (event.notification.jsonRepresentation().isNotEmpty) {
         Map<String, dynamic>? data = event.notification.additionalData;
         if (data != null) {
-          if (data['type'] == 'inbox') {
-            Map<String, String>? stringMap = data.map((key, value) {
-              if (value is! String) {
-                throw Exception("Value is not a String");
-              }
-              return MapEntry(key, value);
-            });
-            appRouter.go(AppRoutes.tinNhan, extra: stringMap);
+          final String type = data['type'] ?? '';
+          final String id = data['id'] ?? '';
+          
+          switch (type) {
+            case 'inbox':
+              Map<String, String>? stringMap = data.map((key, value) {
+                if (value is! String) {
+                  return MapEntry(key, value.toString());
+                }
+                return MapEntry(key, value);
+              });
+              // Use push instead of go to maintain navigation stack
+              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+              break;
+              
+            case 'ordersell':
+              Map<String, String>? stringMap = data.map((key, value) {
+                if (value is! String) {
+                  return MapEntry(key, value.toString());
+                }
+                return MapEntry(key, value);
+              });
+              // Use push instead of go to maintain navigation stack
+              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+              break;
+              
+            case 'orderbuy':
+              Map<String, String>? stringMap = data.map((key, value) {
+                if (value is! String) {
+                  return MapEntry(key, value.toString());
+                }
+                return MapEntry(key, value);
+              });
+              // Use push instead of go to maintain navigation stack
+              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+              break;
+              
+            case 'post':
+              // Navigate to post detail screen with the post ID
+              appRouter.go('${AppRoutes.home}${AppRoutes.postDetail.replaceFirst(':postId', id)}');
+              break;
+              
+            case 'bo':
+              // Navigate to business opportunity screen
+              appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'), 
+                  extra: {'showBusinessOpportunities': true});
+              break;
+              
+            default:
+              // For unknown types, go to notification screen
+              appRouter.go(AppRoutes.thongBao, extra: data);
+              break;
           }
         } else {
           appRouter.go(AppRoutes.thongBao);
