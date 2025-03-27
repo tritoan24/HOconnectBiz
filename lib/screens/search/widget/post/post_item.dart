@@ -860,6 +860,7 @@ class _PostItemState extends State<PostItem> {
                   context,
                   isJoin: widget.isJoin ?? [],
                   postId: widget.postId,
+                  isPostItem: true,
                 );
               },
               child: SizedBox(
@@ -940,6 +941,7 @@ class _PostItemState extends State<PostItem> {
                           context,
                           isJoin: widget.isJoin ?? [],
                           postId: widget.postId,
+                          isPostItem: true,
                         );
                       },
                       child: SizedBox(

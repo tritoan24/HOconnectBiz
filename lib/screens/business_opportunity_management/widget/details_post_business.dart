@@ -453,7 +453,7 @@ class _HeaderSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              memberCount.toString(),
+              data.length.toString(),
               style: TextStyles.textStyleNormal12W400White,
             ),
           ),
