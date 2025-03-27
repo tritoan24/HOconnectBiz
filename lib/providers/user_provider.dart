@@ -64,6 +64,7 @@ class UserProvider extends BaseProvider {
           final authProvider =
               Provider.of<AuthProvider>(context, listen: false);
           await authProvider.clearAllData();
+          await authProvider.clearAllDataIOS();
           // authProvider._isLoggedIn = false;
 
           // Redirect to login screen

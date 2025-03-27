@@ -153,7 +153,7 @@ class AuthProvider extends BaseProvider {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
           if (Platform.isIOS) {
-            await _clearAllDataIOS();
+            await clearAllDataIOS();
           }
 
           // Rethrow lỗi để splash_screen có thể xử lý
@@ -162,14 +162,14 @@ class AuthProvider extends BaseProvider {
       } else {
         _isLoggedIn = false;
         if (Platform.isIOS) {
-          await _clearAllDataIOS();
+          await clearAllDataIOS();
         }
       }
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
       if (Platform.isIOS) {
-        await _clearAllDataIOS();
+        await clearAllDataIOS();
       }
 
       // Rethrow lỗi để splash_screen có thể xử lý
@@ -180,7 +180,7 @@ class AuthProvider extends BaseProvider {
   }
 
 // Thêm hàm xóa dữ liệu trên iOS
-  Future<void> _clearAllDataIOS() async {
+  Future<void> clearAllDataIOS() async {
     if (Platform.isIOS) {
       try {
         // Xóa toàn bộ Keychain trên iOS
