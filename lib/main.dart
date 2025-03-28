@@ -18,6 +18,7 @@ import 'package:clbdoanhnhansg/providers/rank_provider.dart';
 import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -32,10 +33,17 @@ import 'firebase_options.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cài đặt hướng màn hình chỉ ở chế độ đứng
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Bắt tất cả các lỗi không xử lý trong Zone
   runZonedGuarded(() async {
     // Đảm bảo binding chỉ được gọi một lần
-    WidgetsFlutterBinding.ensureInitialized();
 
     await initializeDateFormatting('vi', null);
 
