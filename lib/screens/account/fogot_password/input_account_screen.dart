@@ -128,11 +128,10 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       ButtonWidget16(
                         label: 'Tiếp theo',
                         onPressed: () {
-                          print("Email${accountController.text}");
-
                           auth.sendEmailOtp(
                             context,
                             accountController.text,
+                            widget.showAppBar,
                           );
                           // Không cần clearState ở đây vì đã xử lý trong sendEmailOtp
                         },

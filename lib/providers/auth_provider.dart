@@ -9,6 +9,7 @@ import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/widgets/loading_overlay.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -536,19 +537,43 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> sendEmailOtp(BuildContext context, String email) async {
+  Future<void> sendEmailOtp(
+      BuildContext context, String email, bool? isShow) async {
     await executeApiCall(
       apiCall: () => _authRepository.sendOtpEmail(email, context),
       context: context,
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.push(AppRoutes.nhapMaOTP, extra: {'email': email});
+        context.push(AppRoutes.nhapMaOTP,
+            extra: {'email': email, 'isShow': isShow});
       },
     );
   }
 
-  Future<void> inputOtp(BuildContext context, String email, String code) async {
+  Future<void> reSendEmailOtp(BuildContext context, String email) async {
+    await executeApiCall(
+      apiCall: () => _authRepository.sendOtpEmail(email, context),
+      context: context,
+      onSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Mã xác thực đã được gửi lại thành công',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> inputOtp(
+      BuildContext context, String email, String code, bool? isShow) async {
+    context
+        .go(AppRoutes.taoMatKhauMoi, extra: {"email": email, "isShow": isShow});
     await executeApiCall(
       apiCall: () async {
         final response = await _authRepository.inputOtp(email, code, context);
@@ -564,7 +589,8 @@ class AuthProvider extends BaseProvider {
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.go(AppRoutes.taoMatKhauMoi, extra: {"email": email});
+        context.go(AppRoutes.taoMatKhauMoi,
+            extra: {"email": email, "isShow": isShow});
       },
     );
   }

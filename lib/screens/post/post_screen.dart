@@ -71,9 +71,6 @@ class _PostScreenState extends State<PostScreen> {
               if (loaiBaiDang != "") {
                 // Lấy dữ liệu từ form và gửi tới API
                 _createPost(context);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Vui lòng chọn loại bài đăng')));
               }
             },
             child: Padding(
