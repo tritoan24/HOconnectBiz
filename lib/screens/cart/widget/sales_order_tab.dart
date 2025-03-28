@@ -177,7 +177,7 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
     return GestureDetector(
       onTap: () {
         // Assuming ChiTietDonHang expects an OrderModel, we pass the order object
-        ChiTietDonHang.show(context, order, status);
+        // ChiTietDonHang.show(context, order, status);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -281,7 +281,7 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
                 ],
               ),
             ),
-            _buildActionButtons(order),
+            // _buildActionButtons(order),
           ],
         ),
       ),
