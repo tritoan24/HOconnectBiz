@@ -470,6 +470,7 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text(title),
           content: Text(content),
           actions: <Widget>[
