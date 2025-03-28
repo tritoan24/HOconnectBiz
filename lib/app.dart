@@ -1,8 +1,9 @@
+import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
+import 'package:clbdoanhnhansg/screens/comment/comments_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
-
 import 'providers/auth_provider.dart';
 import 'utils/router/router.dart';
 import 'utils/router/router.name.dart';
@@ -55,79 +56,42 @@ class _MyAppState extends State<MyApp> {
       }
     }
 
-    OneSignal.Notifications.addClickListener((event) {
-      if (event.notification.jsonRepresentation().isNotEmpty) {
+    OneSignal.Notifications.addClickListener((event) async {
+      try {
+        // Đảm bảo có dữ liệu thông báo
+        if (event.notification.jsonRepresentation().isEmpty) return;
+
         Map<String, dynamic>? data = event.notification.additionalData;
-        if (data != null) {
-          final String type = data['type'] ?? '';
-          final String id = data['id'] ?? '';
+        if (data == null) return;
 
-          switch (type) {
-            case 'inbox':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
-              break;
+        final String type = data['type'] ?? '';
+        final String id = data['id'] ?? '';
 
-            case 'ordersell':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Cart(initialTab: CartTab.SaleOrder),
-                ),
-              );
-              break;
+        // Sử dụng GlobalKey Navigator an toàn hơn
+        final navigatorContext = navigatorKey.currentContext;
+        if (navigatorContext == null) return;
 
-            case 'orderbuy':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Cart(initialTab: CartTab.PurchaseOrder),
-                ),
-              );
-              break;
-
-            case 'post':
-              // Navigate to post detail screen with the post ID
-              appRouter.go(
-                  '${AppRoutes.home}${AppRoutes.postDetail.replaceFirst(':postId', id)}');
-              break;
-
-            case 'bo':
-              // Navigate to business opportunity screen
-              appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
-                  extra: {'showBusinessOpportunities': true});
-              break;
-
-            default:
-              // For unknown types, go to notification screen
-              appRouter.go(AppRoutes.thongBao, extra: data);
-              break;
-          }
-        } else {
-          appRouter.go(AppRoutes.thongBao);
+        switch (type) {
+          case 'inbox':
+            await _handleInboxNavigation(data);
+            break;
+          case 'ordersell':
+            _navigateToCart(navigatorContext, CartTab.SaleOrder);
+            break;
+          case 'orderbuy':
+            _navigateToCart(navigatorContext, CartTab.PurchaseOrder);
+            break;
+          case 'post':
+            await _handlePostNavigation(id);
+            break;
+          case 'bo':
+            _navigateToBusinessOpportunities();
+            break;
+          default:
+            _navigateToNotificationScreen(data);
         }
+      } catch (e) {
+        print('Lỗi xử lý thông báo: $e');
       }
     });
 
@@ -161,6 +125,70 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future<void> _handleInboxNavigation(Map<String, dynamic> data) async {
+    Map<String, String> stringMap =
+        data.map((key, value) => MapEntry(key, value?.toString() ?? ''));
+    await appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+  }
+
+  void _navigateToCart(BuildContext context, CartTab tab) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Cart(initialTab: tab),
+      ),
+    );
+  }
+
+  Future<void> _handlePostNavigation(String id) async {
+    try {
+      // Sử dụng context từ navigator để tránh null
+      BuildContext? context =
+          Navigator.of(navigatorKey.currentContext!).context;
+
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final post = await postProvider.fetchPostDetail(context, id);
+
+      if (post != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => CommentsScreen(
+              postId: post.id ?? id,
+              postType: post.category ?? 0,
+              displayName: post.author?.displayName ?? 'Không xác định',
+              avatar_image: post.author?.avatarImage ?? '',
+              dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
+              title: post.title ?? '',
+              content: post.content ?? '',
+              images: post.album ?? [],
+              business: post.business ?? [],
+              product: post.product ?? [],
+              likes: post.like ?? [],
+              commentCount: post.totalComment ?? 0,
+              isMe: true,
+              idUser: post.author?.id ?? '',
+              isJoin: post.isJoin ?? [],
+            ),
+          ),
+        );
+      } else {
+        print('Không tìm thấy bài đăng với ID: $id');
+      }
+    } catch (e) {
+      print('Lỗi điều hướng bài đăng: $e');
+      // Có thể thêm một số xử lý khác ở đây, chẳng hạn như hiển thị Snackbar
+    }
+  }
+
+  void _navigateToBusinessOpportunities() {
+    appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
+        extra: {'showBusinessOpportunities': true});
+  }
+
+  void _navigateToNotificationScreen(Map<String, dynamic>? data) {
+    appRouter.go(AppRoutes.thongBao, extra: data);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -182,40 +210,6 @@ class _MyAppState extends State<MyApp> {
                 ),
                 routerConfig: appRouter,
                 title: 'CLB DNSG',
-                //     //   builder: (context, child) {
-                //     //     return Directionality(
-                //     //       textDirection: TextDirection.ltr,
-                //     //       child: Stack(
-                //     //         children: [
-                //     //           child!,
-                //     //           if (authProvider.isLoading)
-                //     //             Material(
-                //     //               color: Colors.black54,
-                //     //               child: Center(
-                //     //                 child: Lottie.asset(
-                //     //                   'assets/lottie/loading.json',
-                //     //                   width: 70,
-                //     //                   height: 70,
-                //     //                   fit: BoxFit.contain,
-                //     //                 ),
-                //     //               ),
-                //     //             )
-                //     //         ],
-                //     //       ),
-                //     //     );
-                //     //   },
-                //     // ),
-                //     // if (_isInitializing)
-                //     //   Material(
-                //     //     color: Colors.black54,
-                //     //     child: Center(
-                //     //       child: Lottie.asset(
-                //     //         'assets/lottie/loading.json',
-                //     //         width: 70,
-                //     //         height: 70,
-                //     //         fit: BoxFit.contain,
-                //     //       ),
-                //     //     ),
               ),
             ],
           ),
