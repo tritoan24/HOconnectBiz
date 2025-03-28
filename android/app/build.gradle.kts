@@ -10,12 +10,6 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-val keystorePropertiesFile = rootProject.file("key.properties")
-val keystoreProperties = Properties()
-
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
 android {
     namespace = "com.webest.clbdoanhnhansg"
     compileSdk = 35
@@ -40,23 +34,28 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
-            storePassword = keystoreProperties.getProperty("storePassword")
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            val keystoreProperties = Properties()
+            keystoreProperties.load(keystorePropertiesFile.inputStream())
+
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-        }
-        getByName("debug") {
-            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
-
-    flutter {
-        source = "../.."
+}
+android {
+    defaultConfig {
+        versionCode = 3 // Tăng từ 1 lên 2
+        versionName = "1.0.1" // Giữ nguyên hoặc cập nhật nếu cần
     }
 }
