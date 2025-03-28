@@ -9,7 +9,9 @@ import '../../../widgets/text_styles.dart';
 
 class InputNewPasswordScreen extends StatefulWidget {
   final String email;
-  const InputNewPasswordScreen({super.key, required this.email});
+  final bool isShow;
+  const InputNewPasswordScreen(
+      {super.key, required this.email, this.isShow = false});
 
   @override
   State<InputNewPasswordScreen> createState() => _InputNewPasswordState();
@@ -148,35 +150,37 @@ class _InputNewPasswordState extends State<InputNewPasswordScreen> {
           },
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 50,
-        child: Center(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(
-                    text: "Chưa có tài khoản?  ",
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
-                TextSpan(
-                  text: "Đăng ký ngay",
-                  style: const TextStyle(
-                    color: Color(0xff006AF5),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+      bottomNavigationBar: widget.isShow == true
+          ? const SizedBox()
+          : Container(
+              height: 50,
+              child: Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(
+                          text: "Chưa có tài khoản?  ",
+                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      TextSpan(
+                        text: "Đăng ký ngay",
+                        style: const TextStyle(
+                          color: Color(0xff006AF5),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            // Xóa lỗi trước khi chuyển màn hình
+                            Provider.of<AuthProvider>(context, listen: false)
+                                .clearState();
+                            context.push(AppRoutes.dangKyTaiKhoan);
+                          },
+                      ),
+                    ],
                   ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      // Xóa lỗi trước khi chuyển màn hình
-                      Provider.of<AuthProvider>(context, listen: false)
-                          .clearState();
-                      context.push(AppRoutes.dangKyTaiKhoan);
-                    },
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

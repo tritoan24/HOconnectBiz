@@ -96,6 +96,7 @@ class NotificationProvider extends BaseProvider {
               likes: post.like ?? [],
               commentCount: post.totalComment ?? 0,
               idUser: userId,
+              isJoin: post.isJoin ?? [],
             ),
           ),
         );

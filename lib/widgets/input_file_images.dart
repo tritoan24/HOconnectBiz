@@ -129,7 +129,7 @@ class _InputFileImagesState extends State<InputFileImages> {
                   onTap: pickImages,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
+                      color: Color(0xffEBF4FF),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     width: 100,
@@ -138,6 +138,7 @@ class _InputFileImagesState extends State<InputFileImages> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset("assets/icons/iPhoto.png", width: 32),
+                        const SizedBox(height: 6),
                         const Text('Thêm ảnh'),
                       ],
                     ),

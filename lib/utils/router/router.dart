@@ -106,17 +106,19 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.nhapMaOTP,
           builder: (context, state) {
-            final extra = state.extra as Map<String, String>?; // Lấy extra
-            final email = extra?['email'] ?? ''; // Lấy email từ extra
-            return InputOtpScreen(email: email); // Truyền email vào màn hình
+            final extra = state.extra as Map<String, dynamic>?;
+            final email = extra?['email'] as String? ?? '';
+            final bool isShow = extra?['isShow'] as bool? ?? false;
+            return InputOtpScreen(email: email, isShow: isShow);
           },
         ),
         GoRoute(
           path: AppRoutes.taoMatKhauMoi,
           builder: (context, state) {
-            final Map<String, dynamic> extra =
-                state.extra as Map<String, dynamic>;
-            return InputNewPasswordScreen(email: extra['email']);
+            final extra = state.extra as Map<String, dynamic>?;
+            final email = extra?['email'] as String? ?? '';
+            final bool isShow = extra?['isShow'] as bool? ?? false;
+            return InputNewPasswordScreen(email: email, isShow: isShow);
           },
         ),
         GoRoute(
