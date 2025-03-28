@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +61,7 @@ class _MyAppState extends State<MyApp> {
         if (data != null) {
           final String type = data['type'] ?? '';
           final String id = data['id'] ?? '';
-          
+
           switch (type) {
             case 'inbox':
               Map<String, String>? stringMap = data.map((key, value) {
@@ -72,7 +73,7 @@ class _MyAppState extends State<MyApp> {
               // Use push instead of go to maintain navigation stack
               appRouter.push(AppRoutes.tinNhan, extra: stringMap);
               break;
-              
+
             case 'ordersell':
               Map<String, String>? stringMap = data.map((key, value) {
                 if (value is! String) {
@@ -81,9 +82,15 @@ class _MyAppState extends State<MyApp> {
                 return MapEntry(key, value);
               });
               // Use push instead of go to maintain navigation stack
-              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const Cart(initialTab: CartTab.SaleOrder),
+                ),
+              );
               break;
-              
+
             case 'orderbuy':
               Map<String, String>? stringMap = data.map((key, value) {
                 if (value is! String) {
@@ -92,20 +99,27 @@ class _MyAppState extends State<MyApp> {
                 return MapEntry(key, value);
               });
               // Use push instead of go to maintain navigation stack
-              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const Cart(initialTab: CartTab.PurchaseOrder),
+                ),
+              );
               break;
-              
+
             case 'post':
               // Navigate to post detail screen with the post ID
-              appRouter.go('${AppRoutes.home}${AppRoutes.postDetail.replaceFirst(':postId', id)}');
+              appRouter.go(
+                  '${AppRoutes.home}${AppRoutes.postDetail.replaceFirst(':postId', id)}');
               break;
-              
+
             case 'bo':
               // Navigate to business opportunity screen
-              appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'), 
+              appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
                   extra: {'showBusinessOpportunities': true});
               break;
-              
+
             default:
               // For unknown types, go to notification screen
               appRouter.go(AppRoutes.thongBao, extra: data);
