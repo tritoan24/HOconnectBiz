@@ -17,6 +17,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../providers/StatisticalProvider.dart';
 import '../../../providers/rank_provider.dart';
+import '../../../utils/transitions/custom_page_transition.dart';
 import 'bang_xep_hang.dart';
 
 class Home extends StatefulWidget {
@@ -132,9 +133,9 @@ class _HomeState extends State<Home> {
                           onTap: () {
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChatListScreen(),
-                                ));
+                                CustomPageTransition(
+                                    page: ChatListScreen(),
+                                    type: TransitionType.fade));
                           },
                           child: SvgPicture.asset(
                             "assets/icons/mess.svg",

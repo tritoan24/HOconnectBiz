@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
+import '../../utils/transitions/custom_page_transition.dart';
 import '../cart/cart_tab.dart';
 import 'deltails_sales_article.dart';
 import 'details_chat.dart';
@@ -130,8 +131,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       onPressed: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const Cart()));
+                            CustomPageTransition(
+                              page: const Cart(),
+                              type: TransitionType.slideRight,
+                            ));
                       },
                     ),
                   ),
@@ -228,14 +231,15 @@ class MessageTile extends StatelessWidget {
         if (contact.type == "Group") {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => ChatDetailScreen(
+            CustomPageTransition(
+              page: ChatDetailScreen(
                 currentUserId: currentUserId,
                 idMessage: idMessage,
                 groupId: contact.id,
                 groupName: contact.displayName,
                 quantityMember: totalMem,
               ),
+              type: TransitionType.fade,
             ),
           );
         } else {

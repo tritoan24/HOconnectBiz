@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/is_join_model.dart';
+import '../../utils/transitions/custom_page_transition.dart';
 
 class ChiTietBaiDang extends StatefulWidget {
   final List<String> imageList;
@@ -128,19 +129,19 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
 
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CommentsScreen(
+      CustomPageTransition(
+        page: CommentsScreen(
           postId: widget.postId!,
           postType: widget.postType,
           displayName: widget.companyName,
-          avatar_image: "", // Cần truyền avatar từ màn hình trước
+          avatar_image: "",
           dateTime: widget.dateTime,
-          title: widget.title ?? "", // Sử dụng title nếu có
+          title: widget.title ?? "",
           content: widget.description,
           images: widget.imageList,
-          business: [], // Cần truyền business từ màn hình trước
-          product: [], // Cần truyền product từ màn hình trước
-          likes: widget.likes, // Cần truyền danh sách likes từ màn hình trước
+          business: [],
+          product: [],
+          likes: widget.likes,
           commentCount: widget.comment,
           isBusiness: isBusiness,
           isMe: widget.isMe,
@@ -148,6 +149,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
           isComment: true,
           idUser: idUserID ?? "",
         ),
+        type: TransitionType.slideUp,
       ),
     );
 

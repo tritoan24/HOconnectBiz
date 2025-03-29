@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/auth_provider.dart';
 import '../../../providers/user_provider.dart';
+import '../../../utils/transitions/custom_page_transition.dart';
 import '../../business_opportunity_management/manage.dart';
 import '../../change_password/change_password_screen.dart';
 import '../../edit_information/edit_information.dart';
@@ -49,8 +50,9 @@ class _ListProfileState extends State<ListProfile> {
                         // Xử lý khi nhấn chuyển sang màn hình chỉnh sửa thông tin
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => EditProfile(user: user)));
+                            CustomPageTransition(
+                                type: TransitionType.fade,
+                                page: EditProfile(user: user)));
                       },
                     ),
                     const SizedBox(height: 4),
@@ -61,8 +63,9 @@ class _ListProfileState extends State<ListProfile> {
                       onTap: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const ManageBO()));
+                            CustomPageTransition(
+                                type: TransitionType.fade,
+                                page: const ManageBO()));
                       },
                     ),
                     const SizedBox(height: 4),
@@ -73,9 +76,9 @@ class _ListProfileState extends State<ListProfile> {
                       onTap: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const ChangePasswordScreen()));
+                            CustomPageTransition(
+                                type: TransitionType.fade,
+                                page: const ChangePasswordScreen()));
                       },
                     ),
                     const SizedBox(height: 4),
@@ -86,9 +89,9 @@ class _ListProfileState extends State<ListProfile> {
                       onTap: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const MemberStatistics()));
+                            CustomPageTransition(
+                                type: TransitionType.fade,
+                                page: const MemberStatistics()));
                       },
                     ),
                     const SizedBox(height: 4),
