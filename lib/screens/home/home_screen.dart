@@ -5,16 +5,21 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/post_provider.dart';
 import '../../utils/router/router.name.dart';
 import '../manage/manage.dart';
 import '../profile/profile_screen.dart';
 import '../shopping/shopping.dart';
 import '../../utils/global_state.dart';
 import '../cart/cart_tab.dart';
+import '../comment/comments_screen.dart';
 
 class TrangChuView extends StatefulWidget {
+  final Map<String, dynamic>? extraData;
+  
   const TrangChuView({
     super.key,
+    this.extraData,
   });
 
   @override
@@ -28,8 +33,123 @@ class _TrangChuViewState extends State<TrangChuView> {
   void initState() {
     super.initState();
     
-    // Kiểm tra xem có điều hướng Cart đang chờ không
+    // Kiểm tra dữ liệu từ tham số và GlobalAppState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _processExtraData();
+    });
+  }
+
+  void _processExtraData() {
+    // Kiểm tra dữ liệu từ tham số
+    if (widget.extraData != null) {
+      print("Nhận được dữ liệu: ${widget.extraData}");
+      
+      // Xử lý dữ liệu bài viết nếu có
+      if (widget.extraData!.containsKey('postId')) {
+        final postId = widget.extraData!['postId'] as String;
+        print("Tìm thấy ID bài viết: $postId");
+        _loadAndNavigateToPost(postId);
+        return;
+      }
+      
+      // Xử lý dữ liệu giỏ hàng nếu có
+      if (widget.extraData!.containsKey('cartTab')) {
+        final cartType = widget.extraData!['cartTab'] as String;
+        print("Tìm thấy loại giỏ hàng: $cartType");
+        _navigateToCart(cartType);
+        return;
+      }
+      
+      // Xử lý hiển thị cơ hội kinh doanh nếu có
+      if (widget.extraData!.containsKey('showBusinessOpportunities')) {
+        print("Chuyển đến tab cơ hội kinh doanh");
+        setState(() {
+          selectedIndex = 1; // Tab Quản lý
+        });
+        return;
+      }
+    }
+    
+    // Kiểm tra từ GlobalAppState nếu không có dữ liệu trong tham số
     _checkPendingCartNavigation();
+  }
+  
+  // Tải thông tin bài viết và điều hướng đến màn hình chi tiết
+  Future<void> _loadAndNavigateToPost(String postId) async {
+    try {
+      print("Đang tải thông tin bài viết: $postId");
+      
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final post = await postProvider.fetchPostDetail(context, postId);
+      
+      if (!mounted) {
+        print("Context không còn mounted, dừng việc xử lý");
+        return;
+      }
+      
+      if (post != null) {
+        print("Đã tìm thấy bài viết, chuyển đến màn hình chi tiết");
+        
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CommentsScreen(
+              postId: post.id ?? postId,
+              postType: post.category ?? 0,
+              displayName: post.author?.displayName ?? 'Không xác định',
+              avatar_image: post.author?.avatarImage ?? '',
+              dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
+              title: post.title ?? '',
+              content: post.content ?? '',
+              images: post.album ?? [],
+              business: post.business ?? [],
+              product: post.product ?? [],
+              likes: post.like ?? [],
+              commentCount: post.totalComment ?? 0,
+              isMe: false,
+              idUser: post.author?.id ?? '',
+              isJoin: post.isJoin ?? [],
+              isBusiness: false,
+              isComment: true,
+            ),
+          ),
+        );
+      } else {
+        print("Không tìm thấy bài viết: $postId");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tìm thấy bài viết'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Lỗi khi tải thông tin bài viết: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+  
+  // Điều hướng đến màn hình giỏ hàng
+  void _navigateToCart(String cartType) {
+    if (!mounted) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Cart(
+          initialTab: cartType == 'sale' 
+            ? CartTab.SaleOrder 
+            : CartTab.PurchaseOrder,
+        ),
+      ),
+    );
   }
 
   void handleTabChange(int index) {
@@ -38,25 +158,12 @@ class _TrangChuViewState extends State<TrangChuView> {
     });
   }
 
-  // Hàm mới để kiểm tra và xử lý pendingCartNavigationType
+  // Hàm kiểm tra dữ liệu từ GlobalAppState
   void _checkPendingCartNavigation() {
     final cartType = GlobalAppState.checkAndClearPendingCartNavigation();
     if (cartType != null) {
-      // Sử dụng addPostFrameCallback để đảm bảo widget đã được khởi tạo đầy đủ
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          // Mở màn hình Cart với tab tương ứng
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => Cart(
-                initialTab: cartType == 'sale' 
-                  ? CartTab.SaleOrder 
-                  : CartTab.PurchaseOrder,
-              ),
-            ),
-          );
-        }
-      });
+      print("Tìm thấy loại giỏ hàng từ GlobalAppState: $cartType");
+      _navigateToCart(cartType);
     }
   }
 

@@ -126,70 +126,52 @@ class _SplashScreenState extends State<SplashScreen> {
     
     final String type = data['type'] ?? '';
     final String id = data['id'] ?? '';
-
-    // Đánh dấu đã xử lý trước khi điều hướng
-    GlobalAppState.clearNotificationData();
+    
+    print("Đang xử lý thông báo, loại: $type, ID: $id");
 
     switch (type) {
       case 'inbox':
-        Map<String, String>? stringMap = data.map((key, value) {
+        Map<String, String> stringMap = data.map((key, value) {
           if (value is! String) {
             return MapEntry(key, value.toString());
           }
           return MapEntry(key, value);
         });
         
-        // Sử dụng GoRouter.pushReplacement để thay thế màn hình hiện tại
-        context.pushReplacement(AppRoutes.tinNhan, extra: stringMap);
+        print("Điều hướng đến màn hình tin nhắn với dữ liệu: $stringMap");
+        context.go(AppRoutes.tinNhan, extra: stringMap);
         break;
-
-      case 'ordersell':
-        // Lưu thông tin cần thiết vào GlobalAppState hoặc cách khác
-        GlobalAppState.pendingCartNavigationType = 'sale';
-        // Điều hướng về trang chủ và từ đó sẽ xử lý mở Cart
-        context.go(AppRoutes.trangChu);
-        break;
-
-      case 'orderbuy':
-        // Lưu thông tin cần thiết vào GlobalAppState hoặc cách khác
-        GlobalAppState.pendingCartNavigationType = 'buy';
-        // Điều hướng về trang chủ và từ đó sẽ xử lý mở Cart
-        context.go(AppRoutes.trangChu);
-        break;
-
+      
       case 'post':
-        // Điều hướng trực tiếp đến màn hình chi tiết post
-        context.go('/comments/$id', extra: {
-          'postId': id,
-          'postType': 0, // Giá trị mặc định
-          'displayName': 'Đang tải...',
-          'avatar_image': '',
-          'dateTime': DateTime.now().toString(),
-          'title': '',
-          'content': '',
-          'images': [],
-          'business': [],
-          'product': [],
-          'likes': [],
-          'commentCount': 0,
-          'isMe': true,
-          'idUser': '',
-          'isJoin': [],
-          'isBusiness': false,
-          'isComment': true,
-        });
+        print("Điều hướng đến trang chủ với ID bài viết để lấy thông tin chi tiết");
+        
+        // Lưu ID bài viết để xử lý ở trang chủ
+        context.go(AppRoutes.trangChu, extra: {'postId': id});
         break;
-
+        
+      case 'ordersell':
+        print("Điều hướng đến trang chủ trước khi xem đơn hàng bán");
+        context.go(AppRoutes.trangChu, extra: {'cartTab': 'sale'});
+        break;
+        
+      case 'orderbuy':
+        print("Điều hướng đến trang chủ trước khi xem đơn hàng mua");
+        context.go(AppRoutes.trangChu, extra: {'cartTab': 'buy'});
+        break;
+        
       case 'bo':
-        context.go(AppRoutes.trangChu.replaceFirst(':index', '0'), 
-          extra: {'showBusinessOpportunities': true});
+        print("Điều hướng đến trang cơ hội kinh doanh");
+        context.go(AppRoutes.trangChu, extra: {'showBusinessOpportunities': true});
         break;
-
+        
       default:
-        // Mặc định đến trang thông báo
+        print("Loại thông báo không xác định, điều hướng đến trang thông báo");
         context.go(AppRoutes.thongBao, extra: data);
         break;
     }
+    
+    // Xóa thông tin thông báo sau khi đã xử lý
+    GlobalAppState.clearNotificationData();
   }
 
   @override

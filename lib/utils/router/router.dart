@@ -44,7 +44,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.trangChu,
           builder: (context, state) {
-            return const TrangChuView();
+            return TrangChuView(extraData: state.extra as Map<String, dynamic>?);
           },
         ),
         GoRoute(
