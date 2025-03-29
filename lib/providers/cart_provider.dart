@@ -11,6 +11,7 @@ import '../core/network/api_endpoints.dart';
 import '../models/apiresponse.dart';
 import '../repository/cart_repository.dart';
 import '../screens/chat/deltails_sales_article.dart';
+import '../utils/transitions/custom_page_transition.dart';
 import '../widgets/loading_overlay.dart';
 import 'auth_provider.dart';
 
@@ -116,16 +117,19 @@ class CartProvider extends BaseProvider {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         currentUserId = (await authProvider.getuserID())!;
         Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => DeltailsSalesArticle(
-                      isCreate: true,
-                      currentUserId: currentUserId,
-                      idReceiver: receiverId,
-                      idMessage: receiverId,
-                      avatarImage: avatar,
-                      displayName: name,
-                    )));
+          context,
+          CustomPageTransition(
+            page: DeltailsSalesArticle(
+              isCreate: true,
+              currentUserId: currentUserId,
+              idReceiver: receiverId,
+              idMessage: receiverId,
+              avatarImage: avatar,
+              displayName: name,
+            ),
+            type: TransitionType.fade,
+          ),
+        );
       },
       successMessage: "Đặt hàng thành công!",
     );
