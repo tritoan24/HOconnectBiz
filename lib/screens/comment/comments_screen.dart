@@ -67,6 +67,7 @@ class CommentsScreen extends StatefulWidget {
 class _CommentState extends State<CommentsScreen> {
   //lấy dữ liệu khi bắt đầu khởi tạo màn
   bool isJoind = false; // Lưu trạng thái join
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -77,7 +78,16 @@ class _CommentState extends State<CommentsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final commentProvider =
           Provider.of<CommentProvider>(context, listen: false);
-      commentProvider.getComments(widget.postId, context);
+      commentProvider.getComments(widget.postId, context).then((_) {
+        // Scroll xuống dưới cùng sau khi load xong comments
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
       debugPrint(
           "🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
       debugPrint("trạng thái business 111: ${widget.isBusiness} ");
@@ -171,6 +181,7 @@ class _CommentState extends State<CommentsScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     if (_hasChanges) {
       debugPrint("🔍 DEBUG CommentsScreen: dispose() với _hasChanges = true");
     }
@@ -212,71 +223,58 @@ class _CommentState extends State<CommentsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding:
-                    EdgeInsets.only(bottom: inputHeight), // Thêm padding bottom
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    NotificationListener<PostItemChangedNotification>(
-                      onNotification: (notification) {
-                        if (notification.postId == widget.postId) {
-                          setState(() {
-                            _hasChanges = true;
+            child: ListView(
+              controller: _scrollController,
+              padding: EdgeInsets.only(bottom: inputHeight),
+              children: [
+                NotificationListener<PostItemChangedNotification>(
+                  onNotification: (notification) {
+                    if (notification.postId == widget.postId) {
+                      setState(() {
+                        _hasChanges = true;
 
-                            // Cập nhật isJoind nếu thông báo có thông tin về join
-                            if (notification.isJoined != null) {
-                              isJoind = notification.isJoined!;
-                              debugPrint(
-                                  "🔍 DEBUG CommentsScreen: Cập nhật isJoind = $isJoind từ thông báo");
-                            }
-
-                            // Cập nhật số lượng comment nếu có
-                            if (notification.commentCount != null) {
-                              debugPrint(
-                                  "🔍 DEBUG CommentsScreen: Cập nhật số lượng comment = ${notification.commentCount} từ thông báo");
-                            }
-                          });
+                        // Cập nhật isJoind nếu thông báo có thông tin về join
+                        if (notification.isJoined != null) {
+                          isJoind = notification.isJoined!;
                           debugPrint(
-                              "🔍 DEBUG CommentsScreen: Cập nhật _hasChanges = true do PostItem thay đổi");
+                              "🔍 DEBUG CommentsScreen: Cập nhật isJoind = $isJoind từ thông báo");
                         }
-                        return true;
-                      },
-                      child: PostItem(
-                        postId: widget.postId,
-                        postType: widget.postType,
-                        displayName: widget.displayName,
-                        avatar_image: widget.avatar_image,
-                        dateTime: widget.dateTime,
-                        title: widget.title,
-                        content: widget.content,
-                        images: widget.images,
-                        business: widget.business,
-                        product: widget.product,
-                        likes: widget.likes,
-                        isMe: widget.isMe,
-                        comments:
-                            currentCommentCount, // Sử dụng số lượng comment mới nhất
-                        isComment: widget.isComment,
-                        idUser: widget.idUser,
-                        isJoin: widget.isJoin,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ListView.builder(
-                      key: _listKey,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: commentProvider.comments.length,
-                      itemBuilder: (context, index) {
-                        return BinhLuanItem(
-                            binhLuan: commentProvider.comments[index]);
-                      },
-                    ),
-                  ],
+
+                        // Cập nhật số lượng comment nếu có
+                        if (notification.commentCount != null) {
+                          debugPrint(
+                              "🔍 DEBUG CommentsScreen: Cập nhật số lượng comment = ${notification.commentCount} từ thông báo");
+                        }
+                      });
+                      debugPrint(
+                          "🔍 DEBUG CommentsScreen: Cập nhật _hasChanges = true do PostItem thay đổi");
+                    }
+                    return true;
+                  },
+                  child: PostItem(
+                    postId: widget.postId,
+                    postType: widget.postType,
+                    displayName: widget.displayName,
+                    avatar_image: widget.avatar_image,
+                    dateTime: widget.dateTime,
+                    title: widget.title,
+                    content: widget.content,
+                    images: widget.images,
+                    business: widget.business,
+                    product: widget.product,
+                    likes: widget.likes,
+                    isMe: widget.isMe,
+                    comments: currentCommentCount,
+                    isComment: widget.isComment,
+                    idUser: widget.idUser,
+                    isJoin: widget.isJoin,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                ...commentProvider.comments.map((comment) => 
+                  BinhLuanItem(binhLuan: comment)
+                ).toList(),
+              ],
             ),
           ),
         ],

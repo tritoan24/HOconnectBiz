@@ -180,46 +180,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<void> _handlePostNavigation(String id) async {
-    try {
-      // Sử dụng context từ navigator để tránh null
-      BuildContext? context =
-          Navigator.of(navigatorKey.currentContext!).context;
-
-      final postProvider = Provider.of<PostProvider>(context, listen: false);
-      final post = await postProvider.fetchPostDetail(context, id);
-
-      if (post != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => CommentsScreen(
-              postId: post.id ?? id,
-              postType: post.category ?? 0,
-              displayName: post.author?.displayName ?? 'Không xác định',
-              avatar_image: post.author?.avatarImage ?? '',
-              dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
-              title: post.title ?? '',
-              content: post.content ?? '',
-              images: post.album ?? [],
-              business: post.business ?? [],
-              product: post.product ?? [],
-              likes: post.like ?? [],
-              commentCount: post.totalComment ?? 0,
-              isMe: true,
-              idUser: post.author?.id ?? '',
-              isJoin: post.isJoin ?? [],
-            ),
-          ),
-        );
-      } else {
-        print('Không tìm thấy bài đăng với ID: $id');
-      }
-    } catch (e) {
-      print('Lỗi điều hướng bài đăng: $e');
-      // Có thể thêm một số xử lý khác ở đây, chẳng hạn như hiển thị Snackbar
-    }
-  }
-
   void _navigateToBusinessOpportunities() {
     appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
         extra: {'showBusinessOpportunities': true});
@@ -256,40 +216,58 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> handlePostNavigation(String id) async {
     try {
-      // Sử dụng context từ navigator để tránh null
-      BuildContext? context =
-          Navigator.of(navigatorKey.currentContext!).context;
-
+      if (!mounted) return;
+      
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final post = await postProvider.fetchPostDetail(context, id);
 
+      if (!mounted) return;
+
       if (post != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => CommentsScreen(
-              postId: post.id ?? id,
-              postType: post.category ?? 0,
-              displayName: post.author?.displayName ?? 'Không xác định',
-              avatar_image: post.author?.avatarImage ?? '',
-              dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
-              title: post.title ?? '',
-              content: post.content ?? '',
-              images: post.album ?? [],
-              business: post.business ?? [],
-              product: post.product ?? [],
-              likes: post.like ?? [],
-              commentCount: post.totalComment ?? 0,
-              isMe: true,
-              idUser: post.author?.id ?? '',
-              isJoin: post.isJoin ?? [],
-            ),
-          ),
-        );
+        appRouter.push('/comments/${post.id ?? id}', extra: {
+          'postId': post.id ?? id,
+          'postType': post.category ?? 0,
+          'displayName': post.author?.displayName ?? 'Không xác định',
+          'avatar_image': post.author?.avatarImage ?? '',
+          'dateTime': post.createdAt?.toString() ?? DateTime.now().toString(),
+          'title': post.title ?? '',
+          'content': post.content ?? '',
+          'images': post.album ?? [],
+          'business': [],
+          'product': [],
+          'likes': post.like ?? [],
+          'commentCount': post.totalComment ?? 0,
+          'isMe': true,
+          'idUser': post.author?.id ?? '',
+          'isJoin': post.isJoin ?? [],
+          'isBusiness': false,
+          'isComment': true,
+        });
       } else {
         print('Không tìm thấy bài đăng với ID: $id');
+        // Fallback navigation với thông tin tối thiểu
+        appRouter.push('/comments/$id', extra: {
+          'postId': id,
+          'postType': 0,
+          'displayName': 'Không xác định',
+          'avatar_image': '',
+          'dateTime': DateTime.now().toString(),
+          'title': '',
+          'content': '',
+          'images': [],
+          'business': [],
+          'product': [],
+          'likes': [],
+          'commentCount': 0,
+          'isMe': true,
+          'idUser': '',
+          'isJoin': [],
+          'isBusiness': false,
+          'isComment': true,
+        });
       }
     } catch (e) {
-      print('Lỗi điều hướng bài đăng: $e');
+      print('Lỗi khi lấy dữ liệu bài đăng: $e');
     }
   }
 }

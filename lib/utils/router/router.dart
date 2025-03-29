@@ -9,9 +9,12 @@ import 'package:clbdoanhnhansg/screens/manage/widget/information/widget/edit_imf
 import 'package:clbdoanhnhansg/screens/post/post_screen.dart';
 import 'package:clbdoanhnhansg/screens/search/search.dart';
 import 'package:clbdoanhnhansg/screens/splash_screen.dart';
+import 'package:clbdoanhnhansg/screens/comment/comments_screen.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../models/business_model.dart';
+import '../../models/is_join_model.dart';
 import '../../models/product_model.dart';
 import '../../screens/account/login.dart';
 import '../../screens/home/home_screen.dart';
@@ -134,6 +137,31 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             return const CreateOrder(
               idRecive: "",
+            );
+          },
+        ),
+        GoRoute(
+          path: 'comments/:id',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return CommentsScreen(
+              postId: extra['postId'] ?? '',
+              postType: extra['postType'] ?? 0,
+              displayName: extra['displayName'] ?? 'Không xác định',
+              avatar_image: extra['avatar_image'] ?? '',
+              dateTime: extra['dateTime'] ?? DateTime.now().toString(),
+              title: extra['title'] ?? '',
+              content: extra['content'] ?? '',
+              images: List<String>.from(extra['images'] ?? []),
+              business: (extra['business'] as List<dynamic>?)?.map((e) => BusinessModel.fromJson(e)).toList() ?? [],
+              product: (extra['product'] as List<dynamic>?)?.map((e) => ProductModel.fromJson(e)).toList() ?? [],
+              likes: List<String>.from(extra['likes'] ?? []),
+              commentCount: extra['commentCount'] ?? 0,
+              isMe: extra['isMe'] ?? true,
+              idUser: extra['idUser'] ?? '',
+              isJoin: (extra['isJoin'] as List<dynamic>?)?.map((e) => IsJoin.fromJson(e)).toList() ?? [],
+              isBusiness: extra['isBusiness'] ?? false,
+              isComment: extra['isComment'] ?? true,
             );
           },
         ),
