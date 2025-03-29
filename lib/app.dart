@@ -133,46 +133,6 @@ class _MyAppState extends State<MyApp> {
       }
     });
 
-    Future<void> handlePostNavigation(String id) async {
-      try {
-        // Sử dụng context từ navigator để tránh null
-        BuildContext? context =
-            Navigator.of(navigatorKey.currentContext!).context;
-
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
-        final post = await postProvider.fet(context, id);
-
-        if (post != null) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CommentsScreen(
-                postId: post.id ?? id,
-                postType: post.category ?? 0,
-                displayName: post.author?.displayName ?? 'Không xác định',
-                avatar_image: post.author?.avatarImage ?? '',
-                dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
-                title: post.title ?? '',
-                content: post.content ?? '',
-                images: post.album ?? [],
-                business: post.business ?? [],
-                product: post.product ?? [],
-                likes: post.like ?? [],
-                commentCount: post.totalComment ?? 0,
-                isMe: true,
-                idUser: post.author?.id ?? '',
-                isJoin: post.isJoin ?? [],
-              ),
-            ),
-          );
-        } else {
-          print('Không tìm thấy bài đăng với ID: $id');
-        }
-      } catch (e) {
-        print('Lỗi điều hướng bài đăng: $e');
-        // Có thể thêm một số xử lý khác ở đây, chẳng hạn như hiển thị Snackbar
-      }
-    }
-
     OneSignal.Notifications.addForegroundWillDisplayListener((event) {
       print(
           'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
@@ -209,60 +169,60 @@ class _MyAppState extends State<MyApp> {
       builder: (context, authProvider, child) {
         return Directionality(
           textDirection: TextDirection.ltr,
-          child: Stack(
-            children: [
-              MaterialApp.router(
-                debugShowCheckedModeBanner: false,
-                theme: ThemeData(
-                  useMaterial3: true,
-                  appBarTheme: const AppBarTheme(
-                    elevation: 5,
-                    surfaceTintColor: Colors.transparent,
-                    shadowColor: Colors.white,
-                    backgroundColor: Colors.white,
-                  ),
-                ),
-                routerConfig: appRouter,
-                title: 'CLB DNSG',
-                //     //   builder: (context, child) {
-                //     //     return Directionality(
-                //     //       textDirection: TextDirection.ltr,
-                //     //       child: Stack(
-                //     //         children: [
-                //     //           child!,
-                //     //           if (authProvider.isLoading)
-                //     //             Material(
-                //     //               color: Colors.black54,
-                //     //               child: Center(
-                //     //                 child: Lottie.asset(
-                //     //                   'assets/lottie/loading.json',
-                //     //                   width: 70,
-                //     //                   height: 70,
-                //     //                   fit: BoxFit.contain,
-                //     //                 ),
-                //     //               ),
-                //     //             )
-                //     //         ],
-                //     //       ),
-                //     //     );
-                //     //   },
-                //     // ),
-                //     // if (_isInitializing)
-                //     //   Material(
-                //     //     color: Colors.black54,
-                //     //     child: Center(
-                //     //       child: Lottie.asset(
-                //     //         'assets/lottie/loading.json',
-                //     //         width: 70,
-                //     //         height: 70,
-                //     //         fit: BoxFit.contain,
-                //     //       ),
-                //     //     ),
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              useMaterial3: true,
+              appBarTheme: const AppBarTheme(
+                elevation: 5,
+                surfaceTintColor: Colors.transparent,
+                shadowColor: Colors.white,
+                backgroundColor: Colors.white,
               ),
-            ],
+            ),
+            routerConfig: appRouter,
+            title: 'CLB DNSG',
           ),
         );
       },
     );
+  }
+
+  Future<void> handlePostNavigation(String id) async {
+    try {
+      // Sử dụng context từ navigator để tránh null
+      BuildContext? context = Navigator.of(navigatorKey.currentContext!).context;
+
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final post = await postProvider.fetchPostDetail(context, id);
+
+      if (post != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => CommentsScreen(
+              postId: post.id ?? id,
+              postType: post.category ?? 0,
+              displayName: post.author?.displayName ?? 'Không xác định',
+              avatar_image: post.author?.avatarImage ?? '',
+              dateTime: post.createdAt?.toString() ?? DateTime.now().toString(),
+              title: post.title ?? '',
+              content: post.content ?? '',
+              images: post.album ?? [],
+              business: post.business ?? [],
+              product: post.product ?? [],
+              likes: post.like ?? [],
+              commentCount: post.totalComment ?? 0,
+              isMe: true,
+              idUser: post.author?.id ?? '',
+              isJoin: post.isJoin ?? [],
+            ),
+          ),
+        );
+      } else {
+        print('Không tìm thấy bài đăng với ID: $id');
+      }
+    } catch (e) {
+      print('Lỗi điều hướng bài đăng: $e');
+    }
   }
 }
