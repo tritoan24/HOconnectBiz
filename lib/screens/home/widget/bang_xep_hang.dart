@@ -125,7 +125,7 @@ class BangXepHang extends StatelessWidget {
                               ),
                               SizedBox(height: screenWidth * 0.025),
                               buildTopItem(context, top3[0], avatarSize * 1.2),
-                              SizedBox(height: screenWidth * 0.05),
+                              SizedBox(height: screenWidth * 0.1),
                             ],
                           )
                         else
@@ -328,7 +328,7 @@ class BangXepHang extends StatelessWidget {
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
