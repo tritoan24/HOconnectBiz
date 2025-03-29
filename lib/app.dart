@@ -56,7 +56,6 @@ class _MyAppState extends State<MyApp> {
         });
       }
     }
-
     OneSignal.Notifications.addClickListener((event) {
       // Đánh dấu rằng ứng dụng đã được mở từ thông báo
       GlobalAppState.launchedFromNotification = true;
