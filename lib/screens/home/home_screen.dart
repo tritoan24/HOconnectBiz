@@ -9,6 +9,8 @@ import '../../utils/router/router.name.dart';
 import '../manage/manage.dart';
 import '../profile/profile_screen.dart';
 import '../shopping/shopping.dart';
+import '../../utils/global_state.dart';
+import '../cart/cart_tab.dart';
 
 class TrangChuView extends StatefulWidget {
   const TrangChuView({
@@ -22,10 +24,40 @@ class TrangChuView extends StatefulWidget {
 class _TrangChuViewState extends State<TrangChuView> {
   int selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    
+    // Kiểm tra xem có điều hướng Cart đang chờ không
+    _checkPendingCartNavigation();
+  }
+
   void handleTabChange(int index) {
     setState(() {
       selectedIndex = index;
     });
+  }
+
+  // Hàm mới để kiểm tra và xử lý pendingCartNavigationType
+  void _checkPendingCartNavigation() {
+    final cartType = GlobalAppState.checkAndClearPendingCartNavigation();
+    if (cartType != null) {
+      // Sử dụng addPostFrameCallback để đảm bảo widget đã được khởi tạo đầy đủ
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Mở màn hình Cart với tab tương ứng
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => Cart(
+                initialTab: cartType == 'sale' 
+                  ? CartTab.SaleOrder 
+                  : CartTab.PurchaseOrder,
+              ),
+            ),
+          );
+        }
+      });
+    }
   }
 
   @override

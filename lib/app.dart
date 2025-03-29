@@ -57,77 +57,59 @@ class _MyAppState extends State<MyApp> {
       }
     }
     OneSignal.Notifications.addClickListener((event) {
+      // Chỉ xử lý nếu không có notification nào đang được xử lý
+      if (GlobalAppState.notificationProcessed) {
+        // Notification đã được xử lý
+        return;
+      }
+      
       // Đánh dấu rằng ứng dụng đã được mở từ thông báo
-      GlobalAppState.launchedFromNotification = true;
       if (event.notification.jsonRepresentation().isNotEmpty) {
         Map<String, dynamic>? data = event.notification.additionalData;
         if (data != null) {
-          GlobalAppState.notificationData = data;
-          final String type = data['type'] ?? '';
-          final String id = data['id'] ?? '';
+          // Lưu data vào GlobalAppState để xử lý sau
+          GlobalAppState.setNotificationData(data);
+          
+          // Nếu splash screen đã qua (không phải cold start), xử lý ngay
+          if (!GlobalAppState.launchedFromNotification) {
+            final String type = data['type'] ?? '';
+            final String id = data['id'] ?? '';
 
-          switch (type) {
-            case 'inbox':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              appRouter.push(AppRoutes.tinNhan, extra: stringMap);
-              break;
+            switch (type) {
+              case 'inbox':
+                _handleInboxNavigation(data);
+                break;
 
-            case 'ordersell':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Cart(initialTab: CartTab.SaleOrder),
-                ),
-              );
-              break;
+              case 'ordersell':
+                _navigateToCart(context, CartTab.SaleOrder);
+                GlobalAppState.clearNotificationData();
+                break;
 
-            case 'orderbuy':
-              Map<String, String>? stringMap = data.map((key, value) {
-                if (value is! String) {
-                  return MapEntry(key, value.toString());
-                }
-                return MapEntry(key, value);
-              });
-              // Use push instead of go to maintain navigation stack
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Cart(initialTab: CartTab.PurchaseOrder),
-                ),
-              );
-              break;
+              case 'orderbuy':
+                _navigateToCart(context, CartTab.PurchaseOrder);
+                GlobalAppState.clearNotificationData();
+                break;
 
-            case 'post':
-              // Navigate to post detail screen with the post ID
-              print("bạn đã chạy vào đây");
-              handlePostNavigation(id);
-              break;
+              case 'post':
+                // Navigate to post detail screen with the post ID
+                print("bạn đã chạy vào đây");
+                handlePostNavigation(id);
+                GlobalAppState.clearNotificationData();
+                break;
 
-            case 'bo':
-              // Navigate to business opportunity screen
-              appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
-                  extra: {'showBusinessOpportunities': true});
-              break;
+              case 'bo':
+                // Navigate to business opportunity screen
+                appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
+                    extra: {'showBusinessOpportunities': true});
+                GlobalAppState.clearNotificationData();
+                break;
 
-            default:
-              // For unknown types, go to notification screen
-              appRouter.go(AppRoutes.thongBao, extra: data);
-              break;
+              default:
+                // For unknown types, go to notification screen
+                appRouter.go(AppRoutes.thongBao, extra: data);
+                GlobalAppState.clearNotificationData();
+                break;
+            }
           }
         } else {
           appRouter.go(AppRoutes.thongBao);
@@ -168,7 +150,12 @@ class _MyAppState extends State<MyApp> {
   Future<void> _handleInboxNavigation(Map<String, dynamic> data) async {
     Map<String, String> stringMap =
         data.map((key, value) => MapEntry(key, value?.toString() ?? ''));
-    await appRouter.push(AppRoutes.tinNhan, extra: stringMap);
+    
+    // Sử dụng go thay vì push để tránh nhiều màn hình chồng lên nhau
+    appRouter.go(AppRoutes.tinNhan, extra: stringMap);
+    
+    // Đánh dấu là đã xử lý notification
+    GlobalAppState.clearNotificationData();
   }
 
   void _navigateToCart(BuildContext context, CartTab tab) {
@@ -224,7 +211,8 @@ class _MyAppState extends State<MyApp> {
       if (!mounted) return;
 
       if (post != null) {
-        appRouter.push('/comments/${post.id ?? id}', extra: {
+        // Sử dụng go thay vì push để tránh nhiều màn hình chồng lên nhau
+        appRouter.go('/comments/${post.id ?? id}', extra: {
           'postId': post.id ?? id,
           'postType': post.category ?? 0,
           'displayName': post.author?.displayName ?? 'Không xác định',
@@ -246,7 +234,7 @@ class _MyAppState extends State<MyApp> {
       } else {
         print('Không tìm thấy bài đăng với ID: $id');
         // Fallback navigation với thông tin tối thiểu
-        appRouter.push('/comments/$id', extra: {
+        appRouter.go('/comments/$id', extra: {
           'postId': id,
           'postType': 0,
           'displayName': 'Không xác định',

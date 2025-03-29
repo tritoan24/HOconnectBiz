@@ -8,6 +8,9 @@ import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/user_provider.dart';
 import '../utils/router/router.name.dart';
+import '../utils/global_state.dart';
+import '../screens/cart/cart_tab.dart';
+import '../screens/chat/chat_list_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,18 +22,18 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool _hasError = false;
   String _errorMessage = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Chuyển hướng sau khoảng thời gian
+    // Chuyển hướng ngay lập tức
     _navigateToNextScreen();
   }
 
   Future<void> _navigateToNextScreen() async {
     try {
-      // Delay ngắn để hiển thị splash screen
-      await Future.delayed(const Duration(seconds: 2));
+      // Không delay nữa, bắt đầu tải dữ liệu ngay lập tức
       if (!mounted) return;
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -53,8 +56,16 @@ class _SplashScreenState extends State<SplashScreen> {
             onTimeout: () => throw TimeoutException('Kết nối mạng quá chậm'),
           );
 
-          // Nếu tất cả API đều thành công
-          if (mounted) context.go(AppRoutes.trangChu);
+          // Kiểm tra xem ứng dụng có được mở từ notification không
+          if (mounted) {
+            if (GlobalAppState.launchedFromNotification && GlobalAppState.notificationData != null) {
+              // Xử lý điều hướng dựa trên notification data
+              _handleNotificationNavigation(GlobalAppState.notificationData!);
+            } else {
+              // Điều hướng mặc định nếu không có notification
+              context.go(AppRoutes.trangChu);
+            }
+          }
         } on TimeoutException catch (e) {
           await _handleApiError(
               'Kết nối mạng chậm. Vui lòng kiểm tra đường truyền.');
@@ -68,6 +79,13 @@ class _SplashScreenState extends State<SplashScreen> {
     } catch (e) {
       // Xử lý các lỗi không mong muốn
       await _handleApiError('Đã xảy ra lỗi không xác định: ${e.toString()}');
+    } finally {
+      // Đảm bảo tắt trạng thái loading ngay cả khi có lỗi
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -90,6 +108,7 @@ class _SplashScreenState extends State<SplashScreen> {
     setState(() {
       _hasError = true;
       _errorMessage = errorMessage;
+      _isLoading = false;
     });
 
     // Log lỗi
@@ -99,6 +118,78 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3), () {
       if (mounted) context.go(AppRoutes.login);
     });
+  }
+
+  // Phương thức mới để xử lý điều hướng dựa trên notification
+  void _handleNotificationNavigation(Map<String, dynamic> data) {
+    if (!mounted) return;
+    
+    final String type = data['type'] ?? '';
+    final String id = data['id'] ?? '';
+
+    // Đánh dấu đã xử lý trước khi điều hướng
+    GlobalAppState.clearNotificationData();
+
+    switch (type) {
+      case 'inbox':
+        Map<String, String>? stringMap = data.map((key, value) {
+          if (value is! String) {
+            return MapEntry(key, value.toString());
+          }
+          return MapEntry(key, value);
+        });
+        
+        // Sử dụng GoRouter.pushReplacement để thay thế màn hình hiện tại
+        context.pushReplacement(AppRoutes.tinNhan, extra: stringMap);
+        break;
+
+      case 'ordersell':
+        // Lưu thông tin cần thiết vào GlobalAppState hoặc cách khác
+        GlobalAppState.pendingCartNavigationType = 'sale';
+        // Điều hướng về trang chủ và từ đó sẽ xử lý mở Cart
+        context.go(AppRoutes.trangChu);
+        break;
+
+      case 'orderbuy':
+        // Lưu thông tin cần thiết vào GlobalAppState hoặc cách khác
+        GlobalAppState.pendingCartNavigationType = 'buy';
+        // Điều hướng về trang chủ và từ đó sẽ xử lý mở Cart
+        context.go(AppRoutes.trangChu);
+        break;
+
+      case 'post':
+        // Điều hướng trực tiếp đến màn hình chi tiết post
+        context.go('/comments/$id', extra: {
+          'postId': id,
+          'postType': 0, // Giá trị mặc định
+          'displayName': 'Đang tải...',
+          'avatar_image': '',
+          'dateTime': DateTime.now().toString(),
+          'title': '',
+          'content': '',
+          'images': [],
+          'business': [],
+          'product': [],
+          'likes': [],
+          'commentCount': 0,
+          'isMe': true,
+          'idUser': '',
+          'isJoin': [],
+          'isBusiness': false,
+          'isComment': true,
+        });
+        break;
+
+      case 'bo':
+        context.go(AppRoutes.trangChu.replaceFirst(':index', '0'), 
+          extra: {'showBusinessOpportunities': true});
+        break;
+
+      default:
+        // Mặc định đến trang thông báo
+        context.go(AppRoutes.thongBao, extra: data);
+        break;
+    }
   }
 
   @override
@@ -119,6 +210,22 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 24),
+            if (_isLoading)
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006AF5)),
+              ),
+            if (_hasError)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  _errorMessage,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
           ],
         ),
       ),
