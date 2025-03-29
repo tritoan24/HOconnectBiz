@@ -1,6 +1,7 @@
 import 'package:clbdoanhnhansg/providers/post_provider.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:clbdoanhnhansg/screens/comment/comments_screen.dart';
+import 'package:clbdoanhnhansg/utils/global_state.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -58,9 +59,12 @@ class _MyAppState extends State<MyApp> {
     }
 
     OneSignal.Notifications.addClickListener((event) {
+      // Đánh dấu rằng ứng dụng đã được mở từ thông báo
+      GlobalAppState.launchedFromNotification = true;
       if (event.notification.jsonRepresentation().isNotEmpty) {
         Map<String, dynamic>? data = event.notification.additionalData;
         if (data != null) {
+          GlobalAppState.notificationData = data;
           final String type = data['type'] ?? '';
           final String id = data['id'] ?? '';
 
@@ -113,7 +117,7 @@ class _MyAppState extends State<MyApp> {
             case 'post':
               // Navigate to post detail screen with the post ID
               print("bạn đã chạy vào đây");
-               handlePostNavigation(id);
+              handlePostNavigation(id);
               break;
 
             case 'bo':
@@ -191,7 +195,8 @@ class _MyAppState extends State<MyApp> {
   Future<void> handlePostNavigation(String id) async {
     try {
       // Sử dụng context từ navigator để tránh null
-      BuildContext? context = Navigator.of(navigatorKey.currentContext!).context;
+      BuildContext? context =
+          Navigator.of(navigatorKey.currentContext!).context;
 
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final post = await postProvider.fetchPostDetail(context, id);

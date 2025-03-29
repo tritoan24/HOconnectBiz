@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/user_provider.dart';
+import '../utils/global_state.dart';
 import '../utils/router/router.name.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,8 +54,10 @@ class _SplashScreenState extends State<SplashScreen> {
             onTimeout: () => throw TimeoutException('Kết nối mạng quá chậm'),
           );
 
-          // Nếu tất cả API đều thành công
-          if (mounted) context.go(AppRoutes.trangChu);
+          // Chỉ điều hướng đến trang chủ nếu KHÔNG mở từ thông báo
+          if (mounted && !GlobalAppState.launchedFromNotification) {
+            context.go(AppRoutes.trangChu);
+          }
         } on TimeoutException catch (e) {
           await _handleApiError(
               'Kết nối mạng chậm. Vui lòng kiểm tra đường truyền.');
