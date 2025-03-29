@@ -17,7 +17,7 @@ class CommentRepository {
       'album': files ?? [],
     };
     final response = await _apiClient.patchRequest(
-      '${ApiEndpoints.post}/comment/${comment.postId}',
+      '${ApiEndpoints.commentPost}/${comment.postId}',
       context,
       body: comment.toJson(),
       files: fileFields,

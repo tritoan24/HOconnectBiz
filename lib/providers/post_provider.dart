@@ -987,7 +987,7 @@ class PostProvider extends BaseProvider {
     try {
       // Make GET request to API
       final response = await ApiClient().getRequest(
-        '${ApiEndpoints.post}/$postId',
+        '${ApiEndpoints.postById}/$postId',
         context,
       );
 

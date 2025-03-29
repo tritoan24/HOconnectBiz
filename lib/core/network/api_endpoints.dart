@@ -19,7 +19,8 @@ class ApiEndpoints {
   static const String product = "product";
   static const String productPin = "product/pin";
   static const String productByUser = "product/getByUserId";
-  static const String post = "post/getById";
+  static const String post = "post";
+  static const String postById = "post/getById";
   static const String postByUser = "post/getByUserId";
   static const String likePost = "post/togglelike/";
   static const String commentPost = "post/comment";
