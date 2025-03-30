@@ -100,6 +100,7 @@ class _TabShopState extends State<TabShop> {
                                   child: ItemProduct(
                                     sanPham: sanPhamGhim[index],
                                     isProfile: widget.isLeading,
+                                    isCheckbtn: true,
                                   ),
                                 );
                               },
@@ -150,6 +151,7 @@ class _TabShopState extends State<TabShop> {
                               return ItemProduct(
                                 sanPham: sanPhamKhac[index],
                                 isProfile: widget.isLeading,
+                                isCheckbtn: true,
                               );
                             },
                           )

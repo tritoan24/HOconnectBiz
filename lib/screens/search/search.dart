@@ -22,7 +22,7 @@ class _SearchViewState extends State<SearchView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   TextEditingController _searchController = TextEditingController();
-  
+
   // Thêm timer cho debounce
   Timer? _debounce;
 
@@ -64,7 +64,7 @@ class _SearchViewState extends State<SearchView>
       setState(() {
         _currentCategory = _tabController.index + 1;
       });
-      
+
       // Reset tìm kiếm khi chuyển tab
       if (_searchController.text.isNotEmpty) {
         _searchController.clear();
@@ -91,7 +91,7 @@ class _SearchViewState extends State<SearchView>
       }
     }
   }
-  
+
   // Thêm debounce cho tìm kiếm
   void _onSearchChanged(String value) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -117,70 +117,133 @@ class _SearchViewState extends State<SearchView>
       child: Scaffold(
         backgroundColor: AppColor.primaryColor,
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           title: Container(
             height: 40.0,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width *
+                  0.9, // Limit width on large screens
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width > 600
+                  ? 24.0
+                  : 16.0, // Larger padding on bigger screens
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(30.0),
               border: Border.all(color: Colors.grey.shade300),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _searchController,
-                    textAlign: TextAlign.left,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 9),
-                      hintText: "Tìm kiếm...",
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      border: InputBorder.none,
-                      icon: AppIcons.getSearch(color: Colors.grey),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    // Search icon with responsive sizing
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: constraints.maxWidth * 0.02,
+                        bottom: 2,
+                      ),
+                      child: AppIcons.getSearch(
+                        color: Colors.grey,
+                        size: constraints.maxWidth > 300
+                            ? 20
+                            : 16, // Smaller icon on very small screens
+                      ),
                     ),
-                    onTap: () {
-                      // Refresh dữ liệu khi người dùng click vào ô tìm kiếm
-                      if (_tabController.index == 0) {
-                        // Tab doanh nghiệp - tải lại danh sách
-                        final boProvider = Provider.of<BoProvider>(context, listen: false);
-                        boProvider.fetchBusinessesSearch(context);
-                      } else {
-                        // Tab bài viết - tải lại danh sách
-                        final postProvider = Provider.of<PostProvider>(context, listen: false);
-                        postProvider.fetchPosts(context);
-                      }
-                    },
-                    onChanged: _onSearchChanged,
-                    onFieldSubmitted: (value) {
-                      if (value.trim().isNotEmpty) {
-                        _performSearch();
-                      }
-                    },
-                  ),
-                ),
-                // Add a clear button
-                if (_searchController.text.isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _searchController.clear();
-                      });
-                      // Trả về danh sách mặc định
-                      if (_tabController.index == 0) {
-                        // Tab doanh nghiệp - tải lại danh sách mặc định
-                        final boProvider =
-                            Provider.of<BoProvider>(context, listen: false);
-                        boProvider.fetchBusinessesSearch(context);
-                      } else {
-                        // Tab bài viết - tải lại danh sách mặc định
-                        final postProvider =
-                            Provider.of<PostProvider>(context, listen: false);
-                        postProvider.fetchPosts(context);
-                      }
-                    },
-                    child: AppIcons.getClear(color: Colors.grey, size: 20),
-                  ),
-              ],
+                    // Expanded text field
+                    Expanded(
+                      child: TextFormField(
+                        controller: _searchController,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          height: 1.0,
+                          fontSize: constraints.maxWidth > 400
+                              ? 16.0
+                              : 14.0, // Responsive font size
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: constraints.maxWidth > 400
+                                ? 12.0
+                                : 10.0, // Adjusted padding for different sizes
+                          ),
+                          hintText: "Tìm kiếm...",
+                          hintStyle: TextStyle(
+                            color: Colors.grey,
+                            height: 1.0,
+                            fontSize: constraints.maxWidth > 400
+                                ? 16.0
+                                : 14.0, // Responsive font size
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        onTap: () {
+                          // Refresh dữ liệu khi người dùng click vào ô tìm kiếm
+                          if (_tabController.index == 0) {
+                            // Tab doanh nghiệp - tải lại danh sách
+                            final boProvider =
+                                Provider.of<BoProvider>(context, listen: false);
+                            boProvider.fetchBusinessesSearch(context);
+                          } else {
+                            // Tab bài viết - tải lại danh sách
+                            final postProvider = Provider.of<PostProvider>(
+                                context,
+                                listen: false);
+                            postProvider.fetchPosts(context);
+                          }
+                        },
+                        onChanged: _onSearchChanged,
+                        onFieldSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            _performSearch();
+                          }
+                        },
+                      ),
+                    ),
+                    // Clear button with responsive sizing
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _searchController.clear();
+                          });
+                          // Trả về danh sách mặc định
+                          if (_tabController.index == 0) {
+                            // Tab doanh nghiệp - tải lại danh sách mặc định
+                            final boProvider =
+                                Provider.of<BoProvider>(context, listen: false);
+                            boProvider.fetchBusinessesSearch(context);
+                          } else {
+                            // Tab bài viết - tải lại danh sách mặc định
+                            final postProvider = Provider.of<PostProvider>(
+                                context,
+                                listen: false);
+                            postProvider.fetchPosts(context);
+                          }
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: constraints.maxWidth > 400 ? 10.0 : 8.0,
+                            horizontal: constraints.maxWidth > 400 ? 8.0 : 4.0,
+                          ),
+                          child: AppIcons.getClear(
+                            color: Colors.grey,
+                            size: constraints.maxWidth > 300
+                                ? 20
+                                : 16, // Smaller icon on very small screens
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
           bottom: TabBar(

@@ -119,7 +119,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
     setState(() {
       _showFullDescription = !_showFullDescription;
       // Điều chỉnh vị trí container text khi chuyển đổi trạng thái
-      _textContainerPosition = _showFullDescription ? 10.0 : -50.0;
+      _textContainerPosition = _showFullDescription ? 60.0 : 60.0;
     });
   }
 
@@ -196,13 +196,17 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
           onTap: () => Navigator.pop(context, _hasChanges),
           child: Container(
             margin: const EdgeInsets.all(8),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: AppIcons.getArrowBackIos(
-              color: Colors.white,
-              size: 20,
+            child: Center(
+              child: AppIcons.getArrowBackIos(
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -239,35 +243,41 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
         children: [
           // Phần ảnh
           Positioned.fill(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemCount: widget.imageList.length,
-              itemBuilder: (context, index) {
-                return InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Image.network(
-                    widget.imageList[index],
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+            child: Center(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height *
+                    0.8, // 80% of screen height
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemCount: widget.imageList.length,
+                  itemBuilder: (context, index) {
+                    return InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: Image.network(
+                        widget.imageList[index],
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
 
@@ -282,7 +292,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
               constraints: BoxConstraints(
                 maxHeight: _showFullDescription
                     ? screenHeight * 0.5
-                    : screenHeight * 0.2,
+                    : screenHeight * 0.3,
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
@@ -290,7 +300,7 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                     const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -308,13 +318,18 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                         ),
                         const SizedBox(height: 8),
                       ],
+                      // Trong widget build
                       GestureDetector(
                         onTap: _toggleDescription,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.description.split('\n').join('\n • '),
+                              // Xử lý định dạng danh sách hợp lý hơn
+                              widget.description
+                                  .split('\n')
+                                  .map((line) => '• $line')
+                                  .join('\n'),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -324,16 +339,19 @@ class _ChiTietBaiDanglScreenState extends State<ChiTietBaiDang> {
                                   ? null
                                   : TextOverflow.ellipsis,
                             ),
-                            if (!_showFullDescription &&
-                                widget.description.split('\n').length > 3)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
-                                child: Text(
-                                  "Xem thêm...",
-                                  style: TextStyle(
-                                    color: Colors.blue[300],
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                            // Sử dụng cách tiếp cận khác để xác định hiển thị "Xem thêm..."
+                            if (!_showFullDescription)
+                              GestureDetector(
+                                onTap: _toggleDescription,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    "Xem thêm...",
+                                    style: TextStyle(
+                                      color: Colors.blue[300],
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
