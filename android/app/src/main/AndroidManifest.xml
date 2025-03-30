@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Quyền thông báo cho Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Cấu hình  Android-specific settings  -->
+
 
 
     <application
@@ -68,6 +72,19 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- OneSignal Configuration -->
+        <meta-data
+            android:name="com.onesignal.NotificationServiceExtension"
+            android:value="com.hoconnectbiz.app.NotificationServiceExtension" />
+
+<!--        <meta-data-->
+<!--            android:name="com.onesignal.NotificationAccentColor.DEFAULT" />-->
+
+        <!-- Optional but recommended -->
+        <meta-data
+            android:name="com.onesignal.suppressLaunchURLs"
+            android:value="true" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

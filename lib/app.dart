@@ -124,13 +124,42 @@ class _MyAppState extends State<MyApp> {
       print(
           'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
 
-      /// Display Notification, preventDefault to not display
-      event.preventDefault();
+      // 1. Let the system notification display (don't prevent default)
+      // event.preventDefault(); // Remove this line to allow the default system notification
 
-      /// Do async work
+      // 2. Additionally show a custom in-app popup
+      if (mounted && navigatorKey.currentContext != null) {
+        // Get notification data
+        final title = event.notification.title ?? 'Thông báo mới';
+        final body = event.notification.body ?? '';
+        final additionalData = event.notification.additionalData;
 
-      /// notification.display() to display after preventing default
-      event.notification.display();
+        // Show custom popup
+        showDialog(
+          context: navigatorKey.currentContext!,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(body),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Đóng'),
+              ),
+              if (additionalData != null)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Handle the notification click manually
+                    _handleNotificationData(additionalData);
+                  },
+                  child: const Text('Xem'),
+                ),
+            ],
+          ),
+        );
+      }
     });
 
     OneSignal.InAppMessages.addClickListener((event) {
@@ -150,33 +179,40 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<void> _handleInboxNavigation(Map<String, dynamic> data) async {
-    Map<String, String> stringMap =
-        data.map((key, value) => MapEntry(key, value?.toString() ?? ''));
+// Helper method to handle notification data from the custom popup
+  void _handleNotificationData(Map<String, dynamic> data) {
+    final String type = data['type'] ?? '';
+    final String id = data['id'] ?? '';
 
-    // Sử dụng go thay vì push để tránh nhiều màn hình chồng lên nhau
-    appRouter.go(AppRoutes.tinNhan, extra: stringMap);
+    switch (type) {
+      case 'inbox':
+        Map<String, String> stringMap = data.map((key, value) {
+          return MapEntry(key, value?.toString() ?? '');
+        });
+        appRouter.go(AppRoutes.tinNhan, extra: stringMap);
+        break;
 
-    // Đánh dấu là đã xử lý notification
-    GlobalAppState.clearNotificationData();
-  }
+      case 'ordersell':
+        appRouter.push('/cart', extra: {'initialTab': CartTab.SaleOrder});
+        break;
 
-  void _navigateToCart(BuildContext context, CartTab tab) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Cart(initialTab: tab),
-      ),
-    );
-  }
+      case 'orderbuy':
+        appRouter.push('/cart', extra: {'initialTab': CartTab.PurchaseOrder});
+        break;
 
-  void _navigateToBusinessOpportunities() {
-    appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
-        extra: {'showBusinessOpportunities': true});
-  }
+      case 'post':
+        handlePostNavigation(id);
+        break;
 
-  void _navigateToNotificationScreen(Map<String, dynamic>? data) {
-    appRouter.go(AppRoutes.thongBao, extra: data);
+      case 'bo':
+        final String idPost = data['id'] ?? '';
+        appRouter.push(AppRoutes.chitietcohoi, extra: {'idPost': idPost});
+        break;
+
+      default:
+        appRouter.go(AppRoutes.thongBao, extra: data);
+        break;
+    }
   }
 
   @override

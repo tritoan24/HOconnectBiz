@@ -509,6 +509,8 @@ class AuthProvider extends BaseProvider {
                   name: 'LOGOUT_GOOGLE_ERROR', error: e);
             }
           } else if (registerType == 'fb') {
+            // Đảm bảo xóa register_type
+            await prefs.remove('register_type');
             await FacebookAuth.instance.logOut();
             developer.log('Đã đăng xuất Facebook',
                 name: 'PROFILE_LOGOUT.FACEBOOK');
