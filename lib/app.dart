@@ -120,47 +120,47 @@ class _MyAppState extends State<MyApp> {
       }
     });
 
-    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-      print(
-          'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
-
-      // 1. Let the system notification display (don't prevent default)
-      // event.preventDefault(); // Remove this line to allow the default system notification
-
-      // 2. Additionally show a custom in-app popup
-      if (mounted) {
-        // Get notification data
-        final title = event.notification.title ?? 'Thông báo mới';
-        final body = event.notification.body ?? '';
-        final additionalData = event.notification.additionalData;
-
-        // Show custom popup
-        showDialog(
-          context: navigatorKey.currentContext!,
-          builder: (context) => AlertDialog(
-            title: Text(title),
-            content: Text(body),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Đóng'),
-              ),
-              if (additionalData != null)
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    // Handle the notification click manually
-                    _handleNotificationData(additionalData);
-                  },
-                  child: const Text('Xem'),
-                ),
-            ],
-          ),
-        );
-      }
-    });
+    // OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+    //   print(
+    //       'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
+    //
+    //   // 1. Let the system notification display (don't prevent default)
+    //   // event.preventDefault(); // Remove this line to allow the default system notification
+    //
+    //   // 2. Additionally show a custom in-app popup
+    //   if (mounted) {
+    //     // Get notification data
+    //     final title = event.notification.title ?? 'Thông báo mới';
+    //     final body = event.notification.body ?? '';
+    //     final additionalData = event.notification.additionalData;
+    //
+    //     // Show custom popup
+    //     showDialog(
+    //       context: navigatorKey.currentContext!,
+    //       builder: (context) => AlertDialog(
+    //         title: Text(title),
+    //         content: Text(body),
+    //         actions: [
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //             child: const Text('Đóng'),
+    //           ),
+    //           if (additionalData != null)
+    //             TextButton(
+    //               onPressed: () {
+    //                 Navigator.of(context).pop();
+    //                 // Handle the notification click manually
+    //                 _handleNotificationData(additionalData);
+    //               },
+    //               child: const Text('Xem'),
+    //             ),
+    //         ],
+    //       ),
+    //     );
+    //   }
+    // });
 
     OneSignal.InAppMessages.addClickListener((event) {
       print('In App Message Clicked: $event');

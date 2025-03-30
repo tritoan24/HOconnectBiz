@@ -85,6 +85,7 @@ class _TabShopState extends State<TabShop> {
                         },
                         label: 'Chỉnh sửa sản phẩm đã ghim',
                       ),
+                    const SizedBox(height: 18),
                     Container(
                       height: sanPhamGhim.isEmpty ? 30 : 268,
                       child: sanPhamGhim.isNotEmpty
@@ -115,8 +116,11 @@ class _TabShopState extends State<TabShop> {
 
               // Sản phẩm khác
               Padding(
-                padding: const EdgeInsets.only(
-                    left: 12, right: 12, top: 12, bottom: 100),
+                padding: EdgeInsets.only(
+                    left: 12,
+                    right: 12,
+                    top: 12,
+                    bottom: widget.isLeading ? 0 : 80),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

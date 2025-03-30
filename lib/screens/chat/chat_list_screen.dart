@@ -239,21 +239,22 @@ class MessageTile extends StatelessWidget {
                 groupName: contact.displayName,
                 quantityMember: totalMem,
               ),
-              type: TransitionType.fade,
+              type: TransitionType.slideRight,
             ),
           );
         } else {
           // Navigate to business/individual chat screen
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => DeltailsSalesArticle(
+            CustomPageTransition(
+              page: DeltailsSalesArticle(
                 currentUserId: currentUserId,
                 idMessage: idMessage,
                 idReceiver: contact.id,
                 avatarImage: contact.avatarImage,
                 displayName: contact.displayName,
               ),
+              type: TransitionType.slideRight,
             ),
           );
         }
