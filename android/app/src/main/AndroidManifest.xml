@@ -75,11 +75,16 @@
 
         <!-- OneSignal Configuration -->
         <meta-data
-            android:name="com.onesignal.NotificationServiceExtension"
-            android:value="com.hoconnectbiz.app.NotificationServiceExtension" />
+            android:name="com.onesignal.NotificationChannelId"
+            android:value="your_channel_id" />
 
-<!--        <meta-data-->
-<!--            android:name="com.onesignal.NotificationAccentColor.DEFAULT" />-->
+        <meta-data
+            android:name="com.onesignal.NotificationChannelName"
+            android:value="HOConnectBiz Notifications" />
+
+        <meta-data
+            android:name="com.onesignal.NotificationAccentColor.DEFAULT"
+            android:value="FFFF0000" />
 
         <!-- Optional but recommended -->
         <meta-data

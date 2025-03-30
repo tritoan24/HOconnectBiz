@@ -128,7 +128,7 @@ class _MyAppState extends State<MyApp> {
       // event.preventDefault(); // Remove this line to allow the default system notification
 
       // 2. Additionally show a custom in-app popup
-      if (mounted && navigatorKey.currentContext != null) {
+      if (mounted) {
         // Get notification data
         final title = event.notification.title ?? 'Thông báo mới';
         final body = event.notification.body ?? '';
