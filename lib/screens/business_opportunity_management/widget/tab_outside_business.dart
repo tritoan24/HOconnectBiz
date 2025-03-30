@@ -28,7 +28,14 @@ class _TabOutsideBusinessState extends State<TabOutsideBusiness> {
           final boListOut = boProvider.boListOut;
 
           if (boProvider.isLoadingBoOut) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Lottie.asset(
+                'assets/lottie/loading.json',
+                width: 70,
+                height: 70,
+                fit: BoxFit.contain,
+              ),
+            );
           }
 
           if (boProvider.errorMessageBoOut.isNotEmpty) {
