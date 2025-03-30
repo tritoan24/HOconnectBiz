@@ -179,22 +179,30 @@ class BangXepHang extends StatelessWidget {
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Xếp hạng",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                        fontWeight: FontWeight.w600,
+                    // Zone 1: Rank title (fixed width - 40% of screen)
+                    Container(
+                      width:
+                          screenWidth * 0.4, // Increased width for rank title
+                      child: Text(
+                        "Xếp hạng",
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    Text(
-                      "Tên doanh nghiệp",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                        fontWeight: FontWeight.w600,
+                    // Zone 2: Business name title (remaining width - 60% of screen)
+                    Expanded(
+                      child: Text(
+                        "Tên doanh nghiệp",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
                     ),
                   ],
@@ -233,17 +241,21 @@ class BangXepHang extends StatelessWidget {
                                 );
                               },
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "Thứ hạng ${rank.rank}",
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.035,
-                                      fontWeight: FontWeight.w400,
+                                  // Zone 1: Rank (fixed width - 40% of screen)
+                                  Container(
+                                    width: screenWidth *
+                                        0.35, // Slightly reduced width for rank
+                                    child: Text(
+                                      "Thứ hạng ${rank.rank}",
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.035,
+                                        fontWeight: FontWeight.w400,
+                                      ),
                                     ),
                                   ),
-                                  Flexible(
+                                  // Zone 2: Name (remaining width)
+                                  Expanded(
                                     child: Text(
                                       rank.companyName.isNotEmpty
                                           ? rank.companyName
@@ -252,8 +264,9 @@ class BangXepHang extends StatelessWidget {
                                         fontSize: screenWidth * 0.035,
                                         fontWeight: FontWeight.w400,
                                       ),
-                                      textAlign: TextAlign.right,
+                                      textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
