@@ -59,18 +59,32 @@ void main() {
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
     OneSignal.initialize(AppConfig.oneSignalAppId);
 
+    // Cấu hình thêm cho OneSignal
+    OneSignal.Notifications.clearAll();
+    OneSignal.User.pushSubscription.optIn();
+    
     // Yêu cầu quyền thông báo cho iOS
     if (Platform.isIOS) {
-      OneSignal.Notifications.requestPermission(true);
+      // Đợi một chút để đảm bảo ứng dụng đã khởi động hoàn toàn
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Cấu hình cho iOS
+      await OneSignal.Notifications.requestPermission(true).then((accepted) {
+        print("Quyền thông báo iOS: $accepted");
+      });
+      
+      // Đăng ký để nhận thông báo từ xa
+      await OneSignal.User.pushSubscription.optIn().then((_) {
+        print("Đã đăng ký nhận thông báo từ xa trên iOS");
+      });
     }
-    // Trong main.dart, bạn có thể bỏ comment phần kiểm tra Android 13+
+    
+    // Kiểm tra và yêu cầu quyền cho Android 13+
     if (Platform.isAndroid) {
       final isAndroid13Plus = await _isAndroid13OrHigher();
       if (isAndroid13Plus) {
-        // Android 13+ requires explicit permission request
-        OneSignal.Notifications.requestPermission(true);
+        await OneSignal.Notifications.requestPermission(true);
       }
-      OneSignal.Notifications.requestPermission(true);
     }
 
     // Khởi tạo logger
