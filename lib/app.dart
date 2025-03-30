@@ -5,10 +5,12 @@ import 'package:clbdoanhnhansg/utils/global_state.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import 'providers/auth_provider.dart';
 import 'utils/router/router.dart';
 import 'utils/router/router.name.dart';
 import 'widgets/handling_permissions.dart';
+import 'package:flutter/foundation.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -121,44 +123,89 @@ class _MyAppState extends State<MyApp> {
     });
 
     OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-      print(
-          'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
+      print('NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
 
-      // 1. Let the system notification display (don't prevent default)
-      // event.preventDefault(); // Remove this line to allow the default system notification
+      if (Platform.isIOS) {
+        // Cho phép thông báo hệ thống hiển thị trên iOS
+        // KHÔNG gọi event.preventDefault()
+        
+        // Chỉ hiển thị banner trong ứng dụng nếu ứng dụng đang active
+        if (mounted && navigatorKey.currentContext != null) {
+          final title = event.notification.title ?? 'Thông báo mới';
+          final body = event.notification.body ?? '';
+          final additionalData = event.notification.additionalData;
 
-      // 2. Additionally show a custom in-app popup
-      if (mounted) {
-        // Get notification data
-        final title = event.notification.title ?? 'Thông báo mới';
-        final body = event.notification.body ?? '';
-        final additionalData = event.notification.additionalData;
-
-        // Show custom popup
-        showDialog(
-          context: navigatorKey.currentContext!,
-          builder: (context) => AlertDialog(
-            title: Text(title),
-            content: Text(body),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Đóng'),
+          // Hiển thị thông báo dạng banner với style iOS
+          ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(body),
+                ],
               ),
-              if (additionalData != null)
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    // Handle the notification click manually
-                    _handleNotificationData(additionalData);
-                  },
-                  child: const Text('Xem'),
-                ),
-            ],
-          ),
-        );
+              duration: const Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              action: additionalData != null
+                  ? SnackBarAction(
+                      label: 'Xem',
+                      onPressed: () {
+                        _handleNotificationData(additionalData);
+                      },
+                    )
+                  : null,
+            ),
+          );
+        }
+      } else {
+        // Xử lý cho Android như cũ
+        if (mounted && navigatorKey.currentContext != null) {
+          final title = event.notification.title ?? 'Thông báo mới';
+          final body = event.notification.body ?? '';
+          final additionalData = event.notification.additionalData;
+
+          ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(body),
+                ],
+              ),
+              duration: const Duration(seconds: 5),
+              action: additionalData != null
+                  ? SnackBarAction(
+                      label: 'Xem',
+                      onPressed: () {
+                        _handleNotificationData(additionalData);
+                      },
+                    )
+                  : null,
+            ),
+          );
+        }
       }
     });
 
