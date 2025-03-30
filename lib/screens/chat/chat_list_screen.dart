@@ -239,7 +239,7 @@ class MessageTile extends StatelessWidget {
                 groupName: contact.displayName,
                 quantityMember: totalMem,
               ),
-              type: TransitionType.slideRight,
+              type: TransitionType.fade,
             ),
           );
         } else {
@@ -254,7 +254,7 @@ class MessageTile extends StatelessWidget {
                 avatarImage: contact.avatarImage,
                 displayName: contact.displayName,
               ),
-              type: TransitionType.slideRight,
+              type: TransitionType.fade,
             ),
           );
         }

@@ -558,11 +558,14 @@ class _MemberListSectionState extends State<MemberListSection> {
             initialDeduction: currentUserMember!.deduction?.toDouble() ?? 0.0,
             member: currentUserMember!,
             onSave: (revenue, deduction, status) async {
+              // Kiểm tra xem widget vẫn còn mounted hay không
+              if (!mounted) {
+                print("Widget đã bị hủy, bỏ qua cập nhật");
+                return;
+              }
+
               final boProvider =
                   Provider.of<BoProvider>(context, listen: false);
-
-              // Remove this erroneous line
-              // if(widget.members.revenue)
 
               // Check if values actually changed before making the API call
               double currentRevenue =
@@ -581,32 +584,57 @@ class _MemberListSectionState extends State<MemberListSection> {
               }
 
               if (revenue < deduction) {
+                if (mounted) {
+                  // Kiểm tra lại trước khi hiển thị dialog
+                  showDialog(
+                    context: context,
+                    builder: (context) => CustomConfirmDialog(
+                      titleButtonLeft: "Hủy",
+                      titleButtonRight: "Xác nhận",
+                      content:
+                          "Doanh thu không thể nhỏ hơn chi phí. Vui lòng kiểm tra lại.",
+                      onConfirm: () {
+                        Navigator.of(context).pop(); // Đóng dialog
+                      },
+                    ),
+                  );
+                }
+              } else {
                 showDialog(
                   context: context,
                   builder: (context) => CustomConfirmDialog(
                     titleButtonLeft: "Hủy",
                     titleButtonRight: "Xác nhận",
                     content:
-                        "Doanh thu không thể nhỏ hơn chi phí. Vui lòng kiểm tra lại.",
-                    onConfirm: () {},
+                        "Bạn có chắc chắn muốn cập nhật doanh thu và trích quỹ không?",
+                    onConfirm: () async {
+                      try {
+                        await boProvider.updateRevenue(
+                          widget.idPost,
+                          status,
+                          revenue.toInt(),
+                          deduction.toInt(),
+                          context,
+                        );
+
+                        // Kiểm tra lại xem widget có còn mounted không
+                        if (mounted) {
+                          setState(() {}); // Refresh UI after update
+
+                          //hiển thị thông báo thành công
+                        }
+                      } catch (e) {
+                        print("❌ Error updating revenue: $e");
+                        // Có thể hiển thị thông báo lỗi nếu widget vẫn mounted
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Lỗi khi cập nhật: $e")),
+                          );
+                        }
+                      }
+                    },
                   ),
                 );
-              } else {
-                try {
-                  await boProvider.updateRevenue(
-                    widget.idPost,
-                    status,
-                    revenue.toInt(),
-                    deduction.toInt(),
-                    context,
-                  );
-
-                  // Refresh data after update
-                  await boProvider.fetchBoDataById(context, widget.idPost);
-                  setState(() {}); // Refresh UI after update
-                } catch (e) {
-                  print("❌ Error updating revenue: $e");
-                }
               }
             },
           ),

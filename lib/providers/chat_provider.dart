@@ -33,7 +33,7 @@ class ChatProvider with ChangeNotifier {
   int _currentPage = 1;
   bool _hasMoreMessages = true;
   int _totalMessageCount = 0;
-  static const int _limit = 10;
+  static const int _limit = 30;
   final _storage = const FlutterSecureStorage();
   String company_name = '';
 
@@ -514,6 +514,10 @@ class ChatProvider with ChangeNotifier {
   /// Lấy danh sách tin nhắn trong một phòng chat
   Future<void> getListDetailChat(BuildContext context, String idUser,
       {bool loadMore = false}) async {
+    // //xóa tin nhan
+    // if (loadMore) {
+    //   clearState();
+    // }
     if (!loadMore) {
       _currentPage = 1;
       _hasMoreMessages = true;
