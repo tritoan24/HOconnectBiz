@@ -281,7 +281,7 @@ class _SalesOrderTabState extends State<SalesOrderTab> {
                 ],
               ),
             ),
-            // _buildActionButtons(order),
+            _buildActionButtons(order),
           ],
         ),
       ),
