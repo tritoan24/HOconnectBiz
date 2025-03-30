@@ -267,8 +267,6 @@ class _HomeState extends State<Home> {
                     viewportFraction: 1,
                     enableInfiniteScroll: false,
                     scrollDirection: Axis.horizontal,
-                    scrollPhysics:
-                        NeverScrollableScrollPhysics(), // Thêm dòng này để vô hiệu hóa cuộn dọc
                   ),
                   itemCount: posts.length,
                   itemBuilder: (context, index, realIndex) {
@@ -276,8 +274,7 @@ class _HomeState extends State<Home> {
 
                     return SingleChildScrollView(
                       // Thay đổi ở đây
-                      physics:
-                          NeverScrollableScrollPhysics(), // Vô hiệu hóa cuộn trong mỗi item
+                      physics: const NeverScrollableScrollPhysics(),
                       child: PostItem(
                         postId: post.id ?? '',
                         postType: post.category ?? 1,

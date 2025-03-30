@@ -286,7 +286,9 @@ class PostProvider extends BaseProvider {
     notifyListeners();
     try {
       // Tạo dữ liệu body cần gửi
-      Map<String, dynamic> body = {"category": 2};
+      Map<String, dynamic> body = {
+        "category": 2,
+      };
 
       // Gửi yêu cầu POST đến API
       final response = await ApiClient().postRequest(
