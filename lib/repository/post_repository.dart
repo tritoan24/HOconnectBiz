@@ -63,7 +63,7 @@ class PostRepository {
 
     // Make the API call
     final response = await _apiClient.patchRequest(
-      '${ApiEndpoints.postById}/$postId',
+      '${ApiEndpoints.post}/$postId',
       body: body,
       context,
       files: fileFields,
@@ -75,7 +75,7 @@ class PostRepository {
   // Add delete method
   Future<ApiResponse> deletePost(String postID, BuildContext context) async {
     final response = await _apiClient.deleteRequest(
-      '${ApiEndpoints.postById}/$postID',
+      '${ApiEndpoints.post}/$postID',
       context,
     );
     return ApiResponse.fromJson(response);

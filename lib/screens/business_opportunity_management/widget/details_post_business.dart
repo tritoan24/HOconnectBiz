@@ -20,14 +20,11 @@ import 'member_item.dart';
 
 class DetailsPostBusiness extends StatefulWidget {
   final String idPost;
-  final bool isInBusiness;
-  final int totalStar;
 
-  const DetailsPostBusiness(
-      {super.key,
-      required this.idPost,
-      this.isInBusiness = true,
-      this.totalStar = 0});
+  const DetailsPostBusiness({
+    super.key,
+    required this.idPost,
+  });
 
   @override
   State<DetailsPostBusiness> createState() => _DetailsPostBusinessState();
@@ -35,6 +32,7 @@ class DetailsPostBusiness extends StatefulWidget {
 
 class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
   late String currentUserId = "";
+  late bool isInBusiness;
 
   @override
   void initState() {
@@ -83,7 +81,10 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         otherMembers.add(member);
       }
     }
-    print('trạng thái is business: ${widget.isInBusiness}');
+    //nếu
+    author.id == currentUserId ? isInBusiness = true : isInBusiness = false;
+
+    print('trạng thái is business: ${isInBusiness}');
 
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
@@ -102,7 +103,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
               borderRadius: BorderRadius.circular(8),
             ),
             itemBuilder: (BuildContext context) {
-              if (widget.isInBusiness) {
+              if (isInBusiness) {
                 return <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(
                     value: 'end_strategy',
@@ -194,7 +195,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
                           member: members,
                           author: author ?? AuthorBusiness.defaultAuthor(),
                           idPost: widget.idPost,
-                          isBusiness: widget.isInBusiness,
+                          isBusiness: isInBusiness,
                           currentUserId: currentUserId,
                         ),
                         const SizedBox(height: 8),

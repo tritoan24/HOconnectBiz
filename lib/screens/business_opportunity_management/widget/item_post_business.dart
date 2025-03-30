@@ -19,7 +19,6 @@ class ItemPostBussiness extends StatelessWidget {
         Widget targetScreen;
         targetScreen = DetailsPostBusiness(
           idPost: bo.id,
-          isInBusiness: isInBusiness,
         );
         Navigator.push(
           context,

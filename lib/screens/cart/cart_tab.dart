@@ -2,7 +2,11 @@ import 'package:clbdoanhnhansg/providers/cart_provider.dart';
 import 'package:clbdoanhnhansg/screens/cart/widget/purchase_order_tab.dart';
 import 'package:clbdoanhnhansg/screens/cart/widget/sales_order_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+import '../../utils/global_state.dart';
+import '../../utils/router/router.name.dart';
 
 // Thêm enum để quản lý các tab
 enum CartTab { SaleOrder, PurchaseOrder }
@@ -79,7 +83,18 @@ class _CardState extends State<Cart> with SingleTickerProviderStateMixin {
             Icons.arrow_back_ios,
             color: Colors.grey,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Check if we came from a notification
+            if (GlobalAppState.launchedFromNotification) {
+              // Navigate to home screen instead of just popping
+              context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+              // Reset the flag
+              GlobalAppState.launchedFromNotification = false;
+            } else {
+              // Normal back behavior
+              Navigator.of(context).pop();
+            }
+          },
         ),
         title: Container(
           height: 40,

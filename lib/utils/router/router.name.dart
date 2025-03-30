@@ -19,6 +19,7 @@ class AppRoutes {
 
   static const String postDetail = 'post/:postId';
   static const String chiTietDonHang = '/chi-tiet-don-hang';
+  static const String chitietcohoi = '/chi-tiet-co-hoi';
 }
 
 class UrlImage {

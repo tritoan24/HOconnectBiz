@@ -57,63 +57,66 @@ class _MyAppState extends State<MyApp> {
       }
     }
     OneSignal.Notifications.addClickListener((event) {
-      // Chỉ xử lý nếu không có notification nào đang được xử lý
-      if (GlobalAppState.notificationProcessed) {
-        // Notification đã được xử lý
+      print("Notification clicked: ${event.notification.jsonRepresentation()}");
+
+      // Get notification data
+      Map<String, dynamic>? data = event.notification.additionalData;
+      if (data == null) {
+        print("No additional data in notification");
+        appRouter.go(AppRoutes.thongBao);
         return;
       }
-      
-      // Đánh dấu rằng ứng dụng đã được mở từ thông báo
-      if (event.notification.jsonRepresentation().isNotEmpty) {
-        Map<String, dynamic>? data = event.notification.additionalData;
-        if (data != null) {
-          // Lưu data vào GlobalAppState để xử lý sau
-          GlobalAppState.setNotificationData(data);
-          
-          // Nếu splash screen đã qua (không phải cold start), xử lý ngay
-          if (!GlobalAppState.launchedFromNotification) {
-            final String type = data['type'] ?? '';
-            final String id = data['id'] ?? '';
 
-            switch (type) {
-              case 'inbox':
-                _handleInboxNavigation(data);
-                break;
+      // Store the notification data
+      GlobalAppState.launchedFromNotification = true;
 
-              case 'ordersell':
-                _navigateToCart(context, CartTab.SaleOrder);
-                GlobalAppState.clearNotificationData();
-                break;
+      // Process regardless of app state
+      final String type = data['type'] ?? '';
+      final String id = data['id'] ?? '';
 
-              case 'orderbuy':
-                _navigateToCart(context, CartTab.PurchaseOrder);
-                GlobalAppState.clearNotificationData();
-                break;
+      print(
+          "Processing notification: type=$type, id=$id, app state: ${GlobalAppState.launchedFromNotification ? 'cold start' : 'running'}");
 
-              case 'post':
-                // Navigate to post detail screen with the post ID
-                print("bạn đã chạy vào đây");
-                handlePostNavigation(id);
-                GlobalAppState.clearNotificationData();
-                break;
+      // Handle navigation based on type using GoRouter only
+      switch (type) {
+        case 'inbox':
+          Map<String, String> stringMap = data.map((key, value) {
+            return MapEntry(key, value?.toString() ?? '');
+          });
 
-              case 'bo':
-                // Navigate to business opportunity screen
-                appRouter.go(AppRoutes.trangChu.replaceFirst(':index', '0'),
-                    extra: {'showBusinessOpportunities': true});
-                GlobalAppState.clearNotificationData();
-                break;
+          // Navigate first, then set a cleanup timer
+          appRouter.go(AppRoutes.tinNhan, extra: stringMap);
 
-              default:
-                // For unknown types, go to notification screen
-                appRouter.go(AppRoutes.thongBao, extra: data);
-                GlobalAppState.clearNotificationData();
-                break;
-            }
-          }
-        } else {
-          appRouter.go(AppRoutes.thongBao);
-        }
+          // Clear notification after navigation is likely complete
+          Future.delayed(const Duration(seconds: 10), () {
+            GlobalAppState.launchedFromNotification = false;
+          });
+          break;
+
+        case 'ordersell':
+          print("bạn đã chạy vào đây...");
+          appRouter.push('/cart', extra: {'initialTab': CartTab.SaleOrder});
+          break;
+
+        case 'orderbuy':
+          print("bạn đã chạy vào đây cho đơn mua...");
+          appRouter.push('/cart', extra: {'initialTab': CartTab.PurchaseOrder});
+          break;
+        case 'post':
+          // Navigate to post detail screen with the post ID
+          print("bạn đã chạy vào đây");
+          handlePostNavigation(id);
+          break;
+
+        case 'bo':
+          final String idPost = data['id'] ?? '';
+          print("Navigating to business opportunity details: $idPost");
+          appRouter.push(AppRoutes.chitietcohoi, extra: {'idPost': idPost});
+          break;
+
+        default:
+          appRouter.go(AppRoutes.thongBao, extra: data);
+          break;
       }
     });
 
@@ -150,10 +153,10 @@ class _MyAppState extends State<MyApp> {
   Future<void> _handleInboxNavigation(Map<String, dynamic> data) async {
     Map<String, String> stringMap =
         data.map((key, value) => MapEntry(key, value?.toString() ?? ''));
-    
+
     // Sử dụng go thay vì push để tránh nhiều màn hình chồng lên nhau
     appRouter.go(AppRoutes.tinNhan, extra: stringMap);
-    
+
     // Đánh dấu là đã xử lý notification
     GlobalAppState.clearNotificationData();
   }
@@ -204,7 +207,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> handlePostNavigation(String id) async {
     try {
       if (!mounted) return;
-      
+
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final post = await postProvider.fetchPostDetail(context, id);
 

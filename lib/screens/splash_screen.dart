@@ -56,15 +56,9 @@ class _SplashScreenState extends State<SplashScreen> {
             onTimeout: () => throw TimeoutException('Kết nối mạng quá chậm'),
           );
 
-          // Kiểm tra xem ứng dụng có được mở từ notification không
-          if (mounted) {
-            if (GlobalAppState.launchedFromNotification && GlobalAppState.notificationData != null) {
-              // Xử lý điều hướng dựa trên notification data
-              _handleNotificationNavigation(GlobalAppState.notificationData!);
-            } else {
-              // Điều hướng mặc định nếu không có notification
-              context.go(AppRoutes.trangChu);
-            }
+          // Chỉ điều hướng đến trang chủ nếu KHÔNG mở từ thông báo
+          if (mounted && !GlobalAppState.launchedFromNotification) {
+            context.go(AppRoutes.trangChu);
           }
         } on TimeoutException catch (e) {
           await _handleApiError(
@@ -120,60 +114,6 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  // Phương thức mới để xử lý điều hướng dựa trên notification
-  void _handleNotificationNavigation(Map<String, dynamic> data) {
-    if (!mounted) return;
-    
-    final String type = data['type'] ?? '';
-    final String id = data['id'] ?? '';
-    
-    print("Đang xử lý thông báo, loại: $type, ID: $id");
-
-    switch (type) {
-      case 'inbox':
-        Map<String, String> stringMap = data.map((key, value) {
-          if (value is! String) {
-            return MapEntry(key, value.toString());
-          }
-          return MapEntry(key, value);
-        });
-        
-        print("Điều hướng đến màn hình tin nhắn với dữ liệu: $stringMap");
-        context.go(AppRoutes.tinNhan, extra: stringMap);
-        break;
-      
-      case 'post':
-        print("Điều hướng đến trang chủ với ID bài viết để lấy thông tin chi tiết");
-        
-        // Lưu ID bài viết để xử lý ở trang chủ
-        context.go(AppRoutes.trangChu, extra: {'postId': id});
-        break;
-        
-      case 'ordersell':
-        print("Điều hướng đến trang chủ trước khi xem đơn hàng bán");
-        context.go(AppRoutes.trangChu, extra: {'cartTab': 'sale'});
-        break;
-        
-      case 'orderbuy':
-        print("Điều hướng đến trang chủ trước khi xem đơn hàng mua");
-        context.go(AppRoutes.trangChu, extra: {'cartTab': 'buy'});
-        break;
-        
-      case 'bo':
-        print("Điều hướng đến trang cơ hội kinh doanh");
-        context.go(AppRoutes.trangChu, extra: {'showBusinessOpportunities': true});
-        break;
-        
-      default:
-        print("Loại thông báo không xác định, điều hướng đến trang thông báo");
-        context.go(AppRoutes.thongBao, extra: data);
-        break;
-    }
-    
-    // Xóa thông tin thông báo sau khi đã xử lý
-    GlobalAppState.clearNotificationData();
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -191,23 +131,6 @@ class _SplashScreenState extends State<SplashScreen> {
               height: isSmallScreen ? 125 : 250,
               fit: BoxFit.contain,
             ),
-            const SizedBox(height: 24),
-            if (_isLoading)
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006AF5)),
-              ),
-            if (_hasError)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  _errorMessage,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
           ],
         ),
       ),

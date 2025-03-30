@@ -100,7 +100,6 @@ class _CompanyListState extends State<_CompanyList> {
           MaterialPageRoute(
             builder: (context) => DetailsPostBusiness(
               idPost: postId,
-              isInBusiness: true,
             ),
           ),
         );

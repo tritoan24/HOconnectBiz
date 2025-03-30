@@ -8,11 +8,13 @@ import 'package:clbdoanhnhansg/screens/comment/widget/comment_item.dart';
 import 'package:clbdoanhnhansg/screens/search/widget/post/post_item.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/business_model.dart';
 import '../../models/product_model.dart';
+import '../../utils/global_state.dart';
 import '../../utils/icons/app_icons.dart';
 import '../../utils/router/router.name.dart';
 import '../chat/widget/message_input.dart';
@@ -79,14 +81,7 @@ class _CommentState extends State<CommentsScreen> {
       final commentProvider =
           Provider.of<CommentProvider>(context, listen: false);
       commentProvider.getComments(widget.postId, context).then((_) {
-        // Scroll xuống dưới cùng sau khi load xong comments
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
+        _scrollToBottom();
       });
       debugPrint(
           "🔍 DEBUG CommentsScreen: Đã gọi getComments cho postId: ${widget.postId}");
@@ -170,12 +165,25 @@ class _CommentState extends State<CommentsScreen> {
       }
 
       debugPrint("🔍 DEBUG CommentsScreen: Đã tạo comment thành công");
+      // Gọi hàm cuộn xuống dưới cùng
+      _scrollToBottom();
     } catch (e) {
       debugPrint('⚠️ ERROR CommentsScreen: Lỗi khi tạo comment: $e');
     } finally {
       setState(() {
         isSubmitting = false;
       });
+    }
+  }
+
+  //hàm cuộn xuống dưới cùng
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -214,7 +222,21 @@ class _CommentState extends State<CommentsScreen> {
             onPressed: () {
               debugPrint(
                   "🔍 DEBUG CommentsScreen: Quay lại với _hasChanges = $_hasChanges");
-              Navigator.pop(context, _hasChanges);
+
+              // Check if we came from a notification
+              if (GlobalAppState.launchedFromNotification) {
+                // Navigate to home screen instead of just popping
+                context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+                // Reset the flag
+                GlobalAppState.launchedFromNotification = false;
+              } else {
+                // Normal back behavior
+                if (_hasChanges) {
+                  context.pop(_hasChanges);
+                } else {
+                  context.pop();
+                }
+              }
             },
           ),
         ),
@@ -271,9 +293,9 @@ class _CommentState extends State<CommentsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...commentProvider.comments.map((comment) => 
-                  BinhLuanItem(binhLuan: comment)
-                ).toList(),
+                ...commentProvider.comments
+                    .map((comment) => BinhLuanItem(binhLuan: comment))
+                    .toList(),
               ],
             ),
           ),
