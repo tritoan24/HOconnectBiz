@@ -41,7 +41,7 @@ class _PostManageState extends State<PostManageTab> {
       debugPrint(
           "🔍 Có ${posts.length} bài viết trong danh sách-----------------------!");
       return Scaffold(
-        backgroundColor: AppColor.backgroundColorApp,
+        backgroundColor: Colors.grey.shade100,
         body: RefreshIndicator(
           onRefresh: () async {
             await postProvider.fetchPostsByUser(context);

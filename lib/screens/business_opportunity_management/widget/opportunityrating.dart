@@ -92,8 +92,9 @@ class _OpportunityRating2State extends State<OpportunityRating2> {
                   children: [
                     Expanded(
                       child: widget.ratings.isEmpty ||
-                              widget.ratings[0].review == null
-                          ? const Center(
+                              widget.ratings
+                                  .every((rating) => rating.review == null)
+                          ? Center(
                               child: Text('Chưa có đánh giá nào'),
                             )
                           : ListView.builder(
