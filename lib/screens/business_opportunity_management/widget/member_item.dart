@@ -71,25 +71,44 @@ class InfoRow extends StatelessWidget {
 }
 
 class StatusTag extends StatelessWidget {
-  final String status;
+  final int status;
 
   const StatusTag({
     Key? key,
     required this.status,
   }) : super(key: key);
 
+  String getStatusMessage(int status) {
+    switch (status) {
+      case 0:
+        return 'Chưa cập nhật';
+      case 1:
+        return 'Đã gặp gỡ';
+      case 2:
+        return 'Đã ký hợp đồng';
+      case 3:
+        return 'Đã thanh toán';
+      case 4:
+        return 'Đã xoá';
+      default:
+        return 'Chưa cập nhật';
+    }
+  }
+
   Color getColor() {
     switch (status) {
-      case "Đã thanh toán":
-        return Colors.green;
-      case "Đã ký hợp đồng":
-        return Colors.red;
-      case "Đã gặp gỡ":
-        return Colors.orange;
-      case "Chưa cập nhật":
+      case 0:
         return Colors.grey;
+      case 1:
+        return Colors.orangeAccent;
+      case 2:
+        return Colors.redAccent;
+      case 3:
+        return Colors.green;
+      case 4:
+        return Colors.red;
       default:
-        return Colors.black;
+        return Colors.grey;
     }
   }
 
@@ -102,7 +121,7 @@ class StatusTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status,
+        getStatusMessage(status),
         style: TextStyle(
           color: getColor(),
           fontSize: 14,
@@ -171,7 +190,7 @@ class MemberCard extends StatelessWidget {
                     "Trạng thái: ",
                     style: TextStyles.textStyleNormal14W500,
                   ),
-                  StatusTag(status: member.statusMessage.toString()),
+                  StatusTag(status: member.status!),
                 ],
               ),
             ),
