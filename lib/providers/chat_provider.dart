@@ -33,7 +33,7 @@ class ChatProvider with ChangeNotifier {
   int _currentPage = 1;
   bool _hasMoreMessages = true;
   int _totalMessageCount = 0;
-  static const int _limit = 30;
+  static const int _limit = 7;
   final _storage = const FlutterSecureStorage();
   String company_name = '';
 
@@ -594,18 +594,15 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Load thêm tin nhắn cũ
   Future<void> loadMoreMessages(BuildContext context) async {
-    print("🔄 Đang tải thêm tin nhắn cũ...");
-    if (_currentChatReceiverId != null) {
-      print("📩 ID người nhận: $_currentChatReceiverId, Trang: $_currentPage");
-      return await getListDetailChat(context, _currentChatReceiverId!,
-          loadMore: true);
-    } else {
-      print("❌ ID người nhận không tồn tại!");
-      return Future
-          .value(); // Trả về Promise đã hoàn thành nếu không có người nhận
+    String? currentId = _currentGroupChatId ?? _currentChatReceiverId;
+    if (currentId != null) {
+      print(
+          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID người dùng: $currentId");
+      return await getListDetailChat(context, currentId, loadMore: true);
     }
+    print("❌ Không có ID người dùng để tải thêm tin nhắn");
+    return Future.value();
   }
 
   /// Reset trạng thái phân trang

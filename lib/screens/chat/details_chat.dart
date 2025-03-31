@@ -54,7 +54,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       print("🚀 Khởi tạo socket và kết nối tới phòng chat");
 
       // 1. Kết nối socket
-      chatProvider.initializeSocketChatGroup(context, widget.groupId).then((_) {
+      chatProvider
+          .initializeSocketChatGroup(context, widget.idMessage)
+          .then((_) {
         // 2. Kết nối đến phòng chat cụ thể
         // _connectToSpecificChatRoom();
         print("🚀 Kết nối socket thành công");
@@ -89,7 +91,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     // Hủy đăng ký listener socket để tránh lỗi khi widget đã unmounted
-    _socketService.off('new_message');
+    _socketService.off('new_message_group');
     super.dispose();
   }
 

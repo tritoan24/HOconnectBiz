@@ -64,7 +64,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         print("🚀 Kết nối socket thành công");
 
         // 3. Lấy dữ liệu tin nhắn
-        chatProvider.getListDetailChat(context, widget.idMessage).then((_) {
+        chatProvider.getListDetailChat(context, widget.idReceiver).then((_) {
           _scrollToBottom();
           print("🚀 Lấy tin nhắn cũ thành công");
 
