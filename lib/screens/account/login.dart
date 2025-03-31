@@ -202,7 +202,7 @@ class _LoginViewState extends State<LoginView> {
                               child: Image.asset(
                                 "assets/images/logo.png",
                                 width: isSmallScreen ? 120 : 174,
-                                height: isSmallScreen ? 65 : 70,
+                                height: isSmallScreen ? 65 : 80,
                                 fit: BoxFit.cover,
                               ),
                             ),
