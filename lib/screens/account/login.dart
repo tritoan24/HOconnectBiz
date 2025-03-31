@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -304,28 +305,72 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                             SizedBox(height: screenSize.height * 0.025),
+                            // Hiển thị các nút đăng nhập xã hội
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildSocialButton(
-                                  context,
-                                  "assets/icons/i_google.svg",
-                                  "Google",
-                                  () => authProvider.signInWithGoogle(context),
-                                  screenSize,
-                                  isSmallScreen,
-                                ),
-                                SizedBox(width: screenSize.width * 0.04),
-                                _buildSocialButton(
-                                  context,
-                                  "assets/icons/i_facebook.svg",
-                                  "Facebook",
-                                  () =>
-                                      authProvider.signInWithFacebook(context),
-                                  screenSize,
-                                  isSmallScreen,
-                                ),
-                              ],
+                              children: Platform.isIOS
+                                ? [
+                                    // Hiển thị 3 nút khi là iOS
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        context,
+                                        "assets/icons/i_apple.svg",
+                                        "Apple",
+                                        () => authProvider.signInWithApple(context),
+                                        screenSize,
+                                        isSmallScreen,
+                                        isCompact: true,
+                                      ),
+                                    ),
+                                    SizedBox(width: screenSize.width * 0.02),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        context,
+                                        "assets/icons/i_google.svg",
+                                        "Google",
+                                        () => authProvider.signInWithGoogle(context),
+                                        screenSize,
+                                        isSmallScreen,
+                                        isCompact: true,
+                                      ),
+                                    ),
+                                    SizedBox(width: screenSize.width * 0.02),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        context,
+                                        "assets/icons/i_facebook.svg",
+                                        "Facebook",
+                                        () => authProvider.signInWithFacebook(context),
+                                        screenSize,
+                                        isSmallScreen,
+                                        isCompact: true,
+                                      ),
+                                    ),
+                                  ]
+                                : [
+                                    // Hiển thị 2 nút khi không phải iOS
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        context,
+                                        "assets/icons/i_google.svg",
+                                        "Google",
+                                        () => authProvider.signInWithGoogle(context),
+                                        screenSize,
+                                        isSmallScreen,
+                                      ),
+                                    ),
+                                    SizedBox(width: screenSize.width * 0.04),
+                                    Expanded(
+                                      child: _buildSocialButton(
+                                        context,
+                                        "assets/icons/i_facebook.svg",
+                                        "Facebook",
+                                        () => authProvider.signInWithFacebook(context),
+                                        screenSize, 
+                                        isSmallScreen,
+                                      ),
+                                    ),
+                                  ],
                             ),
                             // Thêm padding dưới cùng để đảm bảo không bị footer đè lên
                             SizedBox(height: 70),
@@ -403,39 +448,38 @@ class _LoginViewState extends State<LoginView> {
     VoidCallback onTap,
     Size screenSize,
     bool isSmallScreen,
+    {bool isCompact = false}
   ) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: AppColor.borderGrey,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: AppColor.borderGrey,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: EdgeInsets.symmetric(
+          vertical: (isSmallScreen || isCompact) ? 10 : 14.0,
+          horizontal: isCompact ? 6 : 8,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              fit: BoxFit.cover,
+              width: (isSmallScreen || isCompact) ? 14 : 18,
+              height: (isSmallScreen || isCompact) ? 14 : 18,
             ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: EdgeInsets.symmetric(
-            vertical: isSmallScreen ? 10 : 14.0,
-            horizontal: 8,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                fit: BoxFit.cover,
-                width: isSmallScreen ? 14 : 18,
-                height: isSmallScreen ? 14 : 18,
+            SizedBox(width: screenSize.width * (isCompact ? 0.01 : 0.02)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isCompact ? 10 : (isSmallScreen ? 11 : 14),
               ),
-              SizedBox(width: screenSize.width * 0.02),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 11 : 14,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

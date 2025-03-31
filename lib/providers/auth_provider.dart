@@ -18,6 +18,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../core/base/base_provider.dart';
 import '../core/network/api_endpoints.dart';
 import '../core/services/socket_service.dart';
@@ -514,6 +515,11 @@ class AuthProvider extends BaseProvider {
             await FacebookAuth.instance.logOut();
             developer.log('Đã đăng xuất Facebook',
                 name: 'PROFILE_LOGOUT.FACEBOOK');
+          } else if (registerType == 'apple') {
+            // Đối với Apple Sign In, chỉ cần xóa register_type vì không có API đăng xuất cụ thể
+            await prefs.remove('register_type');
+            developer.log('Đã đăng xuất Apple',
+                name: 'PROFILE_LOGOUT.APPLE');
           }
 
           // Đăng xuất OneSignal
@@ -681,6 +687,93 @@ class AuthProvider extends BaseProvider {
     }
   }
 
+  Future<void> signInWithApple(BuildContext context) async {
+    const String tag = 'APPLE_LOGIN';
+    const String registerTypeApple = 'apple';
+    const String defaultImage = UrlImage.defaultAvatarImage;
+
+    if (!Platform.isIOS) {
+      developer.log('Đăng nhập Apple chỉ hỗ trợ trên iOS', name: '$tag.PLATFORM_NOT_SUPPORTED');
+      return;
+    }
+
+    try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+
+      developer.log('Bắt đầu đăng nhập Apple', name: tag);
+
+      // Yêu cầu các thông tin cần thiết từ Apple
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      if (credential.userIdentifier == null) {
+        developer.log('Không lấy được thông tin người dùng Apple', name: '$tag.NO_USER_ID');
+        LoadingOverlay.hide();
+        return;
+      }
+
+      developer.log('Đăng nhập Apple thành công', name: '$tag.SUCCESS');
+
+      // Lấy thông tin từ credential
+      final String userId = credential.userIdentifier ?? '';
+      final String? givenName = credential.givenName;
+      final String? familyName = credential.familyName;
+      final String? email = credential.email;
+
+      // Tạo display name từ tên hoặc dùng mặc định
+      String displayName = 'Apple User';
+      if (givenName != null || familyName != null) {
+        displayName = '${givenName ?? ''} ${familyName ?? ''}'.trim();
+      }
+
+      developer.log('UserId: $userId, Email: $email, Name: $displayName', name: '$tag.USER_DATA');
+
+      // Xử lý trường hợp ẩn danh (không chia sẻ email)
+      String userEmail;
+      if (email != null && email.isNotEmpty) {
+        // Nếu có email thật, sử dụng email đó
+        userEmail = email;
+      } else {
+        // Tạo email giả nhưng đảm bảo không vượt quá 64 ký tự
+        // Tạo hash ngắn từ userId
+        String hash = userId.hashCode.toString().replaceAll('-', '');
+        hash = hash.length > 10 ? hash.substring(0, 10) : hash;
+        userEmail = 'apple${hash}@example.com';
+      }
+
+      // Kiểm tra lại độ dài email
+      if (userEmail.length > 64) {
+        // Nếu vẫn quá dài, tạo phiên bản ngắn hơn
+        userEmail = 'apple${DateTime.now().millisecondsSinceEpoch % 1000000}@ex.com';
+      }
+
+      developer.log('Email cuối cùng: $userEmail, Độ dài: ${userEmail.length}', name: '$tag.EMAIL');
+
+      Map<String, dynamic> userData = {
+        'id': userId,
+        'email': userEmail,
+        'name': displayName,
+        'picture': defaultImage,
+      };
+
+      if (context.mounted) {
+        _handleLoginSocialSuccess(context, userData, registerTypeApple);
+      } else {
+        // Ẩn loading overlay nếu context không còn hợp lệ
+        LoadingOverlay.hide();
+      }
+    } catch (e) {
+      developer.log('Lỗi đăng nhập Apple: $e', name: '$tag.ERROR', error: e);
+      // Ẩn loading overlay nếu có lỗi
+      LoadingOverlay.hide();
+    }
+  }
+
   Future<void> signInWithFacebook(BuildContext context) async {
     const String tag = 'FB_LOGIN';
     const String registerTypeFB = 'fb';
@@ -757,8 +850,9 @@ class AuthProvider extends BaseProvider {
   Future<void> _handleLoginSocialSuccess(BuildContext context,
       Map<String, dynamic> userData, String registerType) async {
     // Đặt tag dựa trên registerType
-    final String tag =
-        registerType == 'fb' ? 'FB_LOGIN.SUCCESS' : 'GG_LOGIN.SUCCESS';
+    final String tag = registerType == 'fb' 
+        ? 'FB_LOGIN.SUCCESS' 
+        : (registerType == 'apple' ? 'APPLE_LOGIN.SUCCESS' : 'GG_LOGIN.SUCCESS');
     final String? id = userData['id'];
     final String? name = userData['name'];
     final String? email = userData['email'];
@@ -767,6 +861,8 @@ class AuthProvider extends BaseProvider {
     if (registerType == 'fb') {
       avatarImage = userData['picture']?['data']?['url'];
     } else if (registerType == 'gg') {
+      avatarImage = userData['picture'] as String?;
+    } else if (registerType == 'apple') {
       avatarImage = userData['picture'] as String?;
     }
 
@@ -791,7 +887,7 @@ class AuthProvider extends BaseProvider {
       // Cập nhật tag cho lỗi cũng dựa trên registerType
       final String errorTag = registerType == 'fb'
           ? 'FB_LOGIN.SUCCESS.ERROR'
-          : 'GG_LOGIN.SUCCESS.ERROR';
+          : (registerType == 'apple' ? 'APPLE_LOGIN.SUCCESS.ERROR' : 'GG_LOGIN.SUCCESS.ERROR');
       developer.log('Thiếu thông tin cần thiết để đăng nhập', name: errorTag);
       _handleLoginIssue(
         message: 'Không lấy được đầy đủ thông tin người dùng',
