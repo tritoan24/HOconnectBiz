@@ -26,14 +26,16 @@ class ChatProvider with ChangeNotifier {
   bool _isLoadingMessages = false;
   List<Message> _messages = [];
   List<Contact> _contacts = [];
+
   String? _currentUserId;
   String? _currentChatReceiverId;
   String? _currentGroupChatId;
+
   int _cartItemCount = 0;
   int _currentPage = 1;
   bool _hasMoreMessages = true;
   int _totalMessageCount = 0;
-  static const int _limit = 7;
+  static const int _limit = 15;
   final _storage = const FlutterSecureStorage();
   String company_name = '';
 
@@ -594,14 +596,24 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  Future<void> loadMoreMessages(BuildContext context) async {
-    String? currentId = _currentGroupChatId ?? _currentChatReceiverId;
-    if (currentId != null) {
+  Future<void> loadMoreMessages(BuildContext context, String idReceiver) async {
+    if (idReceiver != null) {
       print(
-          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID người dùng: $currentId");
-      return await getListDetailChat(context, currentId, loadMore: true);
+          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID người dùng: $idReceiver");
+      return await getListDetailChat(context, idReceiver, loadMore: true);
     }
     print("❌ Không có ID người dùng để tải thêm tin nhắn");
+    return Future.value();
+  }
+
+  Future<void> loadMoreMessagesGroup(
+      BuildContext context, String idGroup) async {
+    if (idGroup != null) {
+      print(
+          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID nhóm: $idGroup");
+      return await getListDetailChat(context, idGroup, loadMore: true);
+    }
+    print("❌ Không có ID để tải thêm tin nhắn");
     return Future.value();
   }
 

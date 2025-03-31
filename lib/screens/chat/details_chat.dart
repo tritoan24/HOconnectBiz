@@ -160,7 +160,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         final double currentOffset = scrollPosition;
         final int currentItemCount = chatProvider.messages.length;
 
-        chatProvider.loadMoreMessages(context).then((_) {
+        chatProvider.loadMoreMessagesGroup(context, widget.idMessage).then((_) {
           // Sau khi load xong, tính toán vị trí mới dựa trên số lượng item đã thêm vào
           if (_scrollController.hasClients && mounted) {
             // Tính vị trí mới cần scroll dựa vào số lượng tin nhắn được thêm vào

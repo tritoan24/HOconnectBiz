@@ -150,7 +150,7 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
         final double currentOffset = scrollPosition;
         final int currentItemCount = chatProvider.messages.length;
 
-        chatProvider.loadMoreMessages(context).then((_) {
+        chatProvider.loadMoreMessages(context, widget.idMessage).then((_) {
           // Sau khi load xong, tính toán vị trí mới dựa trên số lượng item đã thêm vào
           if (_scrollController.hasClients && mounted) {
             // Tính vị trí mới cần scroll dựa vào số lượng tin nhắn được thêm vào
@@ -486,7 +486,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
       }
     }
 
-    print("Message ID: ${message.id}, Has data: ${message.data != null}");
     return Container(
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
