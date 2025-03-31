@@ -189,17 +189,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
-  void _deleteMessage(String messageId) async {
-    try {
-      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-      await chatProvider.deleteMessage(messageId, widget.idMessage, context);
-    } catch (e) {
-      print("Lỗi khi xóa tin nhắn: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Xóa tin nhắn thất bại: $e")),
-      );
-    }
-  }
+  // void _deleteMessage(String messageId) async {
+  //   try {
+  //     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  //     await chatProvider.deleteMessage(messageId, widget.idMessage, context);
+  //   } catch (e) {
+  //     print("Lỗi khi xóa tin nhắn: $e");
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Xóa tin nhắn thất bại: $e")),
+  //     );
+  //   }
+  // }
 
   void _sendMessage(String message, List<String> images) async {
     if (message.trim().isEmpty && images.isEmpty) {
@@ -496,43 +496,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
       );
     } else {
-      return Dismissible(
-        key: ObjectKey(message.id),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.symmetric(horizontal: 50),
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(2, 2),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-            size: 30,
-          ),
-        ),
-        confirmDismiss: (direction) async {
-          return await showDialog<bool>(
-                context: context,
-                builder: (context) => CustomConfirmDialog(
-                  content: "Bạn có chắc chắn muốn xóa tin nhắn này?",
-                  titleButtonRight: "Xóa",
-                  titleButtonLeft: "Hủy",
-                  onConfirm: () {
-                    _deleteMessage(message.id!);
-                  },
-                ),
-              ) ??
-              false;
-        },
+      return Container(
         child: Align(
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Column(

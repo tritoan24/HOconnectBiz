@@ -61,28 +61,30 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 if (action.type == "Group") {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatDetailScreen(
+                    CustomPageTransition(
+                      page: ChatDetailScreen(
                         currentUserId: currentUserId,
                         idMessage: action.id,
                         groupId: action.id,
                         groupName: action.displayName,
                         quantityMember: action.avatarImage.length,
                       ),
+                      type: TransitionType.slideRight,
                     ),
                   );
                 } else {
                   // Navigate to business/individual chat screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => DeltailsSalesArticle(
+                    CustomPageTransition(
+                      page: DeltailsSalesArticle(
                         currentUserId: currentUserId,
                         idMessage: action.id,
                         idReceiver: action.id,
                         avatarImage: action.avatarImage,
                         displayName: action.displayName,
                       ),
+                      type: TransitionType.slideRight,
                     ),
                   );
                 }
@@ -239,7 +241,7 @@ class MessageTile extends StatelessWidget {
                 groupName: contact.displayName,
                 quantityMember: totalMem,
               ),
-              type: TransitionType.fade,
+              type: TransitionType.slideRight,
             ),
           );
         } else {
@@ -254,7 +256,7 @@ class MessageTile extends StatelessWidget {
                 avatarImage: contact.avatarImage,
                 displayName: contact.displayName,
               ),
-              type: TransitionType.fade,
+              type: TransitionType.slideRight,
             ),
           );
         }

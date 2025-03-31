@@ -786,39 +786,39 @@ class ChatProvider with ChangeNotifier {
 
   //delete message
   /// **Xóa tin nhắn**
-  Future<void> deleteMessage(
-      String messageId, String chatId, BuildContext context) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final ApiResponse response =
-          await _chatRepository.deleteMessage(messageId, context);
-
-      if (response.isSuccess) {
-        print("✅ Tin nhắn đã xóa thành công!");
-
-        // Cập nhật danh sách tin nhắn sau khi xóa
-        _messages.removeWhere((message) => message.id.toString() == messageId);
-
-        // Sắp xếp lại danh sách tin nhắn để đảm bảo thứ tự đúng
-        _messages.sort((a, b) {
-          final timeCompare = a.timestamp.compareTo(b.timestamp);
-          if (timeCompare != 0) return timeCompare;
-          return (a.id ?? "").compareTo(b.id ?? "");
-        });
-
-        notifyListeners();
-      } else {
-        print("⚠️ Xóa tin nhắn thất bại: ${response.message}");
-      }
-    } catch (e) {
-      print("❌ Lỗi khi xóa tin nhắn: $e");
-    }
-
-    _isLoading = false;
-    notifyListeners();
-  }
+  // Future<void> deleteMessage(
+  //     String messageId, String chatId, BuildContext context) async {
+  //   _isLoading = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final ApiResponse response =
+  //         await _chatRepository.deleteMessage(messageId, context);
+  //
+  //     if (response.isSuccess) {
+  //       print("✅ Tin nhắn đã xóa thành công!");
+  //
+  //       // Cập nhật danh sách tin nhắn sau khi xóa
+  //       _messages.removeWhere((message) => message.id.toString() == messageId);
+  //
+  //       // Sắp xếp lại danh sách tin nhắn để đảm bảo thứ tự đúng
+  //       _messages.sort((a, b) {
+  //         final timeCompare = a.timestamp.compareTo(b.timestamp);
+  //         if (timeCompare != 0) return timeCompare;
+  //         return (a.id ?? "").compareTo(b.id ?? "");
+  //       });
+  //
+  //       notifyListeners();
+  //     } else {
+  //       print("⚠️ Xóa tin nhắn thất bại: ${response.message}");
+  //     }
+  //   } catch (e) {
+  //     print("❌ Lỗi khi xóa tin nhắn: $e");
+  //   }
+  //
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
 
   /// Ngắt kết nối socket cho màn hình chat
   void leaveChatRoom() {
