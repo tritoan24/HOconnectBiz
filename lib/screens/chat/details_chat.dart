@@ -336,7 +336,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           }
 
                           final message = messages[actualIndex];
-                          return _buildMessageBubble(message);
+                          return _buildMessageBubble(
+                              message, actualIndex, messages);
                         },
                       ),
                       // Hiển thị thanh tiến trình khi kéo đến đầu danh sách
@@ -390,10 +391,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildMessageBubble(Message message) {
+  Widget _buildMessageBubble(
+      Message message, int index, List<Message> messages) {
     bool isMe = message.sender?.id == widget.currentUserId;
     final chatProvider = Provider.of<ChatProvider>(context);
     String companyName = chatProvider.company_name;
+
+    bool isLastMessageFromSender = true;
+
+    if (index < messages.length - 1) {
+      Message nextMessage = messages[index + 1];
+      if (message.sender?.id == nextMessage.sender?.id) {
+        isLastMessageFromSender = false;
+      }
+    }
+
     if (message.type == "remove") {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 2),
@@ -704,47 +716,48 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      () {
-                        try {
-                          return message.getFormattedTime();
-                        } catch (e) {
-                          return _getFormattedTime(message);
-                        }
-                      }(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        height: 1.5,
-                        color: const Color(0xFF767A7F),
-                      ),
-                    ),
-                    if (isMe && message.read == true)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Icon(
-                          Icons.done_all,
-                          size: 14,
-                          color: Colors.blue,
+              if (isLastMessageFromSender)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        () {
+                          try {
+                            return message.getFormattedTime();
+                          } catch (e) {
+                            return _getFormattedTime(message);
+                          }
+                        }(),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                          color: const Color(0xFF767A7F),
                         ),
                       ),
-                    if (isMe && message.read != true)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Icon(
-                          Icons.done,
-                          size: 14,
-                          color: Colors.grey,
+                      if (isMe && message.read == true)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.done_all,
+                            size: 14,
+                            color: Colors.blue,
+                          ),
                         ),
-                      ),
-                  ],
+                      if (isMe && message.read != true)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.done,
+                            size: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),
