@@ -454,28 +454,28 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Xử lý một tin nhắn group từ socket
-  void _processGroupMessage(Map<String, dynamic> messageData) {
-    try {
-      final message = Message.fromJson(messageData);
-
-      // Kiểm tra nếu tin nhắn thuộc về cuộc trò chuyện hiện tại
-      if (_currentGroupChatId != null) {
-        final idGroup = message.id;
-
-        if (idGroup == _currentGroupChatId) {
-          // Thêm vào danh sách nếu chưa có
-          if (!_messages.any((m) => m.id == message.id)) {
-            // Thêm tin nhắn mới vào cuối danh sách
-            _messages.add(message);
-            notifyListeners();
-          }
-        }
-      }
-    } catch (e) {
-      print("❌ Lỗi xử lý tin nhắn đơn: $e");
-    }
-  }
+  // /// Xử lý một tin nhắn group từ socket
+  // void _processGroupMessage(Map<String, dynamic> messageData) {
+  //   try {
+  //     final message = Message.fromJson(messageData);
+  //
+  //     // Kiểm tra nếu tin nhắn thuộc về cuộc trò chuyện hiện tại
+  //     if (_currentGroupChatId != null) {
+  //       final idGroup = message.id;
+  //
+  //       if (idGroup == _currentGroupChatId) {
+  //         // Thêm vào danh sách nếu chưa có
+  //         if (!_messages.any((m) => m.id == message.id)) {
+  //           // Thêm tin nhắn mới vào cuối danh sách
+  //           _messages.add(message);
+  //           notifyListeners();
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("❌ Lỗi xử lý tin nhắn đơn: $e");
+  //   }
+  // }
 
   Future<void> sendMessageBuyNow(String receiverId, String productId,
       String avtar, String displayName, BuildContext context) async {

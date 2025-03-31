@@ -104,6 +104,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final contacts = Provider.of<ChatProvider>(context, listen: false).contacts;
+    void updateReadStatus(String contactId) {
+      setState(() {
+        for (int i = 0; i < contacts.length; i++) {
+          if (contacts[i].id == contactId) {
+            contacts[i].setReadStatus(true);
+            break;
+          }
+        }
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Tin nhắn"),
@@ -200,6 +212,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   contact: chatProvider.contacts[index],
                   currentUserId: currentUserId,
                   idMessage: chatProvider.contacts[index].id,
+                  onReadStatusChanged: updateReadStatus,
                 );
               },
             );
@@ -210,35 +223,73 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 }
 
-class MessageTile extends StatelessWidget {
+class MessageTile extends StatefulWidget {
+  // Changed to StatefulWidget
   final Contact contact;
   final String currentUserId;
   final String idMessage;
+  final Function(String)?
+      onReadStatusChanged; // Callback for read status changes
 
   const MessageTile({
     Key? key,
     required this.contact,
     required this.currentUserId,
     required this.idMessage,
+    this.onReadStatusChanged,
   }) : super(key: key);
+
+  @override
+  _MessageTileState createState() => _MessageTileState();
+}
+
+class _MessageTileState extends State<MessageTile> {
+  // Local copy of isRead status to handle immediate UI updates
+  bool? _isRead;
+
+  @override
+  void initState() {
+    super.initState();
+    _isRead = widget.contact.lastMessage.isRead;
+  }
+
+  @override
+  void didUpdateWidget(MessageTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local state if the contact's read status changes externally
+    if (oldWidget.contact.lastMessage.isRead !=
+        widget.contact.lastMessage.isRead) {
+      _isRead = widget.contact.lastMessage.isRead;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     int totalMem = 0;
-    if (contact.avatarImage is List) {
-      totalMem = contact.avatarImage.length;
+    if (widget.contact.avatarImage is List) {
+      totalMem = widget.contact.avatarImage.length;
     }
     return GestureDetector(
       onTap: () {
-        if (contact.type == "Group") {
+        // Update local state immediately
+        setState(() {
+          _isRead = true;
+        });
+
+        // Notify parent to update the data model
+        if (widget.onReadStatusChanged != null) {
+          widget.onReadStatusChanged!(widget.contact.id);
+        }
+
+        if (widget.contact.type == "Group") {
           Navigator.push(
             context,
             CustomPageTransition(
               page: ChatDetailScreen(
-                currentUserId: currentUserId,
-                idMessage: idMessage,
-                groupId: contact.id,
-                groupName: contact.displayName,
+                currentUserId: widget.currentUserId,
+                idMessage: widget.idMessage,
+                groupId: widget.contact.id,
+                groupName: widget.contact.displayName,
                 quantityMember: totalMem,
               ),
               type: TransitionType.slideRight,
@@ -250,11 +301,11 @@ class MessageTile extends StatelessWidget {
             context,
             CustomPageTransition(
               page: DeltailsSalesArticle(
-                currentUserId: currentUserId,
-                idMessage: idMessage,
-                idReceiver: contact.id,
-                avatarImage: contact.avatarImage,
-                displayName: contact.displayName,
+                currentUserId: widget.currentUserId,
+                idMessage: widget.idMessage,
+                idReceiver: widget.contact.id,
+                avatarImage: widget.contact.avatarImage,
+                displayName: widget.contact.displayName,
               ),
               type: TransitionType.slideRight,
             ),
@@ -271,25 +322,23 @@ class MessageTile extends StatelessWidget {
           padding: const EdgeInsets.only(top: 8, bottom: 8),
           child: ListTile(
             leading: Align(
-              alignment: Alignment.center, // This centers the avatar vertically
-              widthFactor: 1, // Important to prevent horizontal stretching
+              alignment: Alignment.center,
+              widthFactor: 1,
               child: _buildAvatar(),
             ),
             title: Text(
-              contact.displayName,
+              widget.contact.displayName,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Padding(
-              padding: const EdgeInsets.only(
-                  top: 4), // Adds 4px spacing above the subtitle
+              padding: const EdgeInsets.only(top: 4),
               child: Text(
-                contact.lastMessage.content,
+                widget.contact.lastMessage.content,
                 style: TextStyle(
-                  color: contact.lastMessage.isRead ?? false
-                      ? Colors.black
-                      : Colors.grey,
+                  // Use local _isRead state for immediate UI feedback
+                  color: _isRead ?? false ? Colors.grey : Colors.black,
                   fontSize: 12,
                 ),
                 maxLines: 1,
@@ -301,7 +350,7 @@ class MessageTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  contact.getFormattedTime(),
+                  widget.contact.getFormattedTime(),
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
@@ -313,16 +362,16 @@ class MessageTile extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    if (contact.type == "Group") {
+    if (widget.contact.type == "Group") {
       // Get avatar URLs
       List<String> avatarUrls = [];
 
       // Handle avatar_image which could be a list or string
-      if (contact.avatarImage is List) {
-        avatarUrls = List<String>.from(contact.avatarImage);
-      } else if (contact.avatarImage is String &&
-          contact.avatarImage.isNotEmpty) {
-        avatarUrls = [contact.avatarImage];
+      if (widget.contact.avatarImage is List) {
+        avatarUrls = List<String>.from(widget.contact.avatarImage);
+      } else if (widget.contact.avatarImage is String &&
+          widget.contact.avatarImage.isNotEmpty) {
+        avatarUrls = [widget.contact.avatarImage];
       }
 
       // If no avatars, show a default group icon
@@ -346,16 +395,16 @@ class MessageTile extends StatelessWidget {
       // If we have only 1 avatar, show default group image
       if (avatarUrls.length <= 3) {
         return Container(
-          width: 40, // Keep original container size
-          height: 40, // Keep original container size
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey.shade200, // Background color for empty space
+            color: Colors.grey.shade200,
           ),
           child: Center(
             child: Container(
-              width: 30, // Smaller image size
-              height: 30, // Smaller image size
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -431,8 +480,8 @@ class MessageTile extends StatelessWidget {
                 right: 0,
                 bottom: -6,
                 child: Container(
-                  width: 27, // Fixed width 24px
-                  height: 27, // Fixed height 24px
+                  width: 27,
+                  height: 27,
                   decoration: BoxDecoration(
                     color: Color(0xffE9EBED),
                     shape: BoxShape.circle,
@@ -457,11 +506,10 @@ class MessageTile extends StatelessWidget {
         ),
       );
     } else {
-      return _buildSafeAvatar(contact.avatarImage, 20);
+      return _buildSafeAvatar(widget.contact.avatarImage, 20);
     }
   }
 
-  // Widget helper để tạo avatar an toàn với xử lý lỗi
   Widget _buildSafeAvatar(String imageUrl, double radius) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -473,7 +521,6 @@ class MessageTile extends StatelessWidget {
                 imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  // Trả về ảnh mặc định khi lỗi
                   return Image.asset(
                     UrlImage.imageUserDefault,
                     fit: BoxFit.cover,

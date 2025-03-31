@@ -9,7 +9,7 @@ class Contact {
   final String? username;
   final String? userId;
   final String? type;
-  final LastMessage lastMessage;
+  LastMessage lastMessage;
 
   Contact({
     required this.id,
@@ -53,6 +53,14 @@ class Contact {
       userId: json['user_id']?.toString() ?? '',
       type: json['type'] ?? '',
       lastMessage: LastMessage.fromJson(lastMessageJson),
+    );
+  }
+  // Method to update isRead status
+  void setReadStatus(bool isRead) {
+    lastMessage = LastMessage(
+      content: lastMessage.content,
+      createdAt: lastMessage.createdAt,
+      isRead: isRead,
     );
   }
 
