@@ -33,19 +33,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToNextScreen() async {
     try {
-      // Không delay nữa, bắt đầu tải dữ liệu ngay lập tức
       if (!mounted) return;
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.checkLoginStatusWithoutRedirect(context);
 
-      if (authProvider.isLoggedIn) {
-        final productProvider =
-            Provider.of<ProductProvider>(context, listen: false);
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
+      try {
+        // This will validate the token by making an API call
+        await authProvider.checkLoginStatusWithoutRedirect(context);
 
-        try {
-          // Sử dụng Future.wait với timeout để quản lý các API song song
+        // If we get here, token is valid
+        if (authProvider.isLoggedIn) {
+          final productProvider =
+              Provider.of<ProductProvider>(context, listen: false);
+          final postProvider =
+              Provider.of<PostProvider>(context, listen: false);
+
           await Future.wait([
             productProvider.getListProduct(context),
             postProvider.fetchPostsFeatured(context),
@@ -56,25 +58,25 @@ class _SplashScreenState extends State<SplashScreen> {
             onTimeout: () => throw TimeoutException('Kết nối mạng quá chậm'),
           );
 
-          // Chỉ điều hướng đến trang chủ nếu KHÔNG mở từ thông báo
           if (mounted && !GlobalAppState.launchedFromNotification) {
             context.go(AppRoutes.trangChu);
           }
-        } on TimeoutException catch (e) {
-          await _handleApiError(
-              'Kết nối mạng chậm. Vui lòng kiểm tra đường truyền.');
-        } on Exception catch (e) {
-          await _handleApiError('Không thể tải dữ liệu. Vui lòng thử lại.');
+        } else {
+          // Not logged in, go to login screen
+          if (mounted) context.go(AppRoutes.login);
         }
-      } else {
-        // Không đăng nhập thì chuyển đến màn hình đăng nhập
-        context.go(AppRoutes.login);
+      } catch (tokenError) {
+        // Token validation failed - explicitly handle this case
+        print('Invalid token detected: $tokenError');
+        await authProvider.clearAllDataIOS(); // Clear all keychain data
+
+        if (mounted) context.go(AppRoutes.login);
+        return;
       }
     } catch (e) {
-      // Xử lý các lỗi không mong muốn
+      // Handle other errors
       await _handleApiError('Đã xảy ra lỗi không xác định: ${e.toString()}');
     } finally {
-      // Đảm bảo tắt trạng thái loading ngay cả khi có lỗi
       if (mounted) {
         setState(() {
           _isLoading = false;

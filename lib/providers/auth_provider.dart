@@ -130,23 +130,20 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-// Thêm phương thức này vào lớp AuthProvider trong file auth_provider.dart
   Future<void> checkLoginStatusWithoutRedirect(BuildContext context) async {
     try {
       setLoading(true);
-
       final token = await _getToken();
 
       if (token != null && token.isNotEmpty) {
         try {
-          // Kiểm tra token có hợp lệ không bằng cách fetch user
+          // Make API call to validate token
           await Provider.of<UserProvider>(context, listen: false)
-              .fetchUser(context);
+              .fetchUser(context, showLoading: false);
 
-          // Nếu fetch user thành công, có nghĩa token vẫn hợp lệ
           _isLoggedIn = true;
 
-          // Kết nối socket
+          // Connect socket
           final userId = await getuserID();
           if (userId != null) {
             socketService.connect(userId);
@@ -155,8 +152,11 @@ class AuthProvider extends BaseProvider {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
           _isLoggedIn = false;
 
-          // Rethrow lỗi để splash_screen có thể xử lý
-          throw userError;
+          // Explicitly clear data on token validation failure
+          await clearAllDataIOS();
+
+          // Make sure to throw the error so it can be caught
+          throw Exception('Token validation failed: $userError');
         }
       } else {
         _isLoggedIn = false;
@@ -164,9 +164,7 @@ class AuthProvider extends BaseProvider {
     } catch (e) {
       _isLoggedIn = false;
       setError("Lỗi kiểm tra đăng nhập: $e");
-
-      // Rethrow lỗi để splash_screen có thể xử lý
-      throw e;
+      throw e; // Re-throw for splash screen to handle
     } finally {
       setLoading(false);
     }
@@ -174,15 +172,21 @@ class AuthProvider extends BaseProvider {
 
 // Thêm hàm xóa dữ liệu trên iOS
   Future<void> clearAllDataIOS() async {
-    if (Platform.isIOS) {
-      try {
-        // Xóa toàn bộ Keychain trên iOS
-        await _storage.deleteAll();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
-      } catch (e) {
-        print('Lỗi xóa dữ liệu iOS: $e');
-      }
+    try {
+      // Clear secure storage (FlutterSecureStorage or similar)
+      final storage = FlutterSecureStorage();
+      await storage.deleteAll();
+
+      // If using SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Reset state
+      _isLoggedIn = false;
+      // _token = null;
+      notifyListeners();
+    } catch (e) {
+      print('Error clearing iOS data: $e');
     }
   }
   //
@@ -518,8 +522,7 @@ class AuthProvider extends BaseProvider {
           } else if (registerType == 'apple') {
             // Đối với Apple Sign In, chỉ cần xóa register_type vì không có API đăng xuất cụ thể
             await prefs.remove('register_type');
-            developer.log('Đã đăng xuất Apple',
-                name: 'PROFILE_LOGOUT.APPLE');
+            developer.log('Đã đăng xuất Apple', name: 'PROFILE_LOGOUT.APPLE');
           }
 
           // Đăng xuất OneSignal
@@ -693,7 +696,8 @@ class AuthProvider extends BaseProvider {
     const String defaultImage = UrlImage.defaultAvatarImage;
 
     if (!Platform.isIOS) {
-      developer.log('Đăng nhập Apple chỉ hỗ trợ trên iOS', name: '$tag.PLATFORM_NOT_SUPPORTED');
+      developer.log('Đăng nhập Apple chỉ hỗ trợ trên iOS',
+          name: '$tag.PLATFORM_NOT_SUPPORTED');
       return;
     }
 
@@ -712,7 +716,8 @@ class AuthProvider extends BaseProvider {
       );
 
       if (credential.userIdentifier == null) {
-        developer.log('Không lấy được thông tin người dùng Apple', name: '$tag.NO_USER_ID');
+        developer.log('Không lấy được thông tin người dùng Apple',
+            name: '$tag.NO_USER_ID');
         LoadingOverlay.hide();
         return;
       }
@@ -731,7 +736,8 @@ class AuthProvider extends BaseProvider {
         displayName = '${givenName ?? ''} ${familyName ?? ''}'.trim();
       }
 
-      developer.log('UserId: $userId, Email: $email, Name: $displayName', name: '$tag.USER_DATA');
+      developer.log('UserId: $userId, Email: $email, Name: $displayName',
+          name: '$tag.USER_DATA');
 
       // Xử lý trường hợp ẩn danh (không chia sẻ email)
       String userEmail;
@@ -749,10 +755,12 @@ class AuthProvider extends BaseProvider {
       // Kiểm tra lại độ dài email
       if (userEmail.length > 64) {
         // Nếu vẫn quá dài, tạo phiên bản ngắn hơn
-        userEmail = 'apple${DateTime.now().millisecondsSinceEpoch % 1000000}@ex.com';
+        userEmail =
+            'apple${DateTime.now().millisecondsSinceEpoch % 1000000}@ex.com';
       }
 
-      developer.log('Email cuối cùng: $userEmail, Độ dài: ${userEmail.length}', name: '$tag.EMAIL');
+      developer.log('Email cuối cùng: $userEmail, Độ dài: ${userEmail.length}',
+          name: '$tag.EMAIL');
 
       Map<String, dynamic> userData = {
         'id': userId,
@@ -850,9 +858,11 @@ class AuthProvider extends BaseProvider {
   Future<void> _handleLoginSocialSuccess(BuildContext context,
       Map<String, dynamic> userData, String registerType) async {
     // Đặt tag dựa trên registerType
-    final String tag = registerType == 'fb' 
-        ? 'FB_LOGIN.SUCCESS' 
-        : (registerType == 'apple' ? 'APPLE_LOGIN.SUCCESS' : 'GG_LOGIN.SUCCESS');
+    final String tag = registerType == 'fb'
+        ? 'FB_LOGIN.SUCCESS'
+        : (registerType == 'apple'
+            ? 'APPLE_LOGIN.SUCCESS'
+            : 'GG_LOGIN.SUCCESS');
     final String? id = userData['id'];
     final String? name = userData['name'];
     final String? email = userData['email'];
@@ -887,7 +897,9 @@ class AuthProvider extends BaseProvider {
       // Cập nhật tag cho lỗi cũng dựa trên registerType
       final String errorTag = registerType == 'fb'
           ? 'FB_LOGIN.SUCCESS.ERROR'
-          : (registerType == 'apple' ? 'APPLE_LOGIN.SUCCESS.ERROR' : 'GG_LOGIN.SUCCESS.ERROR');
+          : (registerType == 'apple'
+              ? 'APPLE_LOGIN.SUCCESS.ERROR'
+              : 'GG_LOGIN.SUCCESS.ERROR');
       developer.log('Thiếu thông tin cần thiết để đăng nhập', name: errorTag);
       _handleLoginIssue(
         message: 'Không lấy được đầy đủ thông tin người dùng',
