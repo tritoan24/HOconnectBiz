@@ -51,6 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
           await Future.wait([
             productProvider.getListProduct(context),
             postProvider.fetchPostsFeatured(context),
+            postProvider.fetchPosts(context),
             _fetchUserPosts(postProvider),
           ], eagerError: true)
               .timeout(

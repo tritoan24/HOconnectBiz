@@ -53,7 +53,6 @@ class _HomeState extends State<Home> {
       staticsticalProvider.fetchStatistics(context);
       rankProvider.fetchRanksRevenue(context);
       rankProvider.fetchRankBusiness(context);
-      postProvider.fetchPosts(context);
 
       // Tải dữ liệu banner
       bannerProvider.getListBanner(context);
