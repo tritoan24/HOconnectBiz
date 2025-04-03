@@ -79,12 +79,11 @@ dependencies:
   path_provider: ^2.1.2
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path: "assets/icons/ic_app.png"
-  # Tắt adaptive icon để tránh biểu tượng bị bóp méo
-  remove_alpha_ios: true
-  min_sdk_android: 21
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21 # Android min SDK
+  remove_alpha_ios: true # Cho iOS loại bỏ transparency
 
 dev_dependencies:
   flutter_test:

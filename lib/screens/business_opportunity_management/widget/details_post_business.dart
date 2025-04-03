@@ -7,8 +7,10 @@ import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:clbdoanhnhansg/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/bo_provider.dart';
+import '../../../utils/global_state.dart';
 import '../../../widgets/button_widget16.dart';
 import '../../../widgets/confirmdialog.dart';
 import '../../../widgets/text_styles.dart';
@@ -92,7 +94,18 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         title: Text(bo?.title ?? "Chi tiết bài viết"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Check if we came from a notification
+            if (GlobalAppState.launchedFromNotification) {
+              // Navigate to home screen instead of just popping
+              context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+              // Reset the flag
+              GlobalAppState.launchedFromNotification = false;
+            } else {
+              // Normal back behavior
+              Navigator.of(context).pop();
+            }
+          },
         ),
         actions: [
           PopupMenuButton<String>(
