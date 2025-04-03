@@ -328,10 +328,13 @@ class _PostItemState extends State<PostItem> {
             _buildTitleAndContent(),
             if (widget.business.isNotEmpty) ...[
               const SizedBox(height: 8),
-              _buildBusiness(context),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                child: _buildBusiness(context),
+              ),
             ],
             if (widget.images.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               _buildImages(),
             ],
             if (!isBusiness) ...[
@@ -676,7 +679,7 @@ class _PostItemState extends State<PostItem> {
     if (!isBusiness || widget.business.isEmpty) return const SizedBox();
 
     return Wrap(
-      spacing: 10.0,
+      spacing: 10,
       runSpacing: 10.0,
       children: widget.business.map((b) => _buildBusinessTag(b)).toList(),
     );
@@ -685,7 +688,7 @@ class _PostItemState extends State<PostItem> {
   Widget _buildBusinessTag(BusinessModel business) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      // margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: AppColor.secondaryBlue,
         borderRadius: BorderRadius.circular(4),
