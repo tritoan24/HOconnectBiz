@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
+import '../providers/upgrade_provider.dart';
 import '../providers/user_provider.dart';
 import '../utils/router/router.name.dart';
 import '../utils/global_state.dart';
@@ -34,6 +35,27 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateToNextScreen() async {
     try {
       if (!mounted) return;
+
+      // First check upgrade info
+      final upgradeService = UpgradeService();
+      final upgradeInfo = await upgradeService.checkUpgrade();
+
+      // Check if app is in maintenance mode
+      if (!upgradeInfo.maintain) {
+        if (mounted) {
+          context.go(AppRoutes.maintenance); // You'll need to add this route
+          return;
+        }
+      }
+
+      // Check if app needs update
+      final needsUpdate = await upgradeService.needsUpdate(upgradeInfo);
+      if (needsUpdate) {
+        if (mounted) {
+          context.go(AppRoutes.update); // You'll need to add this route
+          return;
+        }
+      }
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 

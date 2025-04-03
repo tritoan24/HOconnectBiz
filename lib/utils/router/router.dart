@@ -11,6 +11,7 @@ import 'package:clbdoanhnhansg/screens/post/post_screen.dart';
 import 'package:clbdoanhnhansg/screens/search/search.dart';
 import 'package:clbdoanhnhansg/screens/splash_screen.dart';
 import 'package:clbdoanhnhansg/screens/comment/comments_screen.dart';
+import 'package:clbdoanhnhansg/screens/update_request_screen.dart';
 import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +22,7 @@ import '../../screens/account/login.dart';
 import '../../screens/cart/cart_tab.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/home/widget/buy_product.dart';
+import '../../screens/maintenance_screen.dart';
 import '../../screens/manage/manage.dart';
 import '../../screens/shopping/shopping.dart';
 
@@ -41,6 +43,18 @@ final GoRouter appRouter = GoRouter(
           path: AppRoutes.login,
           builder: (context, state) {
             return const LoginView();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.maintenance,
+          builder: (context, state) {
+            return const MaintenanceScreen();
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.update,
+          builder: (context, state) {
+            return const UpdateRequestScreen();
           },
         ),
         GoRoute(
