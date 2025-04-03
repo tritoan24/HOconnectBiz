@@ -77,13 +77,36 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    // Track the message count to detect where new messages were added
+    int previousMessageCount = chatProvider.messages.length;
+
     chatProvider.addListener(() {
-      // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
-      if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
-        _scrollToBottom();
-        print('🔄 Tin nhắn mới được cập nhật');
+      // Skip if no messages
+      if (chatProvider.messages.isEmpty) return;
+
+      // Get current count after update
+      int currentMessageCount = chatProvider.messages.length;
+
+      // Only scroll to bottom if:
+      // 1. Messages were added (count increased)
+      // 2. We're not loading more historical messages
+      // 3. The new messages were added at the end (not at the beginning)
+      if (currentMessageCount > previousMessageCount &&
+          !chatProvider.isLoadingMore) {
+        // Check if the first message changed - if not, messages were added to the end
+        final firstMessageChanged = currentMessageCount > 0 &&
+            previousMessageCount > 0 &&
+            chatProvider.messages[0].id != null;
+
+        if (!firstMessageChanged) {
+          _scrollToBottom();
+          print('🔄 Tin nhắn mới được thêm vào cuối - cuộn xuống');
+        }
       }
+
+      // Update previous count for next comparison
+      previousMessageCount = currentMessageCount;
     });
   }
 
@@ -243,6 +266,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        // Check if swipe was from left to right with sufficient velocity
+        if (details.primaryVelocity! > 300) {
+          Navigator.of(context).pop();
+        }
+      },
       onTap: () {
         // Đóng bàn phím khi nhấn vào bất kỳ đâu ngoài vùng nhập liệu
         FocusScope.of(context).unfocus();

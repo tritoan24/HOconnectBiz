@@ -75,16 +75,6 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
     });
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    // Hủy đăng ký listener socket để tránh lỗi khi widget đã unmounted
-    _socketService.off('new_message');
-    // Ghi chú: không ngắt kết nối toàn bộ socket mà chỉ thoát phòng
-    // ChatProvider sẽ quản lý việc này
-    super.dispose();
-  }
-
   void _scrollToBottom() {
     // Đợi đến frame tiếp theo để đảm bảo layout đã được tính toán
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -204,13 +194,41 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+    // Track the message count to detect where new messages were added
+    int previousMessageCount = chatProvider.messages.length;
+
     chatProvider.addListener(() {
-      // Chỉ cuộn xuống cuối khi có tin nhắn mới và không đang loadmore
-      if (chatProvider.messages.isNotEmpty && !chatProvider.isLoadingMore) {
-        // Chỉ cuộn xuống khi nhận tin nhắn từ socket hoặc gửi đi, không cuộn khi đang nhập
-        print('🔄 Tin nhắn mới được cập nhật');
+      // Skip if no messages
+      if (chatProvider.messages.isEmpty) return;
+
+      // Get current count after update
+      int currentMessageCount = chatProvider.messages.length;
+
+      // Scroll to bottom when new messages are added at the end
+      if (currentMessageCount > previousMessageCount &&
+          !chatProvider.isLoadingMore) {
+        // Check if the first message changed - if not, messages were added to the end
+        final firstMessageChanged = currentMessageCount > 0 &&
+            previousMessageCount > 0 &&
+            chatProvider.messages[0].id != null;
+
+        if (!firstMessageChanged) {
+          _scrollToBottom();
+          print('🔄 Tin nhắn mới được thêm vào cuối - cuộn xuống');
+        }
       }
+
+      // Update previous count for next comparison
+      previousMessageCount = currentMessageCount;
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _socketService.off('new_message');
+    super.dispose();
   }
 
   // void _deleteMessage(String messageId) async {
@@ -275,6 +293,12 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        // Check if swipe was from left to right with sufficient velocity
+        if (details.primaryVelocity! > 300) {
+          Navigator.of(context).pop();
+        }
+      },
       onTap: () {
         FocusScope.of(context).unfocus();
       },
