@@ -7,6 +7,7 @@ import '../../../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../widgets/button_widget.dart';
+import '../../widgets/currencyI_input_formatter.dart';
 import '../../widgets/horizontal_divider.dart';
 import '../../widgets/input_text.dart';
 import '../post/widget/advertising_article/attached_product.dart';
@@ -54,9 +55,12 @@ class _CreateOrderState extends State<CreateOrder> {
     }
   }
 
+  FocusNode amountFocusNode = FocusNode();
+  @override
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false)
           .getListProduct(context);
@@ -67,8 +71,29 @@ class _CreateOrderState extends State<CreateOrder> {
         productQuantities[product] = 1;
       }
     });
-    // Add listener for currency formatting
-    totalAmountController.addListener(_formatMoney);
+
+    // Initialize with formatted value
+    totalAmountController.text =
+        currencyFormatter.format(0).replaceAll('₫', '').trim();
+
+    // Add listener to the focus node to format immediately when field receives focus
+    amountFocusNode.addListener(() {
+      if (amountFocusNode.hasFocus) {
+        // Get current numeric value
+        String rawText =
+            totalAmountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+        if (rawText.isNotEmpty) {
+          int value = int.parse(rawText);
+          // Reformat and update the field
+          String formattedText =
+              currencyFormatter.format(value).replaceAll('₫', '').trim();
+          totalAmountController.value = TextEditingValue(
+            text: formattedText,
+            selection: TextSelection.collapsed(offset: formattedText.length),
+          );
+        }
+      }
+    });
   }
 
   final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
@@ -107,8 +132,7 @@ class _CreateOrderState extends State<CreateOrder> {
 
   @override
   void dispose() {
-    // Remove listener before disposing
-    totalAmountController.removeListener(_formatMoney);
+    amountFocusNode.dispose();
     totalAmountController.dispose();
     super.dispose();
   }
@@ -501,17 +525,20 @@ class _CreateOrderState extends State<CreateOrder> {
                                     }
                                   }
                                 },
-                                child: FormBuilderTextField(
+                                child:
+// Usage in your FormBuilderTextField:
+                                    FormBuilderTextField(
                                   controller: totalAmountController,
+                                  focusNode: amountFocusNode, // Add this line
                                   name: 'orderValue',
                                   maxLines: null,
                                   keyboardType: TextInputType.number,
                                   textInputAction: TextInputAction.done,
                                   autovalidateMode: AutovalidateMode.always,
-                                  // Remove any automatic formatting in the onChanged
-                                  onChanged: (value) {
-                                    // Prevent any automatic formatting during typing
-                                  },
+                                  inputFormatters: [
+                                    CurrencyInputFormatter(
+                                        locale: 'vi_VN', symbol: ''),
+                                  ],
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 10),
@@ -535,7 +562,7 @@ class _CreateOrderState extends State<CreateOrder> {
                                       ),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    // suffixText: hasFocus ? null : 'đ',
+                                    suffixText: '₫',
                                   ),
                                 ),
                               ),
