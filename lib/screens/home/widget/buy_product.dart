@@ -41,7 +41,7 @@ class _BuyProductState extends State<BuyProduct> {
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xffF4F5F6),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -56,21 +56,24 @@ class _BuyProductState extends State<BuyProduct> {
           children: [
             // Hiển thị ảnh sản phẩm (nếu có ảnh trong album, dùng ảnh đầu tiên)
             widget.product.album.isNotEmpty
-                ? Center(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Image.network(
-                        widget.product.album.first,
-                        fit: BoxFit.contain,
-                        height: 200,
-                        errorBuilder: (context, error, stackTrace) => Center(
-                          child: AppIcons.getIcon(
-                            Icons.broken_image,
-                            size: 100,
-                            color: Colors.grey,
+                ? SizedBox(
+                    height: 200,
+                    child: PageView.builder(
+                      itemCount: widget.product.album.length,
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          widget.product.album[index],
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: AppIcons.getIcon(
+                              Icons.broken_image,
+                              size: 100,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   )
                 : Container(),
@@ -83,7 +86,7 @@ class _BuyProductState extends State<BuyProduct> {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
