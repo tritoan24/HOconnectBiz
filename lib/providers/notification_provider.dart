@@ -1,3 +1,4 @@
+import 'package:clbdoanhnhansg/screens/business_opportunity_management/widget/details_post_business.dart';
 import 'package:clbdoanhnhansg/screens/cart/cart_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -96,6 +97,7 @@ class NotificationProvider extends BaseProvider {
               likes: post.like ?? [],
               commentCount: post.totalComment ?? 0,
               idUser: userId,
+              isJoin: post.isJoin ?? [],
             ),
           ),
         );
@@ -137,11 +139,18 @@ class NotificationProvider extends BaseProvider {
       }
     } else if (notification.deeplink.startsWith('dnsgapp://order/')) {
       // final orderId = notification.deeplink.split('/').last;
-
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const Cart(),
+        ),
+      );
+    } else if (notification.deeplink.startsWith('dnsgapp://bo/')) {
+      final postId = notification.deeplink.split('/').last;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DetailsPostBusiness(idPost: postId),
         ),
       );
     } else {

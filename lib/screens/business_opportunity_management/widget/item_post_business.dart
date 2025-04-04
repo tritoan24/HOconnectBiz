@@ -19,7 +19,6 @@ class ItemPostBussiness extends StatelessWidget {
         Widget targetScreen;
         targetScreen = DetailsPostBusiness(
           idPost: bo.id,
-          isInBusiness: isInBusiness,
         );
         Navigator.push(
           context,
@@ -70,9 +69,10 @@ class ItemPostBussiness extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                DateTimeUtils.formatDateTime(
-                    DateTimeUtils.toLocalTime(bo.createdAt!),
-                    format: 'dd/MM/yyyy HH:mm'),
+                bo.createdAt != null
+                    ? DateTimeUtils.formatDateTime(bo.createdAt!,
+                        format: 'HH:mm, dd/MM/yyyy')
+                    : 'N/A',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,

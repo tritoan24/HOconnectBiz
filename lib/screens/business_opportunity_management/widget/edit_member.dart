@@ -77,7 +77,6 @@ class _EditMemberState extends State<EditMember> {
           MaterialPageRoute(
             builder: (context) => DetailsPostBusiness(
               idPost: postId,
-              isInBusiness: true,
             ),
           ),
         );

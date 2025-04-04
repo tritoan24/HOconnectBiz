@@ -174,7 +174,9 @@ class _InformationState extends State<InformationTab> {
                           textAlign: TextAlign.left, // Căn trái chữ
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      // widget.isMe == true
+                      //     ? const SizedBox(height: 30)
+                      //     : Container(),
                       widget.isMe == true
                           ? GestureDetector(
                               onTap: () {
@@ -202,7 +204,7 @@ class _InformationState extends State<InformationTab> {
                               ),
                             )
                           : Container(),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),

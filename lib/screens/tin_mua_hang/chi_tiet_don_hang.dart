@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:clbdoanhnhansg/utils/Color/app_color.dart';
 import 'package:provider/provider.dart';
 
+import '../cart/widget/button_comfirm.dart';
+
 final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
 // double _calculatePriceAfterDiscount(double tamTinh, double chietKhau) {
@@ -190,6 +192,9 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
             return _buildStatusWidget(
                 statusText, widget.donHang.id, widget.hideButtons, context);
           },
+        ),
+        const SizedBox(
+          height: 10,
         ),
       ]),
     );
@@ -588,39 +593,23 @@ Widget _buildStatusWidget(
                 ],
               )));
     } else if (statusLowerCase == 'chờ vận chuyển') {
-      return GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const Cart(initialTab: CartTab.PurchaseOrder),
-              ),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: ConfirmButtonWithAction(
+          onConfirm: () {
+            _showConfirmDialog(
+              context: context,
+              title: 'Xác nhận hoàn thành',
+              content: 'Bạn xác nhận đã nhận được đơn hàng này?',
+              onConfirm: () async {
+                final cartProvider =
+                    Provider.of<CartProvider>(context, listen: false);
+                await cartProvider.updateStatusOrderBuy(id, 2, context);
+              },
             );
           },
-          child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.check,
-                        color: AppColor.primaryBlue,
-                      ),
-                      Text(
-                        'Đã Xác nhận mua hàng',
-                        style: TextStyle(
-                          color: AppColor.primaryBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Icon(Icons.arrow_forward_ios_rounded),
-                ],
-              )));
+        ),
+      );
     } else if (statusLowerCase == "đang xử lý") {
       return GestureDetector(
           onTap: () {
@@ -693,4 +682,38 @@ Widget _buildStatusWidget(
       return const SizedBox();
     }
   }
+}
+
+void _showConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String content,
+  required Function onConfirm,
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(title),
+        content: Text(content),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Xác nhận',
+                style: TextStyle(color: Color(0xFF006AF5))),
+            onPressed: () {
+              Navigator.of(context).pop();
+              onConfirm();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

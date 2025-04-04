@@ -15,14 +15,18 @@ class BuyProduct extends StatefulWidget {
   final String idUser;
   final String avatar_image;
   final String displayName;
+  final bool isMe;
+  final bool? checkBtn;
 
-  const BuyProduct(
-      {Key? key,
-      required this.product,
-      required this.idUser,
-      required this.avatar_image,
-      required this.displayName})
-      : super(key: key);
+  const BuyProduct({
+    Key? key,
+    required this.product,
+    required this.idUser,
+    required this.avatar_image,
+    required this.displayName,
+    this.isMe = false,
+    this.checkBtn = false,
+  }) : super(key: key);
 
   @override
   State<BuyProduct> createState() => _BuyProductState();
@@ -52,15 +56,20 @@ class _BuyProductState extends State<BuyProduct> {
           children: [
             // Hiển thị ảnh sản phẩm (nếu có ảnh trong album, dùng ảnh đầu tiên)
             widget.product.album.isNotEmpty
-                ? Image.network(
-                    widget.product.album.first,
-                    // fit: BoxFit.cover, // Đảm bảo ảnh vừa khung
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      // Căn giữa icon lỗi
-                      child: AppIcons.getIcon(
-                        Icons.broken_image,
-                        size: 100,
-                        color: Colors.grey, // Màu cho icon lỗi
+                ? Center(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Image.network(
+                        widget.product.album.first,
+                        fit: BoxFit.contain,
+                        height: 200,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: AppIcons.getIcon(
+                            Icons.broken_image,
+                            size: 100,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
                   )
@@ -101,61 +110,65 @@ class _BuyProductState extends State<BuyProduct> {
             ),
             const SizedBox(height: 10),
             // Phần hiển thị thông tin doanh nghiệp (có thể tĩnh hoặc dựa theo product nếu có)
-            Container(
-              decoration: const BoxDecoration(color: Colors.white),
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.network(
-                            widget.avatar_image.isNotEmpty
-                                ? widget.avatar_image
-                                : UrlImage.errorImage,
-                            width: 45,
-                            height: 45,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                AppIcons.getBrokenImage(),
+
+            widget.checkBtn == true
+                ? Container()
+                : Container(
+                    decoration: const BoxDecoration(color: Colors.white),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: Image.network(
+                                  widget.avatar_image.isNotEmpty
+                                      ? widget.avatar_image
+                                      : UrlImage.errorImage,
+                                  width: 45,
+                                  height: 45,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      AppIcons.getBrokenImage(),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(widget.displayName),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(widget.displayName),
-                      ],
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColor.primaryBlue,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => BusinessInformation(
-                                      idUser: widget.idUser)));
-                        },
-                        child: const Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                          child: Text(
-                            "Xem",
-                            style: TextStyle(color: AppColor.primaryBlue),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.primaryBlue,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            BusinessInformation(
+                                                idUser: widget.idUser)));
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 5),
+                                child: Text(
+                                  "Xem",
+                                  style: TextStyle(color: AppColor.primaryBlue),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
             const SizedBox(height: 10),
             // Mô tả chi tiết sản phẩm
             Container(
@@ -177,64 +190,67 @@ class _BuyProductState extends State<BuyProduct> {
           ],
         ),
       ),
-      bottomNavigationBar: Material(
-        elevation: 10,
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              // Use a debounce mechanism to prevent multiple taps
-              HapticFeedback
-                  .lightImpact(); // Optional: add a light vibration feedback
+      bottomNavigationBar: widget.isMe
+          ? null // Empty container if isMe is true
+          : Material(
+              elevation: 10,
+              color: Colors.white,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    // Use a debounce mechanism to prevent multiple taps
+                    HapticFeedback
+                        .lightImpact(); // Optional: add a light vibration feedback
 
-              // Avoid using Provider.of directly in the build method
-              Future.microtask(() {
-                Provider.of<ChatProvider>(context, listen: false)
-                    .sendMessageBuyNow(
-                        widget.product.author.toString(),
-                        widget.product.id.toString(),
-                        widget.avatar_image,
-                        widget.displayName,
-                        context);
-              });
-            },
-            child: Ink(
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppColor.primaryBlue,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      "assets/icons/i_lien_he.png",
-                      width: 32,
-                      height: 32,
-                      // Optional: cache the image
-                      cacheWidth: 32,
-                      cacheHeight: 32,
+                    // Avoid using Provider.of directly in the build method
+                    Future.microtask(() {
+                      Provider.of<ChatProvider>(context, listen: false)
+                          .sendMessageBuyNow(
+                              widget.product.author.toString(),
+                              widget.product.id.toString(),
+                              widget.avatar_image,
+                              widget.displayName,
+                              context);
+                    });
+                  },
+                  child: Ink(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColor.primaryBlue,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Liên hệ ngay',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            "assets/icons/i_lien_he.png",
+                            width: 32,
+                            height: 32,
+                            // Optional: cache the image
+                            cacheWidth: 32,
+                            cacheHeight: 32,
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'Liên hệ ngay',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

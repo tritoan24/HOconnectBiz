@@ -64,7 +64,9 @@ class Author {
       id: json['_id'] ?? '',
       username: json['username'] ?? '',
       displayName: json['displayName'] ?? '',
-      level: json['level'] ?? 0,
+      level: json['level'] is int
+          ? json['level']
+          : int.tryParse(json['level']?.toString() ?? '') ?? 0,
       registerType: json['register_type'] ?? '',
       avatarImage: json['avatar_image'] ?? '',
       coverImage: json['cover_image'] ?? '',
@@ -77,14 +79,26 @@ class Author {
       gender: json['gender'] ?? '',
       status: json['status'] ?? '',
       phone: json['phoneNumber'] ?? 'Chưa cập nhật',
-      roleCode: json['roleCode'] ?? 0,
+      roleCode: json['roleCode'] is int
+          ? json['roleCode']
+          : int.tryParse(json['roleCode']?.toString() ?? '') ?? 0,
       type: json['type'] ?? '',
       userId: json['user_id'] ?? '',
-      membershipPoints: json['membershipPoints'],
-      membershipPointsNeed: json['membershipPointsNeed'],
-      membershipPointsMax: json['membershipPointsMax'],
-      boStar: json['boStar']?? 0,
-      totalBo: json['totalBo']?? 0,
+      membershipPoints: json['membershipPoints'] is int
+          ? json['membershipPoints']
+          : int.tryParse(json['membershipPoints']?.toString() ?? ''),
+      membershipPointsNeed: json['membershipPointsNeed'] is int
+          ? json['membershipPointsNeed']
+          : int.tryParse(json['membershipPointsNeed']?.toString() ?? ''),
+      membershipPointsMax: json['membershipPointsMax'] is int
+          ? json['membershipPointsMax']
+          : int.tryParse(json['membershipPointsMax']?.toString() ?? ''),
+      boStar: json['boStar'] is int
+          ? json['boStar']
+          : int.tryParse(json['boStar']?.toString() ?? '') ?? 0,
+      totalBo: json['totalBo'] is int
+          ? json['totalBo']
+          : int.tryParse(json['totalBo']?.toString() ?? '') ?? 0,
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       updatedAt:

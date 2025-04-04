@@ -59,13 +59,19 @@ class _TrangChuViewState extends State<TrangChuView> {
           backgroundColor: const Color(0xffF4F5F6),
           body: Stack(
             children: [
-              _pages[selectedIndex],
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child: _pages[selectedIndex],
+              ),
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  height: 82,
+                  height: 92,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(

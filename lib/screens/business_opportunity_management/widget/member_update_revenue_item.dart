@@ -29,6 +29,27 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
   final TextEditingController _deductionController = TextEditingController();
   final NumberFormat _formatter = NumberFormat('#,###', 'vi_VN');
 
+  // Thêm biến để lưu trạng thái đã chọn
+  late int _currentStatus;
+
+  // Helper method to convert status int to message
+  String getStatusMessage(int status) {
+    switch (status) {
+      case 0:
+        return 'Chưa cập nhật';
+      case 1:
+        return 'Đã gặp gỡ';
+      case 2:
+        return 'Đã ký hợp đồng';
+      case 3:
+        return 'Đã thanh toán';
+      case 4:
+        return 'Đã xoá';
+      default:
+        return 'Chưa cập nhật';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +62,9 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
       _deductionController.text =
           _formatter.format(widget.initialDeduction!.toInt());
     }
+
+    // Khởi tạo trạng thái từ member hoặc mặc định là 0
+    _currentStatus = widget.member?.status?.toInt() ?? 0;
 
     _revenueController.addListener(() => _formatMoney(_revenueController));
     _deductionController.addListener(() => _formatMoney(_deductionController));
@@ -71,6 +95,9 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
 
   @override
   Widget build(BuildContext context) {
+    // Sử dụng _currentStatus để hiển thị trạng thái hiện tại
+    String statusMessage = getStatusMessage(_currentStatus);
+
     return FormBuilder(
       key: _formKey,
       child: Column(
@@ -126,7 +153,7 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
                         "Trạng thái: ",
                         style: TextStyles.textStyleNormal14W500,
                       ),
-                      _buildStatusTag(widget.member!.statusMessage.toString()),
+                      _buildStatusTag(statusMessage),
                     ],
                   ),
                 ],
@@ -267,12 +294,9 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
                     double deduction =
                         deductionText.isEmpty ? 0 : double.parse(deductionText);
 
-                    // Get status from member if available
-                    int status = widget.member?.status ?? 0;
-
-                    // Call save callback with values
+                    // Sử dụng _currentStatus khi gọi callback
                     if (widget.onSave != null) {
-                      widget.onSave!(revenue, deduction, status);
+                      widget.onSave!(revenue, deduction, _currentStatus);
                     }
                   }
                 },
@@ -295,44 +319,194 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
   }
 
   // Custom StatusTag widget (derived from MemberCard)
-  Widget _buildStatusTag(String status) {
-    Color getColor() {
-      switch (status) {
-        case "Đã thanh toán":
+  Widget _buildStatusTag(String statusMessage) {
+    Color getColor(String message) {
+      switch (message) {
+        case 'Đã thanh toán':
           return Colors.green;
-        case "Đã ký hợp đồng":
+        case 'Đã ký hợp đồng':
           return Colors.red;
-        case "Đã gặp gỡ":
+        case 'Đã gặp gỡ':
           return Colors.orange;
-        case "Chưa cập nhật":
+        case 'Đã xoá':
           return Colors.grey;
+        case 'Chưa cập nhật':
         default:
-          return Colors.black;
+          return Colors.grey;
       }
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: getColor().withOpacity(0.2),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(children: [
-        Text(
-          status,
-          style: TextStyle(
-            color: getColor(),
-            fontSize: 14,
+    return GestureDetector(
+      onTap: () {
+        _showStatusBottomSheet(context);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: getColor(statusMessage).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(children: [
+          Text(
+            statusMessage,
+            style: TextStyle(
+              color: getColor(statusMessage),
+              fontSize: 14,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        SvgPicture.asset(
-          'assets/icons/edit_bo.svg',
-          width: 16,
-          height: 16,
-          color: getColor(),
-        ),
-      ]),
+          const SizedBox(width: 4),
+          SvgPicture.asset(
+            'assets/icons/edit_bo.svg',
+            width: 16,
+            height: 16,
+            color: getColor(statusMessage),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  void _showStatusBottomSheet(BuildContext context) {
+    // Danh sách các trạng thái có thể chọn
+    final List<Map<String, dynamic>> statusOptions = [
+      {'id': 1, 'title': 'Đã gặp gỡ'},
+      {'id': 2, 'title': 'Đã ký hợp đồng'},
+      {'id': 3, 'title': 'Đã thanh toán'},
+    ];
+
+    // Lưu trạng thái đã chọn tạm thời
+    int tempSelectedStatus = _currentStatus;
+
+    showModalBottomSheet(
+      backgroundColor: Colors.white,
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              height: MediaQuery.of(context).size.height * 0.4,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header với tiêu đề và nút đóng
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 20),
+                      ),
+                    ],
+                  ),
+
+                  // Danh sách các trạng thái
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: statusOptions.length,
+                      separatorBuilder: (context, index) => const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Color(0xffF4F5F6),
+                      ),
+                      itemBuilder: (context, index) {
+                        final statusItem = statusOptions[index];
+                        final bool isSelected =
+                            tempSelectedStatus == statusItem['id'];
+
+                        return ListTile(
+                          title: Text(
+                            statusItem['title'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          trailing: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                tempSelectedStatus = statusItem['id'];
+                              });
+                            },
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.blue
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected ? Colors.blue : Colors.grey,
+                                  width: 2,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: isSelected
+                                  ? Center(
+                                      child: Container(
+                                        width: 7,
+                                        height: 7,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              tempSelectedStatus = statusItem['id'];
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Nút lưu
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Cập nhật trạng thái và đóng modal
+                        this.setState(() {
+                          _currentStatus = tempSelectedStatus;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffD6E9FF),
+                        foregroundColor: Colors.blue,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lưu',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

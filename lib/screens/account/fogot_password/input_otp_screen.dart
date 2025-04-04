@@ -11,8 +11,9 @@ import '../../../widgets/text_styles.dart';
 
 class InputOtpScreen extends StatefulWidget {
   final String email;
+  final bool? isShow;
 
-  const InputOtpScreen({super.key, required this.email});
+  const InputOtpScreen({super.key, required this.email, this.isShow = false});
 
   @override
   State<InputOtpScreen> createState() => _InputOtpScreenState();
@@ -89,13 +90,13 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: size.height * 0.05),
+                      SizedBox(height: size.height * 0.03),
                       Center(
                         child: Image.asset(
                           "assets/images/logo.png",
-                          width: size.width * 0.4,
-                          height: size.height * 0.1,
-                          fit: BoxFit.contain,
+                          width: size.width * 0.5,
+                          height: size.height * 0.2,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       SizedBox(height: size.height * 0.03),
@@ -154,7 +155,7 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                                   focusedBorderColor: Colors.blue,
                                   showFieldAsBox: true,
                                   // Giảm kích thước ô để tránh bị tràn
-                                  fieldWidth: 66,
+                                  fieldWidth: size.width * 0.15,
                                   // Giảm padding, tạo khoảng cách hợp lý
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 4.0),
@@ -210,23 +211,12 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                             TextButton(
                               onPressed: secondsRemaining == 0
                                   ? () {
-                                      auth.sendEmailOtp(context, widget.email);
+                                      auth.reSendEmailOtp(
+                                          context, widget.email);
                                       setState(() {
                                         secondsRemaining = 300;
                                         startTimer();
                                       });
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Mã xác thực đã được gửi lại thành công',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          backgroundColor: Colors.green,
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
                                     }
                                   : null,
                               child: Text(
@@ -255,9 +245,8 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
                               onPressed: isButtonEnabled
                                   ? () {
                                       debugPrint("Gửi OTP: $otpCode");
-                                      auth.inputOtp(
-                                          context, widget.email, otpCode);
-                                      // Không cần clearState ở đây vì đã xử lý trong inputOtp
+                                      auth.inputOtp(context, widget.email,
+                                          otpCode, widget.isShow);
                                     }
                                   : null,
                               style: ElevatedButton.styleFrom(
@@ -284,34 +273,36 @@ class _InputOtpScreenState extends State<InputOtpScreen> {
           },
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 50,
-        alignment: Alignment.center,
-        child: Text.rich(
-          TextSpan(
-            children: [
-              const TextSpan(
-                  text: "Chưa có tài khoản?  ",
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              TextSpan(
-                text: "Đăng ký ngay",
-                style: const TextStyle(
-                  color: Color(0xff006AF5),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
+      bottomNavigationBar: widget.isShow == true
+          ? const SizedBox()
+          : Container(
+              height: 50,
+              alignment: Alignment.center,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                        text: "Chưa có tài khoản?  ",
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    TextSpan(
+                      text: "Đăng ký ngay",
+                      style: const TextStyle(
+                        color: Color(0xff006AF5),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          // Xóa lỗi trước khi chuyển màn hình
+                          Provider.of<AuthProvider>(context, listen: false)
+                              .clearState();
+                          context.push(AppRoutes.dangKyTaiKhoan);
+                        },
+                    ),
+                  ],
                 ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    // Xóa lỗi trước khi chuyển màn hình
-                    Provider.of<AuthProvider>(context, listen: false)
-                        .clearState();
-                    context.push(AppRoutes.dangKyTaiKhoan);
-                  },
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

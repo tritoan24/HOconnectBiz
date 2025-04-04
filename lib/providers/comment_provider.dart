@@ -31,13 +31,13 @@ class CommentProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await getComments(postId, context);
-        
+
         // Cập nhật số lượng comment trong danh sách bài viết
         final postProvider = Provider.of<PostProvider>(context, listen: false);
-        
+
         // Cập nhật số lượng comment mới
         postProvider.updatePostCommentCount(postId, _comments.length);
-        
+
         // Thông báo cho các màn hình khác về sự thay đổi thông qua PostItemChangedNotification
         final post = postProvider.getPostById(postId);
         if (post != null) {
@@ -45,14 +45,13 @@ class CommentProvider extends BaseProvider {
           final storage = FlutterSecureStorage();
           final userId = await storage.read(key: 'user_id');
           final isLiked = post.like?.contains(userId) ?? false;
-          
+
           // Phát ra thông báo để các màn hình khác cập nhật UI
-          PostItemChangedNotification(
-            postId, 
-            isLiked, 
-            commentCount: _comments.length
-          ).dispatch(context);
-          debugPrint("🔍 DEBUG CommentProvider: Đã phát thông báo thay đổi sau khi thêm comment, số lượng comment mới: ${_comments.length}");
+          PostItemChangedNotification(postId, isLiked,
+                  commentCount: _comments.length)
+              .dispatch(context);
+          debugPrint(
+              "🔍 DEBUG CommentProvider: Đã phát thông báo thay đổi sau khi thêm comment, số lượng comment mới: ${_comments.length}");
         }
       },
       successMessage: 'Tạo bình luận thành công!',
@@ -66,8 +65,8 @@ class CommentProvider extends BaseProvider {
 
     try {
       Map<String, dynamic> queryParams = {
-        'limit': 2,
-        'page': 2,
+        'limit': 100,
+        'page': 1,
       };
 
       final response =
@@ -91,5 +90,9 @@ class CommentProvider extends BaseProvider {
     // Hide loading overlay after fetching is complete
     LoadingOverlay.hide();
   }
-}
 
+  void resetComments() {
+    _comments = [];
+    notifyListeners();
+  }
+}

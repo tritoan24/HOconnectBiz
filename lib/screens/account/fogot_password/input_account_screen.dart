@@ -51,12 +51,12 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                     children: [
                       SizedBox(
                           height: size.height *
-                              0.05), // Tương đối theo chiều cao màn hình
+                              0.03), // Tương đối theo chiều cao màn hình
                       Image.asset(
                         "assets/images/logo.png",
-                        width: size.width * 0.4,
-                        height: size.height * 0.1,
-                        fit: BoxFit.contain,
+                        width: size.width * 0.6,
+                        height: size.height * 0.2,
+                        fit: BoxFit.cover,
                       ),
 
                       SizedBox(height: size.height * 0.03),
@@ -128,11 +128,10 @@ class _InputAccountScreenState extends State<InputAccountScreen> {
                       ButtonWidget16(
                         label: 'Tiếp theo',
                         onPressed: () {
-                          print("Email${accountController.text}");
-
                           auth.sendEmailOtp(
                             context,
                             accountController.text,
+                            widget.showAppBar,
                           );
                           // Không cần clearState ở đây vì đã xử lý trong sendEmailOtp
                         },

@@ -21,6 +21,11 @@ class PostProvider extends BaseProvider {
   List<Posts> _posts = [];
   List<Posts> get posts => _posts;
 
+  //lưu trữ chi tiết bài viết, một bài viêt thôi
+  Posts? _postDetail;
+  Posts? get postDetail => _postDetail;
+  Posts? fetchedPost;
+
   List<Posts> _listPostMe = [];
   List<Posts> get listPostMe => _listPostMe;
 
@@ -157,7 +162,7 @@ class PostProvider extends BaseProvider {
 
     resetPagination();
     _isLoading = true;
-    
+
     // Xóa dữ liệu cũ và thông báo ngay để hiển thị trạng thái loading
     _posts = [];
     notifyListeners();
@@ -198,7 +203,8 @@ class PostProvider extends BaseProvider {
       Map<String, dynamic> body = {
         "page": _currentPage,
         "limit": _pageSize,
-        "timestamp": DateTime.now().millisecondsSinceEpoch, // Thêm timestamp để tránh cache
+        "timestamp": DateTime.now()
+            .millisecondsSinceEpoch, // Thêm timestamp để tránh cache
       };
 
       final response = await ApiClient().postRequest(
@@ -280,7 +286,9 @@ class PostProvider extends BaseProvider {
     notifyListeners();
     try {
       // Tạo dữ liệu body cần gửi
-      Map<String, dynamic> body = {"category": 2};
+      Map<String, dynamic> body = {
+        "category": 2,
+      };
 
       // Gửi yêu cầu POST đến API
       final response = await ApiClient().postRequest(
@@ -315,7 +323,7 @@ class PostProvider extends BaseProvider {
     }
 
     _isLoading = true;
-    
+
     // Xóa kết quả tìm kiếm cũ và thông báo ngay
     _searchResults = [];
     notifyListeners();
@@ -324,7 +332,8 @@ class PostProvider extends BaseProvider {
       // Create request body
       Map<String, dynamic> body = {
         'keyword': keyword,
-        'timestamp': DateTime.now().millisecondsSinceEpoch, // Thêm timestamp để tránh cache
+        'timestamp': DateTime.now()
+            .millisecondsSinceEpoch, // Thêm timestamp để tránh cache
       };
 
       // Send POST request to API
@@ -969,5 +978,46 @@ class PostProvider extends BaseProvider {
       successMessage: 'Xóa sản phẩm thành công!',
     );
     LoadingOverlay.hide();
+  }
+
+  Future<Posts?> fetchPostDetail(BuildContext context, String postId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    Posts? fetchedPost;
+
+    try {
+      // Make GET request to API
+      final response = await ApiClient().getRequest(
+        '${ApiEndpoints.postById}/$postId',
+        context,
+      );
+
+      if (response != null && response.containsKey('data')) {
+        // Convert JSON data to Posts object
+        fetchedPost = Posts.fromJson(response['data']);
+        _postDetail = fetchedPost;
+
+        // Update liked status for this post
+        final userId = await _getCurrentUserId();
+        if (userId != null && fetchedPost != null && fetchedPost.like != null) {
+          bool isLiked = fetchedPost.like!.contains(userId);
+          _likedPosts[postId] = isLiked;
+        }
+
+        debugPrint('Lấy chi tiết bài đăng thành công: ${fetchedPost?.title}');
+      } else {
+        debugPrint('Không tìm thấy bài đăng với ID: $postId');
+        _postDetail = null;
+      }
+    } catch (e) {
+      debugPrint('Lỗi khi lấy chi tiết bài đăng: $e');
+      _postDetail = null;
+    }
+
+    _isLoading = false;
+    notifyListeners();
+
+    return fetchedPost;
   }
 }

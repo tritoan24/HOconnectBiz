@@ -129,7 +129,7 @@ class _InputFileImagesState extends State<InputFileImages> {
                   onTap: pickImages,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
+                      color: Color(0xffEBF4FF),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     width: 100,
@@ -138,12 +138,12 @@ class _InputFileImagesState extends State<InputFileImages> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset("assets/icons/iPhoto.png", width: 32),
+                        const SizedBox(height: 6),
                         const Text('Thêm ảnh'),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
                 ...selectedImages.map((image) {
                   bool isNetworkImage = isValidImageFile(image.path) &&
                       (image.path.startsWith('http://') ||
@@ -151,7 +151,7 @@ class _InputFileImagesState extends State<InputFileImages> {
 
                   return Row(
                     children: [
-                      const SizedBox(width: 5), // 5px horizontal spacing
+                      const SizedBox(width: 7), // 5px horizontal spacing
                       Stack(
                         children: [
                           ClipRRect(

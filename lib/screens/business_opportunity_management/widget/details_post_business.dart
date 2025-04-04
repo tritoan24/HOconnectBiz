@@ -7,8 +7,10 @@ import 'package:clbdoanhnhansg/utils/router/router.name.dart';
 import 'package:clbdoanhnhansg/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/bo_provider.dart';
+import '../../../utils/global_state.dart';
 import '../../../widgets/button_widget16.dart';
 import '../../../widgets/confirmdialog.dart';
 import '../../../widgets/text_styles.dart';
@@ -20,14 +22,11 @@ import 'member_item.dart';
 
 class DetailsPostBusiness extends StatefulWidget {
   final String idPost;
-  final bool isInBusiness;
-  final int totalStar;
 
-  const DetailsPostBusiness(
-      {super.key,
-      required this.idPost,
-      this.isInBusiness = true,
-      this.totalStar = 0});
+  const DetailsPostBusiness({
+    super.key,
+    required this.idPost,
+  });
 
   @override
   State<DetailsPostBusiness> createState() => _DetailsPostBusinessState();
@@ -35,6 +34,7 @@ class DetailsPostBusiness extends StatefulWidget {
 
 class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
   late String currentUserId = "";
+  late bool isInBusiness;
 
   @override
   void initState() {
@@ -83,7 +83,10 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         otherMembers.add(member);
       }
     }
-    print('trạng thái is business: ${widget.isInBusiness}');
+    //nếu
+    author.id == currentUserId ? isInBusiness = true : isInBusiness = false;
+
+    print('trạng thái is business: ${isInBusiness}');
 
     return Scaffold(
       backgroundColor: const Color(0xffF4F5F6),
@@ -91,7 +94,18 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
         title: Text(bo?.title ?? "Chi tiết bài viết"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Check if we came from a notification
+            if (GlobalAppState.launchedFromNotification) {
+              // Navigate to home screen instead of just popping
+              context.go(AppRoutes.trangChu.replaceFirst(':index', '0'));
+              // Reset the flag
+              GlobalAppState.launchedFromNotification = false;
+            } else {
+              // Normal back behavior
+              Navigator.of(context).pop();
+            }
+          },
         ),
         actions: [
           PopupMenuButton<String>(
@@ -102,7 +116,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
               borderRadius: BorderRadius.circular(8),
             ),
             itemBuilder: (BuildContext context) {
-              if (widget.isInBusiness) {
+              if (isInBusiness) {
                 return <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(
                     value: 'end_strategy',
@@ -194,7 +208,7 @@ class _DetailsPostBusinessState extends State<DetailsPostBusiness> {
                           member: members,
                           author: author ?? AuthorBusiness.defaultAuthor(),
                           idPost: widget.idPost,
-                          isBusiness: widget.isInBusiness,
+                          isBusiness: isInBusiness,
                           currentUserId: currentUserId,
                         ),
                         const SizedBox(height: 8),
@@ -282,8 +296,8 @@ class _HeaderSection extends StatelessWidget {
                       child: Image.network(
                         ownerAvatar,
                         fit: BoxFit.cover,
-                        width: 40,
-                        height: 40,
+                        width: 35,
+                        height: 35,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
                             UrlImage.errorImage,
@@ -453,7 +467,7 @@ class _HeaderSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              memberCount.toString(),
+              data.length.toString(),
               style: TextStyles.textStyleNormal12W400White,
             ),
           ),
@@ -557,11 +571,14 @@ class _MemberListSectionState extends State<MemberListSection> {
             initialDeduction: currentUserMember!.deduction?.toDouble() ?? 0.0,
             member: currentUserMember!,
             onSave: (revenue, deduction, status) async {
+              // Kiểm tra xem widget vẫn còn mounted hay không
+              if (!mounted) {
+                print("Widget đã bị hủy, bỏ qua cập nhật");
+                return;
+              }
+
               final boProvider =
                   Provider.of<BoProvider>(context, listen: false);
-
-              // Remove this erroneous line
-              // if(widget.members.revenue)
 
               // Check if values actually changed before making the API call
               double currentRevenue =
@@ -580,32 +597,57 @@ class _MemberListSectionState extends State<MemberListSection> {
               }
 
               if (revenue < deduction) {
+                if (mounted) {
+                  // Kiểm tra lại trước khi hiển thị dialog
+                  showDialog(
+                    context: context,
+                    builder: (context) => CustomConfirmDialog(
+                      titleButtonLeft: "Hủy",
+                      titleButtonRight: "Xác nhận",
+                      content:
+                          "Doanh thu không thể nhỏ hơn chi phí. Vui lòng kiểm tra lại.",
+                      onConfirm: () {
+                        Navigator.of(context).pop(); // Đóng dialog
+                      },
+                    ),
+                  );
+                }
+              } else {
                 showDialog(
                   context: context,
                   builder: (context) => CustomConfirmDialog(
                     titleButtonLeft: "Hủy",
                     titleButtonRight: "Xác nhận",
                     content:
-                        "Doanh thu không thể nhỏ hơn chi phí. Vui lòng kiểm tra lại.",
-                    onConfirm: () {},
+                        "Bạn có chắc chắn muốn cập nhật doanh thu và trích quỹ không?",
+                    onConfirm: () async {
+                      try {
+                        await boProvider.updateRevenue(
+                          widget.idPost,
+                          status,
+                          revenue.toInt(),
+                          deduction.toInt(),
+                          context,
+                        );
+
+                        // Kiểm tra lại xem widget có còn mounted không
+                        if (mounted) {
+                          setState(() {}); // Refresh UI after update
+
+                          //hiển thị thông báo thành công
+                        }
+                      } catch (e) {
+                        print("❌ Error updating revenue: $e");
+                        // Có thể hiển thị thông báo lỗi nếu widget vẫn mounted
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Lỗi khi cập nhật: $e")),
+                          );
+                        }
+                      }
+                    },
                   ),
                 );
-              } else {
-                try {
-                  await boProvider.updateRevenue(
-                    widget.idPost,
-                    status,
-                    revenue.toInt(),
-                    deduction.toInt(),
-                    context,
-                  );
-
-                  // Refresh data after update
-                  await boProvider.fetchBoDataById(context, widget.idPost);
-                  setState(() {}); // Refresh UI after update
-                } catch (e) {
-                  print("❌ Error updating revenue: $e");
-                }
               }
             },
           ),
@@ -618,8 +660,17 @@ class _MemberListSectionState extends State<MemberListSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Other members list
-        ...otherMembers.map((member) => MemberCard(member: member)),
+        // Duyệt danh sách và lấy cả index
+        ...otherMembers.asMap().entries.map((entry) {
+          int index = entry.key; // Lấy index của phần tử
+          IsJoin member = entry.value; // Lấy giá trị của phần tử
+
+          return MemberCard(
+            member: member,
+            isLast: index ==
+                otherMembers.length - 1, // Kiểm tra nếu là thành viên cuối
+          );
+        }).toList(), // Chuyển đổi Iterable thành List
       ],
     );
   }

@@ -9,7 +9,7 @@ class Contact {
   final String? username;
   final String? userId;
   final String? type;
-  final LastMessage lastMessage;
+  LastMessage lastMessage;
 
   Contact({
     required this.id,
@@ -53,6 +53,14 @@ class Contact {
       userId: json['user_id']?.toString() ?? '',
       type: json['type'] ?? '',
       lastMessage: LastMessage.fromJson(lastMessageJson),
+    );
+  }
+  // Method to update isRead status
+  void setReadStatus(bool isRead) {
+    lastMessage = LastMessage(
+      content: lastMessage.content,
+      createdAt: lastMessage.createdAt,
+      isRead: isRead,
     );
   }
 
@@ -101,12 +109,18 @@ class Contact {
 class LastMessage {
   final String content;
   final String createdAt;
+  final bool? isRead;
 
-  LastMessage({required this.content, required this.createdAt});
+  LastMessage({
+    required this.content,
+    required this.createdAt,
+    this.isRead,
+  });
 
   factory LastMessage.fromJson(Map<String, dynamic> json) {
     String content = '';
     String createdAt = '';
+    bool? isRead;
 
     // Safely extract content
     if (json['content'] != null) {
@@ -117,10 +131,15 @@ class LastMessage {
     if (json['createdAt'] != null && json['createdAt'] != "NaN:NaN") {
       createdAt = json['createdAt'].toString();
     }
+    // Safely extract isRead
+    if (json['isRead'] != null) {
+      isRead = json['isRead'] == true;
+    }
 
     return LastMessage(
       content: content,
       createdAt: createdAt,
+      isRead: isRead,
     );
   }
 }

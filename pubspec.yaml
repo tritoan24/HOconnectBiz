@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+2
+version: 1.0.0+35
 
 environment:
   sdk: ^3.5.1
@@ -70,20 +70,20 @@ dependencies:
   permission_handler: ^11.4.0
   firebase_core: ^3.12.1
   firebase_messaging: ^15.2.4
+  sign_in_with_apple: ^6.0.0
 
   # Các package mới cho theo dõi lỗi
   device_info_plus: ^9.1.2
   package_info_plus: ^8.3.0
-  sentry_flutter: ^7.15.0
+  # sentry_flutter: ^7.15.0
   path_provider: ^2.1.2
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path: "assets/icons/ic_app.png"
-  # Tắt adaptive icon để tránh biểu tượng bị bóp méo
-  remove_alpha_ios: true
-  min_sdk_android: 21
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21 # Android min SDK
+  remove_alpha_ios: true # Cho iOS loại bỏ transparency
 
 dev_dependencies:
   flutter_test:

@@ -26,14 +26,16 @@ class ChatProvider with ChangeNotifier {
   bool _isLoadingMessages = false;
   List<Message> _messages = [];
   List<Contact> _contacts = [];
+
   String? _currentUserId;
   String? _currentChatReceiverId;
   String? _currentGroupChatId;
+
   int _cartItemCount = 0;
   int _currentPage = 1;
   bool _hasMoreMessages = true;
   int _totalMessageCount = 0;
-  static const int _limit = 10;
+  static const int _limit = 15;
   final _storage = const FlutterSecureStorage();
   String company_name = '';
 
@@ -308,6 +310,7 @@ class ChatProvider with ChangeNotifier {
               content: item['lastMessage']?['content'] ?? '',
               createdAt: item['lastMessage']?['createdAt'] ??
                   DateTime.now().toIso8601String(),
+              isRead: item['lastMessage']?['isRead'] ?? false,
             );
 
             final contactId = item['contactId'] ?? '';
@@ -451,28 +454,28 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Xử lý một tin nhắn group từ socket
-  void _processGroupMessage(Map<String, dynamic> messageData) {
-    try {
-      final message = Message.fromJson(messageData);
-
-      // Kiểm tra nếu tin nhắn thuộc về cuộc trò chuyện hiện tại
-      if (_currentGroupChatId != null) {
-        final idGroup = message.id;
-
-        if (idGroup == _currentGroupChatId) {
-          // Thêm vào danh sách nếu chưa có
-          if (!_messages.any((m) => m.id == message.id)) {
-            // Thêm tin nhắn mới vào cuối danh sách
-            _messages.add(message);
-            notifyListeners();
-          }
-        }
-      }
-    } catch (e) {
-      print("❌ Lỗi xử lý tin nhắn đơn: $e");
-    }
-  }
+  // /// Xử lý một tin nhắn group từ socket
+  // void _processGroupMessage(Map<String, dynamic> messageData) {
+  //   try {
+  //     final message = Message.fromJson(messageData);
+  //
+  //     // Kiểm tra nếu tin nhắn thuộc về cuộc trò chuyện hiện tại
+  //     if (_currentGroupChatId != null) {
+  //       final idGroup = message.id;
+  //
+  //       if (idGroup == _currentGroupChatId) {
+  //         // Thêm vào danh sách nếu chưa có
+  //         if (!_messages.any((m) => m.id == message.id)) {
+  //           // Thêm tin nhắn mới vào cuối danh sách
+  //           _messages.add(message);
+  //           notifyListeners();
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("❌ Lỗi xử lý tin nhắn đơn: $e");
+  //   }
+  // }
 
   Future<void> sendMessageBuyNow(String receiverId, String productId,
       String avtar, String displayName, BuildContext context) async {
@@ -513,6 +516,10 @@ class ChatProvider with ChangeNotifier {
   /// Lấy danh sách tin nhắn trong một phòng chat
   Future<void> getListDetailChat(BuildContext context, String idUser,
       {bool loadMore = false}) async {
+    // //xóa tin nhan
+    // if (loadMore) {
+    //   clearState();
+    // }
     if (!loadMore) {
       _currentPage = 1;
       _hasMoreMessages = true;
@@ -589,18 +596,25 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Load thêm tin nhắn cũ
-  Future<void> loadMoreMessages(BuildContext context) async {
-    print("🔄 Đang tải thêm tin nhắn cũ...");
-    if (_currentChatReceiverId != null) {
-      print("📩 ID người nhận: $_currentChatReceiverId, Trang: $_currentPage");
-      return await getListDetailChat(context, _currentChatReceiverId!,
-          loadMore: true);
-    } else {
-      print("❌ ID người nhận không tồn tại!");
-      return Future
-          .value(); // Trả về Promise đã hoàn thành nếu không có người nhận
+  Future<void> loadMoreMessages(BuildContext context, String idReceiver) async {
+    if (idReceiver != null) {
+      print(
+          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID người dùng: $idReceiver");
+      return await getListDetailChat(context, idReceiver, loadMore: true);
     }
+    print("❌ Không có ID người dùng để tải thêm tin nhắn");
+    return Future.value();
+  }
+
+  Future<void> loadMoreMessagesGroup(
+      BuildContext context, String idGroup) async {
+    if (idGroup != null) {
+      print(
+          "🔄 Đang tải thêm tin nhắn, trang: $_currentPage, ID nhóm: $idGroup");
+      return await getListDetailChat(context, idGroup, loadMore: true);
+    }
+    print("❌ Không có ID để tải thêm tin nhắn");
+    return Future.value();
   }
 
   /// Reset trạng thái phân trang
@@ -784,39 +798,39 @@ class ChatProvider with ChangeNotifier {
 
   //delete message
   /// **Xóa tin nhắn**
-  Future<void> deleteMessage(
-      String messageId, String chatId, BuildContext context) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final ApiResponse response =
-          await _chatRepository.deleteMessage(messageId, context);
-
-      if (response.isSuccess) {
-        print("✅ Tin nhắn đã xóa thành công!");
-
-        // Cập nhật danh sách tin nhắn sau khi xóa
-        _messages.removeWhere((message) => message.id.toString() == messageId);
-
-        // Sắp xếp lại danh sách tin nhắn để đảm bảo thứ tự đúng
-        _messages.sort((a, b) {
-          final timeCompare = a.timestamp.compareTo(b.timestamp);
-          if (timeCompare != 0) return timeCompare;
-          return (a.id ?? "").compareTo(b.id ?? "");
-        });
-
-        notifyListeners();
-      } else {
-        print("⚠️ Xóa tin nhắn thất bại: ${response.message}");
-      }
-    } catch (e) {
-      print("❌ Lỗi khi xóa tin nhắn: $e");
-    }
-
-    _isLoading = false;
-    notifyListeners();
-  }
+  // Future<void> deleteMessage(
+  //     String messageId, String chatId, BuildContext context) async {
+  //   _isLoading = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final ApiResponse response =
+  //         await _chatRepository.deleteMessage(messageId, context);
+  //
+  //     if (response.isSuccess) {
+  //       print("✅ Tin nhắn đã xóa thành công!");
+  //
+  //       // Cập nhật danh sách tin nhắn sau khi xóa
+  //       _messages.removeWhere((message) => message.id.toString() == messageId);
+  //
+  //       // Sắp xếp lại danh sách tin nhắn để đảm bảo thứ tự đúng
+  //       _messages.sort((a, b) {
+  //         final timeCompare = a.timestamp.compareTo(b.timestamp);
+  //         if (timeCompare != 0) return timeCompare;
+  //         return (a.id ?? "").compareTo(b.id ?? "");
+  //       });
+  //
+  //       notifyListeners();
+  //     } else {
+  //       print("⚠️ Xóa tin nhắn thất bại: ${response.message}");
+  //     }
+  //   } catch (e) {
+  //     print("❌ Lỗi khi xóa tin nhắn: $e");
+  //   }
+  //
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
 
   /// Ngắt kết nối socket cho màn hình chat
   void leaveChatRoom() {

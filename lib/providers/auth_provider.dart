@@ -9,6 +9,7 @@ import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/widgets/loading_overlay.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../core/base/base_provider.dart';
 import '../core/network/api_endpoints.dart';
 import '../core/services/socket_service.dart';
@@ -109,7 +111,7 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> _clearAllData() async {
+  Future<void> clearAllData() async {
     try {
       // Xóa dữ liệu từ FlutterSecureStorage
       await _storage.delete(key: 'auth_token');
@@ -128,88 +130,165 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> checkLoginStatus(BuildContext context) async {
+  Future<void> checkLoginStatusWithoutRedirect(BuildContext context) async {
     try {
-      // Bắt đầu loading
       setLoading(true);
-      // Record start time
-      final startTime = DateTime.now();
-
       final token = await _getToken();
 
       if (token != null && token.isNotEmpty) {
-        // Cập nhật trạng thái đăng nhập
-        _isLoggedIn = true;
+        try {
+          // Make API call to validate token
+          await Provider.of<UserProvider>(context, listen: false)
+              .fetchUser(context, showLoading: false);
 
-        // Get user ID for socket connection
-        final userId = await getuserID();
+          _isLoggedIn = true;
 
-        if (userId != null) {
-          // Connect to socket if we have a user ID
-          socketService.connect(userId);
-        }
+          // Connect socket
+          final userId = await getuserID();
+          if (userId != null) {
+            socketService.connect(userId);
+          }
+        } catch (userError) {
+          debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
+          _isLoggedIn = false;
 
-        if (!context.mounted) return;
+          // Explicitly clear data on token validation failure
+          await clearAllDataIOS();
 
-        // Tạo danh sách các Future để theo dõi
-        final futures = <Future>[];
-
-        // Thêm các tác vụ fetch dữ liệu vào danh sách
-        futures.add(Provider.of<UserProvider>(context, listen: false)
-            .fetchUser(context));
-        futures.add(Provider.of<ProductProvider>(context, listen: false)
-            .getListProduct(context));
-
-        final postProvider = Provider.of<PostProvider>(context, listen: false);
-        // final rankProvider = Provider.of<RankProvider>(context, listen: false);
-        //
-        // futures.add(rankProvider.fetchRanksRevenue(context));
-        // futures.add(rankProvider.fetchRankBusiness(context));
-
-        futures.add(postProvider.fetchPostsFeatured(context));
-        futures.add(postProvider.fetchPostsByUser(context));
-
-        // Chờ tất cả các tác vụ hoàn thành
-        await Future.wait(futures);
-
-        // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
-        if (context.mounted) {
-          // Xóa lỗi trước khi chuyển màn hình
-          clearState();
-
-          // Sửa: Chuyển hướng đến đúng route
-          context.go(AppRoutes.trangChu);
+          // Make sure to throw the error so it can be caught
+          throw Exception('Token validation failed: $userError');
         }
       } else {
-        // Cập nhật trạng thái đăng nhập
         _isLoggedIn = false;
-
-        // Ensure minimum 3 seconds even for login routing
-        final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
-        final remainingMs = 3000 - elapsedMs;
-        if (remainingMs > 0) {
-          await Future.delayed(Duration(milliseconds: remainingMs));
-        }
-
-        if (context.mounted) {
-          clearState();
-          context.go(AppRoutes.login);
-        }
       }
     } catch (e) {
-      // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
       _isLoggedIn = false;
-
-      setError("Lỗi điều hướng: $e");
-      // Nếu có lỗi, chuyển về trang login
-      if (context.mounted) {
-        context.go(AppRoutes.login);
-      }
+      setError("Lỗi kiểm tra đăng nhập: $e");
+      throw e; // Re-throw for splash screen to handle
     } finally {
-      // Kết thúc loading trong mọi trường hợp
       setLoading(false);
     }
   }
+
+// Thêm hàm xóa dữ liệu trên iOS
+  Future<void> clearAllDataIOS() async {
+    try {
+      // Clear secure storage (FlutterSecureStorage or similar)
+      final storage = FlutterSecureStorage();
+      await storage.deleteAll();
+
+      // If using SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Reset state
+      _isLoggedIn = false;
+      // _token = null;
+      notifyListeners();
+    } catch (e) {
+      print('Error clearing iOS data: $e');
+    }
+  }
+  //
+  // Future<void> checkLoginStatus(BuildContext context) async {
+  //   try {
+  //     // Bắt đầu loading
+  //     setLoading(true);
+  //     // Record start time
+  //     final startTime = DateTime.now();
+  //
+  //     final token = await _getToken();
+  //
+  //     if (token != null && token.isNotEmpty) {
+  //       // Cập nhật trạng thái đăng nhập
+  //       _isLoggedIn = true;
+  //
+  //       // Get user ID for socket connection
+  //       final userId = await getuserID();
+  //
+  //       if (userId != null) {
+  //         // Connect to socket if we have a user ID
+  //         socketService.connect(userId);
+  //       }
+  //
+  //       if (!context.mounted) return;
+  //
+  //       try {
+  //         // Try to fetch user data specifically
+  //         await Provider.of<UserProvider>(context, listen: false)
+  //             .fetchUser(context);
+  //       } catch (userError) {
+  //         // If user fetch fails, log the user out
+  //         debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
+  //
+  //         // Cập nhật trạng thái đăng nhập
+  //         _isLoggedIn = false;
+  //
+  //         // Clear token (optional)
+  //         await _clearAllData();
+  //
+  //         if (context.mounted) {
+  //           clearState();
+  //           context.go(AppRoutes.login);
+  //         }
+  //         return; // Exit early
+  //       }
+  //
+  //       if (!context.mounted) return;
+  //
+  //       // Proceed with other data fetching since user fetch succeeded
+  //       final futures = <Future>[];
+  //
+  //       // Add remaining fetch tasks
+  //       futures.add(Provider.of<ProductProvider>(context, listen: false)
+  //           .getListProduct(context));
+  //
+  //       final postProvider = Provider.of<PostProvider>(context, listen: false);
+  //
+  //       futures.add(postProvider.fetchPostsFeatured(context));
+  //       futures.add(postProvider.fetchPostsByUser(context));
+  //
+  //       // Wait for the remaining futures
+  //       await Future.wait(futures);
+  //
+  //       // Chỉ chuyển hướng sau khi tất cả fetch data đã hoàn thành
+  //       if (context.mounted) {
+  //         // Xóa lỗi trước khi chuyển màn hình
+  //         clearState();
+  //
+  //         // Chuyển hướng đến đúng route
+  //         context.go(AppRoutes.trangChu);
+  //       }
+  //     } else {
+  //       // Cập nhật trạng thái đăng nhập
+  //       _isLoggedIn = false;
+  //
+  //       // Ensure minimum 3 seconds even for login routing
+  //       final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
+  //       final remainingMs = 3000 - elapsedMs;
+  //       if (remainingMs > 0) {
+  //         await Future.delayed(Duration(milliseconds: remainingMs));
+  //       }
+  //
+  //       if (context.mounted) {
+  //         clearState();
+  //         context.go(AppRoutes.login);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     // Đảm bảo cập nhật trạng thái đăng nhập khi có lỗi
+  //     _isLoggedIn = false;
+  //
+  //     setError("Lỗi điều hướng: $e");
+  //     // Nếu có lỗi, chuyển về trang login
+  //     if (context.mounted) {
+  //       context.go(AppRoutes.login);
+  //     }
+  //   } finally {
+  //     // Kết thúc loading trong mọi trường hợp
+  //     setLoading(false);
+  //   }
+  // }
 
   Future<void> login(
       BuildContext context, String username, String password) async {
@@ -356,7 +435,7 @@ class AuthProvider extends BaseProvider {
       await executeApiCall(
         apiCall: () async {
           // Xóa dữ liệu từ cả hai storage
-          await _clearAllData();
+          await clearAllData();
 
           // Cập nhật trạng thái đăng nhập
           _isLoggedIn = false;
@@ -435,9 +514,15 @@ class AuthProvider extends BaseProvider {
                   name: 'LOGOUT_GOOGLE_ERROR', error: e);
             }
           } else if (registerType == 'fb') {
+            // Đảm bảo xóa register_type
+            await prefs.remove('register_type');
             await FacebookAuth.instance.logOut();
             developer.log('Đã đăng xuất Facebook',
                 name: 'PROFILE_LOGOUT.FACEBOOK');
+          } else if (registerType == 'apple') {
+            // Đối với Apple Sign In, chỉ cần xóa register_type vì không có API đăng xuất cụ thể
+            await prefs.remove('register_type');
+            developer.log('Đã đăng xuất Apple', name: 'PROFILE_LOGOUT.APPLE');
           }
 
           // Đăng xuất OneSignal
@@ -463,19 +548,43 @@ class AuthProvider extends BaseProvider {
     }
   }
 
-  Future<void> sendEmailOtp(BuildContext context, String email) async {
+  Future<void> sendEmailOtp(
+      BuildContext context, String email, bool? isShow) async {
     await executeApiCall(
       apiCall: () => _authRepository.sendOtpEmail(email, context),
       context: context,
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.go(AppRoutes.nhapMaOTP, extra: {'email': email});
+        context.push(AppRoutes.nhapMaOTP,
+            extra: {'email': email, 'isShow': isShow});
       },
     );
   }
 
-  Future<void> inputOtp(BuildContext context, String email, String code) async {
+  Future<void> reSendEmailOtp(BuildContext context, String email) async {
+    await executeApiCall(
+      apiCall: () => _authRepository.sendOtpEmail(email, context),
+      context: context,
+      onSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Mã xác thực đã được gửi lại thành công',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> inputOtp(
+      BuildContext context, String email, String code, bool? isShow) async {
+    context
+        .go(AppRoutes.taoMatKhauMoi, extra: {"email": email, "isShow": isShow});
     await executeApiCall(
       apiCall: () async {
         final response = await _authRepository.inputOtp(email, code, context);
@@ -491,7 +600,8 @@ class AuthProvider extends BaseProvider {
       onSuccess: () {
         // Xóa lỗi trước khi chuyển màn hình
         clearState();
-        context.go(AppRoutes.taoMatKhauMoi, extra: {"email": email});
+        context.go(AppRoutes.taoMatKhauMoi,
+            extra: {"email": email, "isShow": isShow});
       },
     );
   }
@@ -580,6 +690,98 @@ class AuthProvider extends BaseProvider {
     }
   }
 
+  Future<void> signInWithApple(BuildContext context) async {
+    const String tag = 'APPLE_LOGIN';
+    const String registerTypeApple = 'apple';
+    const String defaultImage = UrlImage.defaultAvatarImage;
+
+    if (!Platform.isIOS) {
+      developer.log('Đăng nhập Apple chỉ hỗ trợ trên iOS',
+          name: '$tag.PLATFORM_NOT_SUPPORTED');
+      return;
+    }
+
+    try {
+      // Hiển thị loading overlay
+      LoadingOverlay.show(context);
+
+      developer.log('Bắt đầu đăng nhập Apple', name: tag);
+
+      // Yêu cầu các thông tin cần thiết từ Apple
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      if (credential.userIdentifier == null) {
+        developer.log('Không lấy được thông tin người dùng Apple',
+            name: '$tag.NO_USER_ID');
+        LoadingOverlay.hide();
+        return;
+      }
+
+      developer.log('Đăng nhập Apple thành công', name: '$tag.SUCCESS');
+
+      // Lấy thông tin từ credential
+      final String userId = credential.userIdentifier ?? '';
+      final String? givenName = credential.givenName;
+      final String? familyName = credential.familyName;
+      final String? email = credential.email;
+
+      // Tạo display name từ tên hoặc dùng mặc định
+      String displayName = 'Apple User';
+      if (givenName != null || familyName != null) {
+        displayName = '${givenName ?? ''} ${familyName ?? ''}'.trim();
+      }
+
+      developer.log('UserId: $userId, Email: $email, Name: $displayName',
+          name: '$tag.USER_DATA');
+
+      // Xử lý trường hợp ẩn danh (không chia sẻ email)
+      String userEmail;
+      if (email != null && email.isNotEmpty) {
+        // Nếu có email thật, sử dụng email đó
+        userEmail = email;
+      } else {
+        // Tạo email giả nhưng đảm bảo không vượt quá 64 ký tự
+        // Tạo hash ngắn từ userId
+        String hash = userId.hashCode.toString().replaceAll('-', '');
+        hash = hash.length > 10 ? hash.substring(0, 10) : hash;
+        userEmail = 'apple${hash}@example.com';
+      }
+
+      // Kiểm tra lại độ dài email
+      if (userEmail.length > 64) {
+        // Nếu vẫn quá dài, tạo phiên bản ngắn hơn
+        userEmail =
+            'apple${DateTime.now().millisecondsSinceEpoch % 1000000}@ex.com';
+      }
+
+      developer.log('Email cuối cùng: $userEmail, Độ dài: ${userEmail.length}',
+          name: '$tag.EMAIL');
+
+      Map<String, dynamic> userData = {
+        'id': userId,
+        'email': userEmail,
+        'name': displayName,
+        'picture': defaultImage,
+      };
+
+      if (context.mounted) {
+        _handleLoginSocialSuccess(context, userData, registerTypeApple);
+      } else {
+        // Ẩn loading overlay nếu context không còn hợp lệ
+        LoadingOverlay.hide();
+      }
+    } catch (e) {
+      developer.log('Lỗi đăng nhập Apple: $e', name: '$tag.ERROR', error: e);
+      // Ẩn loading overlay nếu có lỗi
+      LoadingOverlay.hide();
+    }
+  }
+
   Future<void> signInWithFacebook(BuildContext context) async {
     const String tag = 'FB_LOGIN';
     const String registerTypeFB = 'fb';
@@ -656,8 +858,11 @@ class AuthProvider extends BaseProvider {
   Future<void> _handleLoginSocialSuccess(BuildContext context,
       Map<String, dynamic> userData, String registerType) async {
     // Đặt tag dựa trên registerType
-    final String tag =
-        registerType == 'fb' ? 'FB_LOGIN.SUCCESS' : 'GG_LOGIN.SUCCESS';
+    final String tag = registerType == 'fb'
+        ? 'FB_LOGIN.SUCCESS'
+        : (registerType == 'apple'
+            ? 'APPLE_LOGIN.SUCCESS'
+            : 'GG_LOGIN.SUCCESS');
     final String? id = userData['id'];
     final String? name = userData['name'];
     final String? email = userData['email'];
@@ -666,6 +871,8 @@ class AuthProvider extends BaseProvider {
     if (registerType == 'fb') {
       avatarImage = userData['picture']?['data']?['url'];
     } else if (registerType == 'gg') {
+      avatarImage = userData['picture'] as String?;
+    } else if (registerType == 'apple') {
       avatarImage = userData['picture'] as String?;
     }
 
@@ -690,7 +897,9 @@ class AuthProvider extends BaseProvider {
       // Cập nhật tag cho lỗi cũng dựa trên registerType
       final String errorTag = registerType == 'fb'
           ? 'FB_LOGIN.SUCCESS.ERROR'
-          : 'GG_LOGIN.SUCCESS.ERROR';
+          : (registerType == 'apple'
+              ? 'APPLE_LOGIN.SUCCESS.ERROR'
+              : 'GG_LOGIN.SUCCESS.ERROR');
       developer.log('Thiếu thông tin cần thiết để đăng nhập', name: errorTag);
       _handleLoginIssue(
         message: 'Không lấy được đầy đủ thông tin người dùng',

@@ -6,6 +6,7 @@ import '../../models/apiresponse.dart';
 import '../../models/auth_model.dart';
 import '../../providers/send_error_log.dart';
 import 'dart:convert';
+import '../../widgets/alert_widget_noti.dart';
 import '../network/api_client.dart'; // Import ApiErrorException
 
 abstract class BaseProvider extends ChangeNotifier {
@@ -96,7 +97,12 @@ abstract class BaseProvider extends ChangeNotifier {
         additionalInfo: "Status: ${e.statusCode}, Body: ${e.responseBody}",
       );
     } on SocketException catch (e, stackTrace) {
-      final errorMsg = "Không thể kết nối đến máy chủ. Kiểm tra Internet!";
+      final errorMsg = "Lỗi kết nối mạng!";
+      CustomAlertNoti.show(
+        context,
+        errorMsg,
+        backgroundColor: Colors.red,
+      );
       setError(errorMsg);
 
       sendErrorLog(

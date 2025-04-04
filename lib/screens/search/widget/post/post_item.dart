@@ -328,10 +328,13 @@ class _PostItemState extends State<PostItem> {
             _buildTitleAndContent(),
             if (widget.business.isNotEmpty) ...[
               const SizedBox(height: 8),
-              _buildBusiness(context),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                child: _buildBusiness(context),
+              ),
             ],
             if (widget.images.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               _buildImages(),
             ],
             if (!isBusiness) ...[
@@ -347,7 +350,7 @@ class _PostItemState extends State<PostItem> {
 
   Widget _buildTitleAndContent() {
     return GestureDetector(
-      onTap: () => _navigateToDetailScreen(0),
+      onTap: () => _navigateToComments(context, widget.isMe),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _kPadding, vertical: 8),
         child: Column(
@@ -676,7 +679,7 @@ class _PostItemState extends State<PostItem> {
     if (!isBusiness || widget.business.isEmpty) return const SizedBox();
 
     return Wrap(
-      spacing: 10.0,
+      spacing: 10,
       runSpacing: 10.0,
       children: widget.business.map((b) => _buildBusinessTag(b)).toList(),
     );
@@ -685,7 +688,7 @@ class _PostItemState extends State<PostItem> {
   Widget _buildBusinessTag(BusinessModel business) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      // margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: AppColor.secondaryBlue,
         borderRadius: BorderRadius.circular(4),
@@ -774,7 +777,8 @@ class _PostItemState extends State<PostItem> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (!isBusiness && !widget.isMe && widget.idUser != idUserID) _buildPurchaseButton(context, sanPham),
+        if (!isBusiness && !widget.isMe && widget.idUser != idUserID)
+          _buildPurchaseButton(context, sanPham),
       ],
     );
   }
@@ -859,6 +863,7 @@ class _PostItemState extends State<PostItem> {
                   context,
                   isJoin: widget.isJoin ?? [],
                   postId: widget.postId,
+                  isPostItem: true,
                 );
               },
               child: SizedBox(
@@ -932,66 +937,99 @@ class _PostItemState extends State<PostItem> {
                     ),
                   ),
                 )
-              : (widget.idUser == idUserID) 
-                ? Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300], // Màu xám nhạt
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text(
-                          "Bài viết của bạn",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
+              : (widget.idUser == idUserID)
+                  ? GestureDetector(
+                      onTap: () {
+                        CompanyBottomSheet.show(
+                          context,
+                          isJoin: widget.isJoin ?? [],
+                          postId: widget.postId,
+                          isPostItem: true,
+                        );
+                      },
+                      child: SizedBox(
+                        height: 36,
+                        child: Row(
+                          children: [
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/icons/icon_list.svg",
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  right: -8,
+                                  top: -8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      "${widget.isJoin?.where((join) => join.isAccept == false).length}",
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0),
+                                child: Text("Chờ phê duyệt",
+                                    style: TextStyles.textStyleNormal12W500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isJoind = true;
+                        });
+
+                        // Gọi API để đăng ký tham gia
+                        businessProvider.joinBusiness(widget.postId, context);
+
+                        // Phát ra thông báo để cập nhật các màn hình khác
+                        PostItemChangedNotification(widget.postId, isLiked,
+                                isJoined: true)
+                            .dispatch(context);
+
+                        // Cập nhật trạng thái isJoin trong post provider
+                        Provider.of<PostProvider>(context, listen: false)
+                            .updatePostJoinStatus(widget.postId, context);
+                      },
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.blue, // Màu xanh đậm
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Text(
+                              "Đăng ký tham gia",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  )
-                : GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isJoind = true;
-                    });
-
-                    // Gọi API để đăng ký tham gia
-                    businessProvider.joinBusiness(widget.postId, context);
-
-                    // Phát ra thông báo để cập nhật các màn hình khác
-                    PostItemChangedNotification(widget.postId, isLiked,
-                            isJoined: true)
-                        .dispatch(context);
-
-                    // Cập nhật trạng thái isJoin trong post provider
-                    Provider.of<PostProvider>(context, listen: false)
-                        .updatePostJoinStatus(widget.postId, context);
-                  },
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.blue, // Màu xanh đậm
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Text(
-                          "Đăng ký tham gia",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
     );
   }
 
@@ -1167,47 +1205,73 @@ class _PostItemState extends State<PostItem> {
     debugPrint(
         "🔍 DEBUG PostItem: Quay lại từ màn comments với result=$result");
 
-    // Luôn cập nhật UI khi quay về từ màn hình comments để đảm bảo đồng bộ
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    final updatedPost = postProvider.getPostById(widget.postId);
+    // Kiểm tra xem context có còn mounted không và Provider có sẵn không
+    if (!context.mounted) {
+      debugPrint("⚠️ WARNING PostItem: Context không còn mounted");
+      return;
+    }
 
-    if (updatedPost != null) {
-      debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
-      debugPrint(
-          "🔍 DEBUG PostItem: Số lượng isJoin mới: ${updatedPost.isJoin?.length}");
+    try {
+      // Luôn cập nhật UI khi quay về từ màn hình comments để đảm bảo đồng bộ
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final updatedPost = postProvider.getPostById(widget.postId);
 
-      // Cập nhật UI với dữ liệu mới
-      setState(() {
-        // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
-        likeCount = updatedPost.like?.length ?? 0;
-        commentCount = updatedPost.totalComment ?? 0;
-
-        // Cập nhật trạng thái isLiked nếu có idUserID
-        if (idUserID != null && idUserID!.isNotEmpty) {
-          isLiked = updatedPost.like?.contains(idUserID) ?? false;
-        }
-
-        // Cập nhật trạng thái isJoind
-        if (updatedPost.isJoin != null) {
-          isJoind =
-              updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
-          debugPrint(
-              "🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
-        }
-
+      if (updatedPost != null) {
+        debugPrint("🔍 DEBUG PostItem: Đã lấy được dữ liệu mới từ provider");
         debugPrint(
-            "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
-      });
-    } else {
-      debugPrint("⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
-      // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      _loadUserIdandStatusLikePost(authProvider);
-      _loadUserStatusJoinBusiness(authProvider);
+            "🔍 DEBUG PostItem: Số lượng like mới: ${updatedPost.like?.length}");
+        debugPrint(
+            "🔍 DEBUG PostItem: Số lượng comment mới: ${updatedPost.totalComment}");
+        debugPrint(
+            "🔍 DEBUG PostItem: Số lượng isJoin mới: ${updatedPost.isJoin?.length}");
+
+        // Cập nhật UI với dữ liệu mới
+        setState(() {
+          // Cập nhật số lượng comment và trạng thái like từ dữ liệu mới
+          likeCount = updatedPost.like?.length ?? 0;
+          commentCount = updatedPost.totalComment ?? 0;
+
+          // Cập nhật trạng thái isLiked nếu có idUserID
+          if (idUserID != null && idUserID!.isNotEmpty) {
+            isLiked = updatedPost.like?.contains(idUserID) ?? false;
+          }
+
+          // Cập nhật trạng thái isJoind
+          if (updatedPost.isJoin != null) {
+            isJoind =
+                updatedPost.isJoin!.any((join) => join.user?.id == idUserID);
+            debugPrint(
+                "🔍 DEBUG PostItem: Cập nhật trạng thái isJoind = $isJoind");
+          }
+
+          debugPrint(
+              "🔍 DEBUG PostItem: UI đã cập nhật với likeCount=$likeCount, commentCount=$commentCount, isLiked=$isLiked");
+        });
+      } else {
+        debugPrint(
+            "⚠️ WARNING PostItem: Không lấy được dữ liệu mới từ provider");
+        // Nếu không lấy được dữ liệu mới, vẫn cập nhật qua AuthProvider
+        if (context.mounted) {
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
+          _loadUserIdandStatusLikePost(authProvider);
+          _loadUserStatusJoinBusiness(authProvider);
+        }
+      }
+    } catch (e) {
+      debugPrint("⚠️ ERROR PostItem: Lỗi khi truy cập Provider: $e");
+      // Xử lý trường hợp Provider không tồn tại hoặc lỗi khác
+      if (context.mounted) {
+        try {
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
+          _loadUserIdandStatusLikePost(authProvider);
+          _loadUserStatusJoinBusiness(authProvider);
+        } catch (authError) {
+          debugPrint(
+              "⚠️ ERROR PostItem: Lỗi khi truy cập AuthProvider: $authError");
+        }
+      }
     }
 
     debugPrint("🔍 DEBUG PostItem: _navigateToComments hoàn tất");

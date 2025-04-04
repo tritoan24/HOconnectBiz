@@ -360,13 +360,15 @@ class BoProvider with ChangeNotifier {
       if (response.isSuccess) {
         print("✅ Cập nhật thành công: " + response.message.toString());
 
-        // Fetch new data but don't navigate here
-        await fetchBoDataById(context, postId);
-
+        // Check if the widget is still mounted
+        if (context.mounted) {
+          // Fetch new data
+          await fetchBoDataById(context, postId);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Cập nhật thành công")),
+          );
+        }
         notifyListeners();
-
-        // Remove this line
-        // Navigator.pop(context, true); // This causes problems
       } else {
         print("❌ Lỗi khi cập nhật: ${response.message}");
       }
@@ -423,7 +425,7 @@ class BoProvider with ChangeNotifier {
   Future<void> fetchBusinessesSearch(BuildContext context) async {
     _isSearching = true;
     _searchErrorMessage = '';
-    
+
     // Xóa dữ liệu cũ ngay lập tức để hiển thị loading
     _searchResults = [];
     notifyListeners();
@@ -431,7 +433,8 @@ class BoProvider with ChangeNotifier {
     try {
       Map<String, dynamic> body = {
         'keyword': '',
-        'timestamp': DateTime.now().millisecondsSinceEpoch,  // Thêm timestamp để tránh cache
+        'timestamp': DateTime.now()
+            .millisecondsSinceEpoch, // Thêm timestamp để tránh cache
       };
 
       final response = await _apiClient.postRequest(
@@ -460,6 +463,4 @@ class BoProvider with ChangeNotifier {
     _isSearching = false;
     notifyListeners();
   }
-
-
 }

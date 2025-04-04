@@ -71,25 +71,44 @@ class InfoRow extends StatelessWidget {
 }
 
 class StatusTag extends StatelessWidget {
-  final String status;
+  final int status;
 
   const StatusTag({
     Key? key,
     required this.status,
   }) : super(key: key);
 
+  String getStatusMessage(int status) {
+    switch (status) {
+      case 0:
+        return 'Chưa cập nhật';
+      case 1:
+        return 'Đã gặp gỡ';
+      case 2:
+        return 'Đã ký hợp đồng';
+      case 3:
+        return 'Đã thanh toán';
+      case 4:
+        return 'Đã xoá';
+      default:
+        return 'Chưa cập nhật';
+    }
+  }
+
   Color getColor() {
     switch (status) {
-      case "Đã thanh toán":
-        return Colors.green;
-      case "Đã ký hợp đồng":
-        return Colors.red;
-      case "Đã gặp gỡ":
-        return Colors.orange;
-      case "Chưa cập nhật":
+      case 0:
         return Colors.grey;
+      case 1:
+        return Colors.orangeAccent;
+      case 2:
+        return Colors.redAccent;
+      case 3:
+        return Colors.green;
+      case 4:
+        return Colors.red;
       default:
-        return Colors.black;
+        return Colors.grey;
     }
   }
 
@@ -102,7 +121,7 @@ class StatusTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status,
+        getStatusMessage(status),
         style: TextStyle(
           color: getColor(),
           fontSize: 14,
@@ -114,10 +133,12 @@ class StatusTag extends StatelessWidget {
 
 class MemberCard extends StatelessWidget {
   final IsJoin member;
+  final bool isLast; // Thêm biến kiểm tra thành viên cuối cùng
 
   const MemberCard({
     super.key,
     required this.member,
+    required this.isLast, // Nhận giá trị từ danh sách
   });
 
   @override
@@ -135,9 +156,7 @@ class MemberCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 20,
                   backgroundImage: NetworkImage(member.user!.avatarImage),
-                  onBackgroundImageError: (_, __) {
-                    // Nếu có lỗi, ảnh sẽ tự động chuyển sang mặc định
-                  },
+                  onBackgroundImageError: (_, __) {},
                   child: ClipOval(
                     child: Image.network(
                       member.user!.avatarImage,
@@ -171,7 +190,7 @@ class MemberCard extends StatelessWidget {
                     "Trạng thái: ",
                     style: TextStyles.textStyleNormal14W500,
                   ),
-                  StatusTag(status: member.statusMessage.toString()),
+                  StatusTag(status: member.status!),
                 ],
               ),
             ),
@@ -187,8 +206,12 @@ class MemberCard extends StatelessWidget {
               label: "Trích quỹ",
               value: member.deduction!.toDouble(),
             ),
-            const SizedBox(height: 13),
-            const HorizontalDivider(),
+            if (!isLast) ...[
+              // Chỉ hiển thị nếu không phải là thành viên cuối cùng
+              const SizedBox(height: 13),
+              const HorizontalDivider(),
+              const SizedBox(height: 13),
+            ],
             const SizedBox(height: 13),
           ],
         ),

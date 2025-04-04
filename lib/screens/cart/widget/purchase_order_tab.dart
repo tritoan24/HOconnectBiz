@@ -138,41 +138,18 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
   }
 
   Widget _buildOrderCard(OrderModel order, BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          _buildOrderItem(order, context),
-          if (_shouldShowButtons(order)) _buildActionButtons(order),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderItem(OrderModel order, BuildContext context) {
     // Get the first product image for display
     String imageUrl = '';
     if (order.products.isNotEmpty) {
       final albumUrl = order.products[0].product.album.isNotEmpty
           ? order.products[0].product.album[0]
           : '';
-      // Check if the URL is a full URL or a local path
       if (albumUrl.startsWith('http')) {
         imageUrl = albumUrl;
       } else {
-        // Use a placeholder if it's a local path that we can't load directly
         imageUrl = 'assets/images/placeholder.png';
       }
     }
-
-    // Get product name for display
-    String productName = order.products.isNotEmpty
-        ? order.products[0].product.title
-        : "Sản phẩm không xác định";
 
     // Calculate total product quantity
     int totalQuantity =
@@ -182,6 +159,11 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
     final priceFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
     String formattedPrice = priceFormat.format(order.totalPay);
 
+    // Get product name for display
+    String productName = order.products.isNotEmpty
+        ? order.products[0].product.title
+        : "Sản phẩm không xác định";
+
     // Determine order status
     String status = _getOrderStatusText(order.status);
 
@@ -189,101 +171,109 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       onTap: () {
         ChiTietDonHang.show(context, order, status);
       },
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Phần 1: Hình ảnh
-                SizedBox(
-                  width: 64,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: imageUrl.startsWith('http')
-                        ? Image.network(
-                            imageUrl,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, error, _) => Container(
-                              width: 64,
-                              height: 64,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.image_not_supported,
-                                  color: Colors.grey),
-                            ),
-                          )
-                        : Image.network(
-                            UrlImage.errorImage,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
-                          ),
-                  ),
-                ),
-
-                // Phần 2: Tên sản phẩm
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: Column(
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        productName,
-                        style: const TextStyle(fontSize: 16),
-                        maxLines: 5,
-                        overflow: TextOverflow.ellipsis,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: imageUrl.startsWith('http')
+                            ? Image.network(
+                                imageUrl,
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, error, _) => Container(
+                                  width: 64,
+                                  height: 64,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image_not_supported,
+                                      color: Colors.grey),
+                                ),
+                              )
+                            : Image.network(
+                                UrlImage.errorImage,
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
+                              ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "Mã đơn: ${order.orderCode}",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              productName,
+                              style: const TextStyle(fontSize: 14),
+                              maxLines: 5,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Mã đơn: ${order.orderCode}",
+                              style: TextStyle(
+                                  color: Colors.grey[600], fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _buildStatusContainer(status),
+                        ),
                       ),
                     ],
                   ),
-                ),
-
-                // Phần 3: Trạng thái
-                Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: _buildStatusContainer(status),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tổng số lượng sản phẩm',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      Text('$totalQuantity'),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Giá trị thanh toán',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        formattedPrice,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Tổng số lượng sản phẩm',
-                    style: TextStyle(color: Colors.grey[600])),
-                Text('$totalQuantity'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Giá trị thanh toán',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  formattedPrice,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 16),
-              child: const HorizontalDivider(),
-            )
+            if (_shouldShowButtons(order)) _buildActionButtons(order),
           ],
         ),
       ),
@@ -470,6 +460,7 @@ class _PurchaseOrderTabState extends State<PurchaseOrderTab> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text(title),
           content: Text(content),
           actions: <Widget>[

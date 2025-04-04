@@ -45,9 +45,11 @@ class ErrorHandler {
   // Gửi báo cáo lỗi
   void _reportError(dynamic error, StackTrace? stack, String source) {
     int errorLevel = 1;
-    
+
     // Phân loại mức độ nghiêm trọng của lỗi
-    if (error is SocketException || error is HttpException || error is TimeoutException) {
+    if (error is SocketException ||
+        error is HttpException ||
+        error is TimeoutException) {
       errorLevel = 2; // Lỗi mạng - nghiêm trọng
     } else if (error is FormatException || error is TypeError) {
       errorLevel = 3; // Lỗi dữ liệu - rất nghiêm trọng
@@ -55,20 +57,20 @@ class ErrorHandler {
 
     final errorMessage = '[${DateTime.now()}] $source: ${error.toString()}';
     final stackTrace = stack?.toString() ?? 'Không có thông tin stack trace';
-    
+
     sendErrorLog(
       level: errorLevel,
       message: errorMessage,
       additionalInfo: stackTrace,
     );
   }
-  
+
   // Bắt lỗi trong khối try-catch
   void logError(dynamic error, {StackTrace? stackTrace, String? context}) {
     _reportError(
-      error, 
+      error,
       stackTrace ?? StackTrace.current,
       context ?? 'Manual Error Log',
     );
   }
-} 
+}

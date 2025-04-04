@@ -9,7 +9,7 @@ class Bo {
   final String companyName;
   final double revenue;
   final double avgStar;
-  final double boStar;
+  final int boStar;
   final int totalBo;
   final int totalReview;
   final List<String> album;
@@ -59,7 +59,7 @@ class Bo {
           json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
       avgStar:
           json['avgStar'] is num ? (json['avgStar'] as num).toDouble() : 0.0,
-      boStar: json['boStar'] is num ? (json['boStar'] as num).toDouble() : 0.0,
+      boStar: json['boStar'] is num ? (json['boStar'] as num).toInt() : 0,
       totalBo: json['totalBo'] is int
           ? json['totalBo']
           : int.tryParse(json['totalBo'].toString()) ?? 0,
@@ -97,7 +97,7 @@ class Bo {
           json['revenue'] is num ? (json['revenue'] as num).toDouble() : 0.0,
       avgStar:
           json['avgStar'] is num ? (json['avgStar'] as num).toDouble() : 0.0,
-      boStar: json['boStar'] is num ? (json['boStar'] as num).toDouble() : 0.0,
+      boStar: json['boStar'] is num ? (json['boStar'] as num).toInt() : 0,
       totalReview: json['total_review'] is int
           ? json['total_review']
           : int.tryParse(json['total_review'].toString()) ?? 0,

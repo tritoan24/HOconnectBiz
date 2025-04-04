@@ -18,6 +18,7 @@ import 'package:clbdoanhnhansg/providers/rank_provider.dart';
 import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -32,10 +33,17 @@ import 'firebase_options.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cài đặt hướng màn hình chỉ ở chế độ đứng
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Bắt tất cả các lỗi không xử lý trong Zone
   runZonedGuarded(() async {
     // Đảm bảo binding chỉ được gọi một lần
-    WidgetsFlutterBinding.ensureInitialized();
 
     await initializeDateFormatting('vi', null);
 
@@ -51,16 +59,32 @@ void main() {
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
     OneSignal.initialize(AppConfig.oneSignalAppId);
 
+    // Cấu hình thêm cho OneSignal
+    OneSignal.Notifications.clearAll();
+    OneSignal.User.pushSubscription.optIn();
+    
     // Yêu cầu quyền thông báo cho iOS
     if (Platform.isIOS) {
-      OneSignal.Notifications.requestPermission(true);
-      // } else if (Platform.isAndroid) {
-      //   // Kiểm tra phiên bản Android
-      //   final isAndroid13Plus = await _isAndroid13OrHigher();
-      //   if (isAndroid13Plus) {
-      //     // Android 13+ requires explicit permission request
-      //     OneSignal.Notifications.requestPermission(true);
-      //   }
+      // Đợi một chút để đảm bảo ứng dụng đã khởi động hoàn toàn
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Cấu hình cho iOS
+      await OneSignal.Notifications.requestPermission(true).then((accepted) {
+        print("Quyền thông báo iOS: $accepted");
+      });
+      
+      // Đăng ký để nhận thông báo từ xa
+      await OneSignal.User.pushSubscription.optIn().then((_) {
+        print("Đã đăng ký nhận thông báo từ xa trên iOS");
+      });
+    }
+    
+    // Kiểm tra và yêu cầu quyền cho Android 13+
+    if (Platform.isAndroid) {
+      final isAndroid13Plus = await _isAndroid13OrHigher();
+      if (isAndroid13Plus) {
+        await OneSignal.Notifications.requestPermission(true);
+      }
     }
 
     // Khởi tạo logger

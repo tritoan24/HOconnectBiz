@@ -17,6 +17,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../providers/StatisticalProvider.dart';
 import '../../../providers/rank_provider.dart';
+import '../../../utils/transitions/custom_page_transition.dart';
 import 'bang_xep_hang.dart';
 
 class Home extends StatefulWidget {
@@ -52,7 +53,6 @@ class _HomeState extends State<Home> {
       staticsticalProvider.fetchStatistics(context);
       rankProvider.fetchRanksRevenue(context);
       rankProvider.fetchRankBusiness(context);
-      postProvider.fetchPosts(context);
 
       // Tải dữ liệu banner
       bannerProvider.getListBanner(context);
@@ -83,7 +83,7 @@ class _HomeState extends State<Home> {
             child: Image.asset(
               "assets/images/logo.png",
               width: 150,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
             ),
           ),
         ),
@@ -132,9 +132,9 @@ class _HomeState extends State<Home> {
                           onTap: () {
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChatListScreen(),
-                                ));
+                                CustomPageTransition(
+                                    page: ChatListScreen(),
+                                    type: TransitionType.fade));
                           },
                           child: SvgPicture.asset(
                             "assets/icons/mess.svg",
@@ -266,8 +266,6 @@ class _HomeState extends State<Home> {
                     viewportFraction: 1,
                     enableInfiniteScroll: false,
                     scrollDirection: Axis.horizontal,
-                    scrollPhysics:
-                        NeverScrollableScrollPhysics(), // Thêm dòng này để vô hiệu hóa cuộn dọc
                   ),
                   itemCount: posts.length,
                   itemBuilder: (context, index, realIndex) {
@@ -275,8 +273,7 @@ class _HomeState extends State<Home> {
 
                     return SingleChildScrollView(
                       // Thay đổi ở đây
-                      physics:
-                          NeverScrollableScrollPhysics(), // Vô hiệu hóa cuộn trong mỗi item
+                      physics: const NeverScrollableScrollPhysics(),
                       child: PostItem(
                         postId: post.id ?? '',
                         postType: post.category ?? 1,
