@@ -13,6 +13,7 @@ class SocketService extends ChangeNotifier {
   static const String PREFIX_NOTIFICATION = 'notification_';
   static const String PREFIX_INBOX = 'inbox_';
   static const String PREFIX_CONTACT = 'contact_';
+  static const String PREFIX_USER = 'user_status';
 
   // Singleton pattern
   static final SocketService _instance = SocketService._internal();
@@ -105,8 +106,9 @@ class SocketService extends ChangeNotifier {
           );
         }
       });
-      
-      _socket!.onReconnectAttempt((attempt) => debugPrint('⏳ Đang thử kết nối lại lần #$attempt'));
+
+      _socket!.onReconnectAttempt(
+          (attempt) => debugPrint('⏳ Đang thử kết nối lại lần #$attempt'));
 
       _socket!.onReconnectFailed((_) {
         debugPrint('❌ Kết nối lại thất bại');
@@ -138,6 +140,21 @@ class SocketService extends ChangeNotifier {
       _socket!.emit(EVENT_CONNECT, {'deviceId': deviceId});
       _connectionStates[deviceId] = true;
       debugPrint('🔔 Kết nối tới kênh thông báo: $deviceId');
+      notifyListeners();
+    }
+  }
+
+  /// Kết nối UserStatus
+  void connectUserStatus() {
+    if (_socket == null || !_socket!.connected) {
+      _setupSocket();
+    }
+
+    if (_socket!.connected) {
+      final statusuerID = '$PREFIX_USER';
+      _socket!.emit(EVENT_CONNECT);
+      _connectionStates[statusuerID] = true;
+      debugPrint('👤kết nối với status user');
       notifyListeners();
     }
   }

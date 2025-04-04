@@ -1,5 +1,6 @@
 import 'package:clbdoanhnhansg/models/order_model.dart';
 import 'package:clbdoanhnhansg/models/product_model.dart';
+import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/screens/tin_mua_hang/widgets/item_san_pham_mess.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -217,6 +218,8 @@ class CartProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await fetcOrderSale(context);
+        await Provider.of<UserProvider>(context, listen: false)
+            .fetchUser(context, showLoading: false);
         notifyListeners();
       },
       successMessage: "Cập nhật trạng thái đơn hàng thành công!",

@@ -203,7 +203,7 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
 
 Widget _buildOrderDetailRow(String label, String value) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
+    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
     child: Row(
       children: [
         Text(

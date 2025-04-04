@@ -57,7 +57,7 @@ class _BuyProductState extends State<BuyProduct> {
             // Hiển thị ảnh sản phẩm (nếu có ảnh trong album, dùng ảnh đầu tiên)
             widget.product.album.isNotEmpty
                 ? SizedBox(
-                    height: 200,
+                    height: 348,
                     child: PageView.builder(
                       itemCount: widget.product.album.length,
                       itemBuilder: (context, index) {

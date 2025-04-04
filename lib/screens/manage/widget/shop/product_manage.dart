@@ -33,7 +33,6 @@ class _ProductManageState extends State<ProductManage> {
     _products = List.from(widget.products);
   }
 
-
 // Hàm gửi dữ liệu lên server
   Future<void> _saveToServer() async {
     final productProvider =
@@ -194,4 +193,3 @@ class _ProductManageState extends State<ProductManage> {
     );
   }
 }
-

@@ -113,12 +113,15 @@ class _TabShopState extends State<TabShop> {
                   ],
                 ),
               ),
+              sanPhamGhim.isEmpty
+                  ? const SizedBox()
+                  : const SizedBox(height: 28),
 
               Padding(
                 padding: EdgeInsets.only(
                   left: 12,
                   right: 12,
-                  bottom: 12,
+                  bottom: 99,
                 ),
                 child: CustomScrollView(
                   shrinkWrap: true,

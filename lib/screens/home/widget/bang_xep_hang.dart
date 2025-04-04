@@ -225,21 +225,21 @@ class BangXepHang extends StatelessWidget {
                 else
                   ...others.map((rank) => Column(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: screenWidth * 0.02),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BusinessInformation(
-                                      idUser: rank.id,
-                                      isMe: false,
-                                    ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BusinessInformation(
+                                    idUser: rank.id,
+                                    isMe: false,
                                   ),
-                                );
-                              },
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: screenWidth * 0.02),
                               child: Row(
                                 children: [
                                   // Zone 1: Rank (fixed width - 40% of screen)
@@ -257,8 +257,8 @@ class BangXepHang extends StatelessWidget {
                                   // Zone 2: Name (remaining width)
                                   Expanded(
                                     child: Text(
-                                      rank.companyName.isNotEmpty
-                                          ? rank.companyName
+                                      rank.displayName.isNotEmpty
+                                          ? rank.displayName
                                           : rank.displayName,
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.035,
@@ -334,7 +334,7 @@ class BangXepHang extends StatelessWidget {
           SizedBox(
             width: screenWidth * 0.25, // Constrain text width
             child: Text(
-              rank.companyName.isNotEmpty ? rank.companyName : rank.displayName,
+              rank.displayName.isNotEmpty ? rank.displayName : rank.displayName,
               style: TextStyle(
                 fontSize: screenWidth * 0.035,
                 fontWeight: FontWeight.w500,

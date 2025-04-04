@@ -62,23 +62,23 @@ void main() {
     // Cấu hình thêm cho OneSignal
     OneSignal.Notifications.clearAll();
     OneSignal.User.pushSubscription.optIn();
-    
+
     // Yêu cầu quyền thông báo cho iOS
     if (Platform.isIOS) {
       // Đợi một chút để đảm bảo ứng dụng đã khởi động hoàn toàn
       await Future.delayed(const Duration(seconds: 1));
-      
+
       // Cấu hình cho iOS
       await OneSignal.Notifications.requestPermission(true).then((accepted) {
         print("Quyền thông báo iOS: $accepted");
       });
-      
+
       // Đăng ký để nhận thông báo từ xa
       await OneSignal.User.pushSubscription.optIn().then((_) {
         print("Đã đăng ký nhận thông báo từ xa trên iOS");
       });
     }
-    
+
     // Kiểm tra và yêu cầu quyền cho Android 13+
     if (Platform.isAndroid) {
       final isAndroid13Plus = await _isAndroid13OrHigher();
@@ -104,6 +104,7 @@ void main() {
     if (userId != null) {
       socketService.initializeSocket(userId);
       socketService.connect(userId);
+      socketService.connectUserStatus();
     }
 
     // Chạy ứng dụng với các providers

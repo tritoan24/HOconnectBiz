@@ -212,390 +212,394 @@ class _CreateOrderState extends State<CreateOrder> {
     final productProvider = Provider.of<ProductProvider>(context);
     poductsList = productProvider.products;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0.5,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          elevation: 0.5,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          ),
+          title: const Text('Tạo đơn bán'),
         ),
-        title: const Text('Tạo đơn bán'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    child: Text(
-                      'Chọn sản phẩm đính kèm',
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        isDismissible: false,
-                        context: context,
-                        enableDrag: false,
-                        builder: (BuildContext context) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: Column(
-                                  children: <Widget>[
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text("Danh sách sản phẩm"),
-                                        IconButton(
-                                          onPressed: () {
-                                            updateSelectedProducts();
-                                            calculateTotal();
-                                            Navigator.pop(context);
-                                          },
-                                          icon: const Icon(
-                                            Icons.close,
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Divider(
-                                      color: Colors.grey,
-                                      thickness: 1,
-                                      height: 1,
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Expanded(
-                                      child: poductsList.isEmpty
-                                          ? const Center(
-                                              child:
-                                                  Text('Không có sản phẩm nào'),
-                                            )
-                                          : ListView.builder(
-                                              itemCount: poductsList.length,
-                                              itemBuilder: (context, index) {
-                                                final product =
-                                                    poductsList[index];
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          bottom: 8.0),
-                                                  child: SanPhamDinhKem(
-                                                    sanPham: product,
-                                                    choice: (value) {
-                                                      setState(() {
-                                                        selectedProducts[
-                                                                product] =
-                                                            value ?? false;
-                                                      });
-                                                    },
-                                                    initialValue:
-                                                        selectedProducts[
-                                                                product] ??
-                                                            false,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    child: Container(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: const Color(0xFFEBF4FF),
-                      ),
                       child: Text(
-                        'Thêm sản phẩm',
-                        textAlign: TextAlign.center,
+                        'Chọn sản phẩm đính kèm',
                         style: GoogleFonts.roboto(
-                          color: Colors.blueAccent,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ),
-
-                  // Hiển thị danh sách sản phẩm đã chọn
-                  if (selectedProductsList.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Container(
-                      height: 230,
-                      child: Scrollbar(
-                        thickness: 6,
-                        radius: Radius.circular(10),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          itemCount: selectedProductsList.length,
-                          itemBuilder: (context, index) {
-                            final product = selectedProductsList[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: ItemProductCreate(
-                                sanPham: product,
-                                quantity: productQuantities[product] ?? 1,
-                                onQuantityChanged: (newQuantity) {
-                                  updateQuantity(product, newQuantity);
-                                },
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          isDismissible: false,
+                          context: context,
+                          enableDrag: false,
+                          builder: (BuildContext context) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        Container(
-                          width: double.infinity,
-                          child: Text(
-                            'Thanh toán:',
-                            style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Tạm tính:',
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff676767),
-                              ),
-                            ),
-                            Text(
-                              currencyFormatter.format(totalAmount),
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff141415),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Tổng số lượng sản phẩm:',
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff676767),
-                              ),
-                            ),
-                            Text(
-                              totalQuantity.toString(),
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff141415),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Chiết khấu:',
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.red,
-                              ),
-                            ),
-                            Text(
-                              currencyFormatter.format(totalDiscount),
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Giá sau khi chiết khấu:',
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff141415),
-                              ),
-                            ),
-                            Text(
-                              currencyFormatter
-                                  .format(totalAmount - totalDiscount),
-                              style: GoogleFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xff141415),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const HorizontalDivider(),
-                        const SizedBox(height: 12),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Cài đặt giá trị đơn hàng",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            FocusScope(
-                              child: Focus(
-                                onFocusChange: (hasFocus) {
-                                  if (hasFocus) {
-                                    // When focused, display only raw numbers without any formatting
-                                    String text = totalAmountController.text
-                                        .replaceAll(RegExp(r'[^0-9]'), '');
-                                    if (text.isNotEmpty) {
-                                      totalAmountController.value =
-                                          TextEditingValue(
-                                        text: text,
-                                        selection: TextSelection.collapsed(
-                                            offset: text.length),
-                                      );
-                                    }
-                                  } else {
-                                    // When losing focus, apply full formatting including currency symbol
-                                    String text = totalAmountController.text
-                                        .replaceAll(RegExp(r'[^0-9]'), '');
-                                    if (text.isNotEmpty) {
-                                      String formatted = currencyFormatter
-                                          .format(int.parse(text));
-                                      totalAmountController.value =
-                                          TextEditingValue(
-                                        text: formatted,
-                                        selection: TextSelection.collapsed(
-                                            offset: formatted.length),
-                                      );
-                                    }
-                                  }
-                                },
-                                child:
-// Usage in your FormBuilderTextField:
-                                    FormBuilderTextField(
-                                  controller: totalAmountController,
-                                  focusNode: amountFocusNode, // Add this line
-                                  name: 'orderValue',
-                                  maxLines: null,
-                                  keyboardType: TextInputType.number,
-                                  textInputAction: TextInputAction.done,
-                                  autovalidateMode: AutovalidateMode.always,
-                                  inputFormatters: [
-                                    CurrencyInputFormatter(
-                                        locale: 'vi_VN', symbol: ''),
-                                  ],
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    hintText: 'Nhập giá trị đơn hàng',
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: Color(0xFFE0E0E0),
-                                        width: 1.0,
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text("Danh sách sản phẩm"),
+                                          IconButton(
+                                            onPressed: () {
+                                              updateSelectedProducts();
+                                              calculateTotal();
+                                              Navigator.pop(context);
+                                            },
+                                            icon: const Icon(
+                                              Icons.close,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    hintStyle: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xFFE0E0E0),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: Color(0xFFE0E0E0),
-                                        width: 1.0,
+                                      const Divider(
+                                        color: Colors.grey,
+                                        thickness: 1,
+                                        height: 1,
                                       ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    suffixText: '₫',
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Expanded(
+                                        child: poductsList.isEmpty
+                                            ? const Center(
+                                                child: Text(
+                                                    'Không có sản phẩm nào'),
+                                              )
+                                            : ListView.builder(
+                                                itemCount: poductsList.length,
+                                                itemBuilder: (context, index) {
+                                                  final product =
+                                                      poductsList[index];
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            bottom: 8.0),
+                                                    child: SanPhamDinhKem(
+                                                      sanPham: product,
+                                                      choice: (value) {
+                                                        setState(() {
+                                                          selectedProducts[
+                                                                  product] =
+                                                              value ?? false;
+                                                        });
+                                                      },
+                                                      initialValue:
+                                                          selectedProducts[
+                                                                  product] ??
+                                                              false,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFFEBF4FF),
                         ),
-                      ],
+                        child: Text(
+                          'Thêm sản phẩm',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.roboto(
+                            color: Colors.blueAccent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
+
+                    // Hiển thị danh sách sản phẩm đã chọn
+                    if (selectedProductsList.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 230,
+                        child: Scrollbar(
+                          thickness: 6,
+                          radius: Radius.circular(10),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.vertical,
+                            itemCount: selectedProductsList.length,
+                            itemBuilder: (context, index) {
+                              final product = selectedProductsList[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: ItemProductCreate(
+                                  sanPham: product,
+                                  quantity: productQuantities[product] ?? 1,
+                                  onQuantityChanged: (newQuantity) {
+                                    updateQuantity(product, newQuantity);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            child: Text(
+                              'Thanh toán:',
+                              style: GoogleFonts.roboto(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Tạm tính:',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff676767),
+                                ),
+                              ),
+                              Text(
+                                currencyFormatter.format(totalAmount),
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff141415),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Tổng số lượng sản phẩm:',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff676767),
+                                ),
+                              ),
+                              Text(
+                                totalQuantity.toString(),
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff141415),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Chiết khấu:',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              Text(
+                                currencyFormatter.format(totalDiscount),
+                                style: GoogleFonts.roboto(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Giá sau khi chiết khấu:',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff141415),
+                                ),
+                              ),
+                              Text(
+                                currencyFormatter
+                                    .format(totalAmount - totalDiscount),
+                                style: GoogleFonts.roboto(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xff141415),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          const HorizontalDivider(),
+                          const SizedBox(height: 12),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Cài đặt giá trị đơn hàng",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              FocusScope(
+                                child: Focus(
+                                  onFocusChange: (hasFocus) {
+                                    if (hasFocus) {
+                                      // When focused, display only raw numbers without any formatting
+                                      String text = totalAmountController.text
+                                          .replaceAll(RegExp(r'[^0-9]'), '');
+                                      if (text.isNotEmpty) {
+                                        totalAmountController.value =
+                                            TextEditingValue(
+                                          text: text,
+                                          selection: TextSelection.collapsed(
+                                              offset: text.length),
+                                        );
+                                      }
+                                    } else {
+                                      // When losing focus, apply full formatting including currency symbol
+                                      String text = totalAmountController.text
+                                          .replaceAll(RegExp(r'[^0-9]'), '');
+                                      if (text.isNotEmpty) {
+                                        String formatted = currencyFormatter
+                                            .format(int.parse(text));
+                                        totalAmountController.value =
+                                            TextEditingValue(
+                                          text: formatted,
+                                          selection: TextSelection.collapsed(
+                                              offset: formatted.length),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child:
+// Usage in your FormBuilderTextField:
+                                      FormBuilderTextField(
+                                    controller: totalAmountController,
+                                    focusNode: amountFocusNode, // Add this line
+                                    name: 'orderValue',
+                                    maxLines: null,
+                                    keyboardType: TextInputType.number,
+                                    textInputAction: TextInputAction.done,
+                                    autovalidateMode: AutovalidateMode.always,
+                                    inputFormatters: [
+                                      CurrencyInputFormatter(
+                                          locale: 'vi_VN', symbol: ''),
+                                    ],
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                      hintText: 'Nhập giá trị đơn hàng',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE0E0E0),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      hintStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xFFE0E0E0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE0E0E0),
+                                          width: 1.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      suffixText: '₫',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: selectedProductsList.isNotEmpty
-          ? Container(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                height: 50,
-                child: ButtonWidget(
-                  label: "Tạo đơn",
-                  onPressed: () async {
-                    addToCart();
-                    final cartProvider =
-                        Provider.of<CartProvider>(context, listen: false);
-                    await cartProvider.createBuild(context, widget.idRecive,
-                        widget.name.toString(), widget.avatar.toString());
-                  },
                 ),
               ),
-            )
-          : null,
+            ],
+          ),
+        ),
+        bottomNavigationBar: selectedProductsList.isNotEmpty
+            ? Container(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  height: 50,
+                  child: ButtonWidget(
+                    label: "Tạo đơn",
+                    onPressed: () async {
+                      addToCart();
+                      final cartProvider =
+                          Provider.of<CartProvider>(context, listen: false);
+                      await cartProvider.createBuild(context, widget.idRecive,
+                          widget.name.toString(), widget.avatar.toString());
+                    },
+                  ),
+                ),
+              )
+            : null,
+      ),
     );
   }
 }
