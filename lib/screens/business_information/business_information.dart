@@ -69,6 +69,12 @@ class _BusinessInformationState extends State<BusinessInformation> {
                     floating: false,
                     pinned: true,
                     backgroundColor: Colors.white,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
                     title: Text(
                       (userProvider.authorByID?.displayName != null)
                           ? userProvider.authorByID!.displayName.isNotEmpty
@@ -127,8 +133,7 @@ class _BusinessInformationState extends State<BusinessInformation> {
                                         ? userProvider.authorByID!.description
                                         : "Chưa có thông tin",
                                     maxLines: 2,
-                                    textAlign: TextAlign
-                                        .center, // Căn giữa nội dung text
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
@@ -141,8 +146,8 @@ class _BusinessInformationState extends State<BusinessInformation> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  userProvider.authorByID?.boStar.toString() ??
-                                      "0",
+                                  (userProvider.authorByID?.boStar ?? 0.0)
+                                      .toStringAsFixed(1),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,

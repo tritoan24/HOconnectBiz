@@ -67,9 +67,9 @@ class _InformationState extends State<InformationTab> {
                         child: CarInforCompany(
                           ulrIcon: 'assets/icons/ten_cong_ty.png',
                           label: 'Tên công ty',
-                          value: user.companyName.isEmpty
+                          value: user.displayName.isEmpty
                               ? 'Chưa cập nhật'
-                              : user.companyName,
+                              : user.displayName,
                         ),
                       ),
                       const Divider(
@@ -83,7 +83,9 @@ class _InformationState extends State<InformationTab> {
                         child: CarInforCompany(
                           ulrIcon: 'assets/icons/chudn.png',
                           label: 'Chủ doanh nghiệp',
-                          value: user.displayName ?? 'Chưa có thông tin',
+                          value: user.companyName.isEmpty
+                              ? 'Chưa cập nhật'
+                              : user.companyName,
                         ),
                       ),
                       const Divider(

@@ -76,9 +76,9 @@ class _EditInformationState extends State<EditInformation> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.author;
     if (user != null && !_controllersInitialized) {
-      _companyNameController.text =
-          user.companyName?.isNotEmpty ?? false ? user.companyName! : "";
       _displayNameController.text =
+          user.companyName?.isNotEmpty ?? false ? user.companyName! : "";
+      _companyNameController.text =
           user.displayName?.isNotEmpty ?? false ? user.displayName! : "";
       _addressController.text =
           user.address?.isNotEmpty ?? false ? user.address! : "";
@@ -127,8 +127,8 @@ class _EditInformationState extends State<EditInformation> {
       return;
     }
     final formData = {
-      'company_name': _companyNameController.text,
-      'displayName': _displayNameController.text,
+      'company_name': _displayNameController.text,
+      'displayName': _companyNameController.text,
       'address': _addressController.text,
       'phoneNumber': _phoneController.text,
       'company_description': _descriptionController.text,

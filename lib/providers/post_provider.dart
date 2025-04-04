@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:clbdoanhnhansg/models/create_post.dart';
+import 'package:clbdoanhnhansg/providers/user_provider.dart';
 import 'package:clbdoanhnhansg/screens/manage/manage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -137,6 +138,8 @@ class PostProvider extends BaseProvider {
       context: context,
       onSuccess: () async {
         await fetchPostsByUser(context);
+        await Provider.of<UserProvider>(context, listen: false)
+            .fetchUser(context, showLoading: false);
         //Hủy bỏ màn hình này trước khi chuyển
         // Thử cách này
         Navigator.of(context).pop(); // Hủy bỏ màn hình hiện tại

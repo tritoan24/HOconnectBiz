@@ -113,6 +113,7 @@ class _QuanLyViewState extends State<QuanLyView> {
                                     : "Chưa có thông tin",
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,
@@ -125,9 +126,9 @@ class _QuanLyViewState extends State<QuanLyView> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  userProvider.author?.boStar?.toString() ??
-                                      "0",
-                                  style: const TextStyle(
+                                  (userProvider.author?.boStar ?? 0.0)
+                                      .toStringAsFixed(1),
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),

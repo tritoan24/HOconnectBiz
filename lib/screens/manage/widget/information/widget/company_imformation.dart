@@ -46,7 +46,7 @@ class _CarInforCompanyState extends State<CarInforCompany> {
         ),
         Expanded(
           child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.55,
+            // width: MediaQuery.of(context).size.width * 0.55,
             child: widget.isNganhNghe == false
                 ? Align(
                     alignment: Alignment
@@ -67,13 +67,15 @@ class _CarInforCompanyState extends State<CarInforCompany> {
                       for (var nganh in widget.nganhNghe!) ...{
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.lightBlueAccent,
+                            color: Color(0xffD6E9FF),
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text(nganh,
-                                style: TextStyles.textStyleNormal14W400),
+                            child: Text(
+                              nganh,
+                              style: TextStyles.textStyleNormal14W400,
+                            ),
                           ),
                         ),
                         const SizedBox(
@@ -88,4 +90,3 @@ class _CarInforCompanyState extends State<CarInforCompany> {
     );
   }
 }
-

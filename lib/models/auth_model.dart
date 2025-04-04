@@ -23,7 +23,7 @@ class Author {
   final int? membershipPoints;
   final int? membershipPointsNeed;
   final int? membershipPointsMax;
-  final int? boStar;
+  final double? boStar;
   final int? totalBo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -93,9 +93,9 @@ class Author {
       membershipPointsMax: json['membershipPointsMax'] is int
           ? json['membershipPointsMax']
           : int.tryParse(json['membershipPointsMax']?.toString() ?? ''),
-      boStar: json['boStar'] is int
+      boStar: json['boStar'] is double
           ? json['boStar']
-          : int.tryParse(json['boStar']?.toString() ?? '') ?? 0,
+          : double.tryParse(json['boStar']?.toString() ?? '') ?? 0.0,
       totalBo: json['totalBo'] is int
           ? json['totalBo']
           : int.tryParse(json['totalBo']?.toString() ?? '') ?? 0,

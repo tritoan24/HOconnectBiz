@@ -436,67 +436,78 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
 
     if (message.type == "remove") {
-      return Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        padding: const EdgeInsets.all(3),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color(0xFFE9EBED),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              backgroundImage: (message.receiver?.avatarImage != null &&
-                      message.receiver!.avatarImage.isNotEmpty)
-                  ? NetworkImage(message.receiver!.avatarImage)
-                  : null,
-              radius: 12,
-              child: (message.receiver?.avatarImage == null ||
-                      message.receiver!.avatarImage.isEmpty)
-                  ? const Icon(Icons.person, size: 14)
-                  : null,
-            ),
-            Text(
-              '${message.receiver?.displayName} đã bị xóa khỏi nhóm',
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                height: 1.5,
-                color: const Color(0xFF141415),
+      return Center(
+        // Thêm Center để căn giữa container
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 12, vertical: 3), // Điều chỉnh padding
+          // Bỏ width: double.infinity để container co giãn theo nội dung
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9EBED),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize:
+                MainAxisSize.min, // Thêm dòng này để Row chỉ rộng bằng nội dung
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                backgroundImage: (message.receiver?.avatarImage != null &&
+                        message.receiver!.avatarImage.isNotEmpty)
+                    ? NetworkImage(message.receiver!.avatarImage)
+                    : null,
+                radius: 12,
+                child: (message.receiver?.avatarImage == null ||
+                        message.receiver!.avatarImage.isEmpty)
+                    ? const Icon(Icons.person, size: 14)
+                    : null,
               ),
-            ),
-          ],
+              const SizedBox(width: 4), // Thêm khoảng cách
+              Text(
+                '${message.receiver?.displayName} đã bị xóa khỏi nhóm',
+                style: GoogleFonts.roboto(
+                  fontSize:
+                      12, // Giảm kích thước text cho phù hợp với type "add"
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: const Color(0xFF141415),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     } else if (message.type == "add") {
-      return Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        padding: const EdgeInsets.all(3),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color(0xFFE9EBED),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              backgroundImage: (message.sender?.avatarImage != null &&
-                      message.sender!.avatarImage.isNotEmpty)
-                  ? NetworkImage(message.sender!.avatarImage)
-                  : null,
-              radius: 12,
-              child: (message.sender?.avatarImage == null ||
-                      message.sender!.avatarImage.isEmpty)
-                  ? const Icon(Icons.person, size: 14)
-                  : null,
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: RichText(
+      return Center(
+        // Thêm Center để căn giữa container
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 12, vertical: 3), // Điều chỉnh padding
+          // Bỏ width: double.infinity để container co giãn theo nội dung
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9EBED),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize:
+                MainAxisSize.min, // Use min to make row only as wide as needed
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                backgroundImage: (message.sender?.avatarImage != null &&
+                        message.sender!.avatarImage.isNotEmpty)
+                    ? NetworkImage(message.sender!.avatarImage)
+                    : null,
+                radius: 12,
+                child: (message.sender?.avatarImage == null ||
+                        message.sender!.avatarImage.isEmpty)
+                    ? const Icon(Icons.person, size: 14)
+                    : null,
+              ),
+              const SizedBox(width: 4),
+              RichText(
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 text: TextSpan(
@@ -520,8 +531,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     } else {

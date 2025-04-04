@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import '../../providers/StatisticalProvider.dart';
 import '../../widgets/text_styles.dart';
 import '../../utils/Color/app_color.dart';
+import '../business_information/business_information.dart';
 
 class MemberStatistics extends StatefulWidget {
   const MemberStatistics({super.key});
@@ -17,16 +19,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
   final ScrollController _scrollController = ScrollController();
   final ScrollController _headerScrollController = ScrollController();
 
-  // Border style được định nghĩa một lần để tái sử dụng
-  final BoxDecoration cellDecoration = BoxDecoration(
-    color: Colors.white,
-    border: Border.all(
-      color: AppColor.borderGrey,
-      width: 0.5,
-    ),
-  );
   final BoxDecoration cellDecoration2 = BoxDecoration(
-    color: const Color(0xfffafafa),
+    color: const Color(0x00e9ebed),
     border: Border.all(
       color: AppColor.borderGrey,
       width: 0.5,
@@ -44,6 +38,12 @@ class _MemberStatisticsState extends State<MemberStatistics> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Fetch data when the widget is built
+      Provider.of<StatisticalProvider>(context, listen: false)
+          .fetchStatistics(context);
+    });
+
     // Sync both scroll controllers
     _scrollController.addListener(() {
       _headerScrollController.jumpTo(_scrollController.offset);
@@ -56,7 +56,12 @@ class _MemberStatisticsState extends State<MemberStatistics> {
       backgroundColor: AppColor.backgroundColorApp,
       appBar: AppBar(
         title: const Text('Thống kê thành viên CLB'),
-        leading: const BackButton(),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Consumer<StatisticalProvider>(
         builder: (context, provider, child) {
@@ -123,7 +128,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                   child: SingleChildScrollView(
                                     controller: _headerScrollController,
                                     scrollDirection: Axis.horizontal,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     child: Container(
                                       width: 300,
                                       height: 100,
@@ -135,7 +141,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                             height: 50,
                                             decoration: headerCellDecoration,
                                             child: Center(
-                                              child: Text('Số cơ hội kinh doanh',
+                                              child: Text(
+                                                  'Số cơ hội kinh doanh',
                                                   style: TextStyles
                                                       .titleStyleColumnW600),
                                             ),
@@ -145,7 +152,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                               Container(
                                                 width: 100,
                                                 height: 50,
-                                                decoration: headerCellDecoration,
+                                                decoration:
+                                                    headerCellDecoration,
                                                 child: Center(
                                                     child: Text('Đã tạo ra',
                                                         style: TextStyles
@@ -154,7 +162,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                               Container(
                                                 width: 100,
                                                 height: 50,
-                                                decoration: headerCellDecoration,
+                                                decoration:
+                                                    headerCellDecoration,
                                                 child: Center(
                                                     child: Text('Tham gia',
                                                         style: TextStyles
@@ -163,7 +172,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                               Container(
                                                 width: 100,
                                                 height: 50,
-                                                decoration: headerCellDecoration,
+                                                decoration:
+                                                    headerCellDecoration,
                                                 child: Center(
                                                     child: Text('Đã đóng góp',
                                                         style: TextStyles
@@ -180,6 +190,7 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                             ),
                           ),
                           // Data rows
+
                           Expanded(
                             child: SingleChildScrollView(
                               child: Row(
@@ -190,18 +201,30 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                     width: 230,
                                     child: Column(
                                       children: data
-                                          .map((item) => Container(
+                                          .map((item) => GestureDetector(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BusinessInformation(
+                                                        idUser: item.id,
+                                                        isMe: false,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                                 child: Row(
                                                   children: [
                                                     Container(
                                                       width: 50,
                                                       height: 70,
                                                       decoration: BoxDecoration(
-                                                        color:
-                                                            const Color(0xffEBF4FF),
+                                                        color: const Color(
+                                                            0xffEBF4FF),
                                                         border: Border.all(
-                                                          color:
-                                                              AppColor.borderGrey,
+                                                          color: AppColor
+                                                              .borderGrey,
                                                           width: 0.5,
                                                         ),
                                                       ),
@@ -217,8 +240,30 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                       width: 180,
                                                       height: 70,
                                                       padding: const EdgeInsets
-                                                          .symmetric(horizontal: 8),
-                                                      decoration: cellDecoration,
+                                                          .symmetric(
+                                                          horizontal: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        border: Border.all(
+                                                          color: AppColor
+                                                              .borderGrey,
+                                                          width: 0.5,
+                                                        ),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Color(
+                                                                    0xffE9EBED)
+                                                                .withOpacity(
+                                                                    0.5),
+                                                            offset: const Offset(
+                                                                15,
+                                                                2), // Rất nhỏ, chỉ đủ để tạo hiệu ứng ở bên phải
+                                                            blurRadius:
+                                                                15, // Không làm mờ để tạo đường viền sắc nét
+                                                            spreadRadius: 0,
+                                                          ),
+                                                        ],
+                                                      ),
                                                       child: Row(
                                                         crossAxisAlignment:
                                                             CrossAxisAlignment
@@ -227,18 +272,22 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                           Container(
                                                             width: 24,
                                                             height: 24,
-                                                            margin: const EdgeInsets
-                                                                .only(right: 8),
+                                                            margin:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 8),
                                                             decoration:
                                                                 BoxDecoration(
-                                                              shape:
-                                                                  BoxShape.circle,
+                                                              shape: BoxShape
+                                                                  .circle,
                                                               color: Colors.grey
-                                                                  .withOpacity(0.2),
+                                                                  .withOpacity(
+                                                                      0.2),
                                                             ),
                                                             clipBehavior:
                                                                 Clip.antiAlias,
-                                                            child: item.avatarImage
+                                                            child: item
+                                                                    .avatarImage
                                                                     .isNotEmpty
                                                                 ? Image.network(
                                                                     item.avatarImage,
@@ -251,44 +300,48 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                                       return const Icon(
                                                                         Icons
                                                                             .business,
-                                                                        size: 20,
+                                                                        size:
+                                                                            20,
                                                                         color: Colors
                                                                             .grey,
                                                                       );
                                                                     },
                                                                   )
                                                                 : const Icon(
-                                                                    Icons.business,
+                                                                    Icons
+                                                                        .business,
                                                                     size: 20,
-                                                                    color:
-                                                                        Colors.grey,
+                                                                    color: Colors
+                                                                        .grey,
                                                                   ),
                                                           ),
                                                           Expanded(
                                                             child: Text(
-                                                              (item.companyName !=
+                                                              (item.displayName !=
                                                                       null)
-                                                                  ? item.companyName
+                                                                  ? item.displayName
                                                                           .isNotEmpty
                                                                       ? item
-                                                                          .companyName
+                                                                          .displayName
                                                                       : "Chưa cập nhật"
                                                                   : "Chưa cập nhật",
                                                               maxLines: 2,
-                                                              overflow: TextOverflow
-                                                                  .ellipsis,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                               style: GoogleFonts
                                                                   .roboto(
                                                                 fontSize: 14,
                                                                 height: 1.2,
                                                                 fontWeight:
-                                                                    FontWeight.w700,
+                                                                    FontWeight
+                                                                        .w700,
                                                               ),
                                                             ),
                                                           ),
                                                         ],
                                                       ),
-                                                    ),
+                                                    )
                                                   ],
                                                 ),
                                               ))
@@ -307,7 +360,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                               .map((item) => Container(
                                                     child: Row(
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment.center,
+                                                          CrossAxisAlignment
+                                                              .center,
                                                       children: [
                                                         Container(
                                                           width: 100,
@@ -319,7 +373,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                               item.create
                                                                   .toString(),
                                                               textAlign:
-                                                                  TextAlign.center,
+                                                                  TextAlign
+                                                                      .center,
                                                             ),
                                                           ),
                                                         ),
@@ -330,9 +385,11 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                               cellDecoration2,
                                                           child: Center(
                                                             child: Text(
-                                                              item.join.toString(),
+                                                              item.join
+                                                                  .toString(),
                                                               textAlign:
-                                                                  TextAlign.center,
+                                                                  TextAlign
+                                                                      .center,
                                                             ),
                                                           ),
                                                         ),
@@ -343,9 +400,25 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                                                               cellDecoration2,
                                                           child: Center(
                                                             child: Text(
-                                                              item.total.toString(),
+                                                              NumberFormat
+                                                                  .currency(
+                                                                locale: 'vi_VN',
+                                                                symbol: '₫',
+                                                                decimalDigits:
+                                                                    0,
+                                                              ).format(
+                                                                  item.total),
                                                               textAlign:
-                                                                  TextAlign.center,
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: GoogleFonts
+                                                                  .roboto(
+                                                                fontSize: 14,
+                                                                height: 1.2,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
@@ -384,31 +457,67 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.chevron_left),
-                              onPressed: currentPage > 1
-                                  ? () => provider.fetchStatistics(context,
-                                      page: currentPage - 1)
-                                  : null,
+                            Container(
+                              width: 29, // Fixed width
+                              height: 32, // Fixed height
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: const Color(0xffD6D6D6)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero, // Remove padding
+                                constraints:
+                                    const BoxConstraints(), // Remove constraints
+                                icon: const Icon(Icons.chevron_left),
+                                onPressed: currentPage > 1
+                                    ? () => provider.fetchStatistics(context,
+                                        page: currentPage - 1)
+                                    : null,
+                              ),
                             ),
                             for (int i = 1; i <= totalPages; i++)
                               if (i == 1 ||
                                   i == totalPages ||
-                                  (i >= currentPage - 1 && i <= currentPage + 1))
+                                  (i >= currentPage - 1 &&
+                                      i <= currentPage + 1))
                                 PaginationNumber(
                                   number: i,
                                   isSelected: i == currentPage,
-                                  onTap: () =>
-                                      provider.fetchStatistics(context, page: i),
+                                  onTap: () => provider.fetchStatistics(context,
+                                      page: i),
                                 )
-                              else if (i == currentPage - 2 || i == currentPage + 2)
-                                const Text('...', style: TextStyle(fontSize: 16)),
-                            IconButton(
-                              icon: const Icon(Icons.chevron_right),
-                              onPressed: currentPage < totalPages
-                                  ? () => provider.fetchStatistics(context,
-                                      page: currentPage + 1)
-                                  : null,
+                              else if (i == currentPage - 2 ||
+                                  i == currentPage + 2)
+                                Center(
+                                  child: Container(
+                                      alignment: Alignment.center,
+                                      height: 32, // Match button height
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 4),
+                                      child: const Image(
+                                          width: 17,
+                                          image: AssetImage(
+                                              'assets/icons/more.png'))),
+                                ),
+                            Container(
+                              width: 29, // Fixed width
+                              height: 32, // Fixed height
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: const Color(0xffD6D6D6)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero, // Remove padding
+                                constraints:
+                                    const BoxConstraints(), // Remove constraints
+                                icon: const Icon(Icons.chevron_right),
+                                onPressed: currentPage < totalPages
+                                    ? () => provider.fetchStatistics(context,
+                                        page: currentPage + 1)
+                                    : null,
+                              ),
                             ),
                           ],
                         ),
@@ -423,7 +532,8 @@ class _MemberStatisticsState extends State<MemberStatistics> {
                               const TextSpan(text: 'Tổng số '),
                               TextSpan(
                                 text: '$totalMembers',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                               const TextSpan(text: ' thành viên CLB'),
                             ],
@@ -479,10 +589,14 @@ class PaginationNumber extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: isSelected ? Colors.blue : const Color(0xffD6D6D6),
+            width: 1,
+          ),
         ),
         child: Text(
           number.toString(),

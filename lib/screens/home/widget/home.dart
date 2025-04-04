@@ -44,13 +44,11 @@ class _HomeState extends State<Home> {
       // Lấy các provider
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       final rankProvider = Provider.of<RankProvider>(context, listen: false);
-      final staticsticalProvider =
-          Provider.of<StatisticalProvider>(context, listen: false);
       final bannerProvider =
           Provider.of<BannerProvider>(context, listen: false);
 
       // Gọi các phương thức fetch data
-      staticsticalProvider.fetchStatistics(context);
+
       rankProvider.fetchRanksRevenue(context);
       rankProvider.fetchRankBusiness(context);
 

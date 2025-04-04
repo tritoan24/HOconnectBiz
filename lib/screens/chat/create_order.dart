@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -35,6 +36,7 @@ class _CreateOrderState extends State<CreateOrder> {
   double totalDiscount = 0;
   String idRecive = '';
   TextEditingController totalAmountController = TextEditingController();
+
   //giá sau khi chiết khấu
   double totalAmountDiscount = 0;
 
@@ -65,6 +67,8 @@ class _CreateOrderState extends State<CreateOrder> {
         productQuantities[product] = 1;
       }
     });
+    // Add listener for currency formatting
+    totalAmountController.addListener(_formatMoney);
   }
 
   final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
@@ -103,8 +107,27 @@ class _CreateOrderState extends State<CreateOrder> {
 
   @override
   void dispose() {
+    // Remove listener before disposing
+    totalAmountController.removeListener(_formatMoney);
     totalAmountController.dispose();
     super.dispose();
+  }
+
+  void _formatMoney() {
+    // Only format when the field is not focused
+    if (!FocusScope.of(context).hasFocus) {
+      String text =
+          totalAmountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (text.isNotEmpty) {
+        String formatted = currencyFormatter.format(int.parse(text));
+        if (formatted != totalAmountController.text) {
+          totalAmountController.value = TextEditingValue(
+            text: formatted,
+            selection: TextSelection.collapsed(offset: formatted.length),
+          );
+        }
+      }
+    }
   }
 
   // Hàm để thêm sản phẩm đã chọn vào giỏ hàng
@@ -435,10 +458,89 @@ class _CreateOrderState extends State<CreateOrder> {
                         const SizedBox(height: 16),
                         const HorizontalDivider(),
                         const SizedBox(height: 12),
-                        InputText(
-                          name: 'Cài đặt giá trị đơn hàng',
-                          title: "Cài đặt giá trị đơn hàng",
-                          controller: totalAmountController,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Cài đặt giá trị đơn hàng",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FocusScope(
+                              child: Focus(
+                                onFocusChange: (hasFocus) {
+                                  if (hasFocus) {
+                                    // When focused, display only raw numbers without any formatting
+                                    String text = totalAmountController.text
+                                        .replaceAll(RegExp(r'[^0-9]'), '');
+                                    if (text.isNotEmpty) {
+                                      totalAmountController.value =
+                                          TextEditingValue(
+                                        text: text,
+                                        selection: TextSelection.collapsed(
+                                            offset: text.length),
+                                      );
+                                    }
+                                  } else {
+                                    // When losing focus, apply full formatting including currency symbol
+                                    String text = totalAmountController.text
+                                        .replaceAll(RegExp(r'[^0-9]'), '');
+                                    if (text.isNotEmpty) {
+                                      String formatted = currencyFormatter
+                                          .format(int.parse(text));
+                                      totalAmountController.value =
+                                          TextEditingValue(
+                                        text: formatted,
+                                        selection: TextSelection.collapsed(
+                                            offset: formatted.length),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: FormBuilderTextField(
+                                  controller: totalAmountController,
+                                  name: 'orderValue',
+                                  maxLines: null,
+                                  keyboardType: TextInputType.number,
+                                  textInputAction: TextInputAction.done,
+                                  autovalidateMode: AutovalidateMode.always,
+                                  // Remove any automatic formatting in the onChanged
+                                  onChanged: (value) {
+                                    // Prevent any automatic formatting during typing
+                                  },
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    hintText: 'Nhập giá trị đơn hàng',
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE0E0E0),
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    hintStyle: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFFE0E0E0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE0E0E0),
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    // suffixText: hasFocus ? null : 'đ',
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
