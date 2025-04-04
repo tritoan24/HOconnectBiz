@@ -10,6 +10,7 @@ import '../core/base/base_provider.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_endpoints.dart';
 import '../models/posts.dart';
+import '../widgets/alert_widget_noti.dart';
 import '../widgets/loading_overlay.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
@@ -121,8 +122,47 @@ class PostProvider extends BaseProvider {
 
   bool _isLoadingPage = false; // Thêm biến kiểm soát request đang chạy
 
+  bool _validateImages(List<File>? files, BuildContext context) {
+    if (files == null || files.isEmpty) {
+      return true; // No files to validate
+    }
+
+    const int maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    final List<String> validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    for (File file in files) {
+      // Check file size
+      final int fileSize = file.lengthSync();
+      if (fileSize > maxSizeInBytes) {
+        CustomAlertNoti.show(
+          context,
+          "Hình ảnh không được vượt quá 5MB",
+          backgroundColor: Colors.red,
+        );
+        return false;
+      }
+
+      // Check file extension
+      final String extension = file.path.split('.').last.toLowerCase();
+      if (!validExtensions.contains(extension)) {
+        CustomAlertNoti.show(
+          context,
+          "Định dạng hình ảnh không hợp lệ. Vui lòng sử dụng JPG, JPEG, PNG, GIF hoặc WEBP",
+          backgroundColor: Colors.red,
+        );
+        return false;
+      }
+    }
+
+    return true; // All files are valid
+  }
+
   Future<void> createPostAD(Map<String, dynamic> postData, BuildContext context,
       {List<File>? files}) async {
+    if (!_validateImages(files, context)) {
+      return;
+    }
+
     LoadingOverlay.show(context);
 
     // Chuyển đổi dữ liệu sang model Posts

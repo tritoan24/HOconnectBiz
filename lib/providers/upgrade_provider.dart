@@ -6,7 +6,7 @@ import 'dart:io' show Platform;
 import '../models/upgradeinfo.dart';
 
 class UpgradeService {
-  static const String apiUrl = 'https://doanhnghiepapp.webest.asia/api/upgrade';
+  static const String apiUrl = 'https://connectbiz.info.vn/api/upgrade';
 
   Future<UpgradeInfo> checkUpgrade() async {
     try {
