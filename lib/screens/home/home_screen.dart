@@ -148,7 +148,7 @@ class _TrangChuViewState extends State<TrangChuView> {
                 child: Center(
                   child: Container(
                     width: 105,
-                    height: 105,
+                    height: 125,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,

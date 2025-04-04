@@ -103,7 +103,7 @@ class _ChiTietDonHangState extends State<ChiTietDonHang> {
         Flexible(
           child: Container(
             height: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 8),
+            // margin: const EdgeInsets.symmetric(horizontal: 4),
             child: Scrollbar(
               thumbVisibility: true,
               interactive: true,

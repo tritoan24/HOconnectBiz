@@ -161,158 +161,163 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
             ),
           ],
 
-          // Doanh thu field
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              "Doanh thu:",
-              style: TextStyles.textStyleNormal14W500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: FormBuilderTextField(
-              controller: _revenueController,
-              name: 'doanhThu',
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                hintText: 'Nhập doanh thu',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xffB9BDC1),
-                    width: 1.0,
-                  ),
-                ),
-                hintStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xffB9BDC1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: Color(0xffB9BDC1),
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                suffixIcon: const Padding(
-                  padding: EdgeInsets.only(right: 10),
-                  child: Text(
-                    'đ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                suffixIconConstraints:
-                    const BoxConstraints(minWidth: 20, minHeight: 20),
+          // Chỉ hiển thị các ô nhập khi trạng thái là "Đã thanh toán" (status = 3)
+          if (_currentStatus == 3) ...[
+            // Doanh thu field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                "Doanh thu:",
+                style: TextStyles.textStyleNormal14W500,
               ),
             ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Trích quỹ field
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              "Trích quỹ:",
-              style: TextStyles.textStyleNormal14W500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: FormBuilderTextField(
-              controller: _deductionController,
-              name: 'trichQuy',
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                hintText: 'Nhập trích quỹ',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xffB9BDC1),
-                    width: 1.0,
-                  ),
-                ),
-                hintStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xffB9BDC1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: Color(0xffB9BDC1),
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                suffixIcon: const Padding(
-                  padding: EdgeInsets.only(right: 10),
-                  child: Text(
-                    'đ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                suffixIconConstraints:
-                    const BoxConstraints(minWidth: 20, minHeight: 20),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Save button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.saveAndValidate() ?? false) {
-                    // Parse values from formatted text
-                    String revenueText = _revenueController.text
-                        .replaceAll(RegExp(r'[^0-9]'), '');
-                    String deductionText = _deductionController.text
-                        .replaceAll(RegExp(r'[^0-9]'), '');
-
-                    double revenue =
-                        revenueText.isEmpty ? 0 : double.parse(revenueText);
-                    double deduction =
-                        deductionText.isEmpty ? 0 : double.parse(deductionText);
-
-                    // Sử dụng _currentStatus khi gọi callback
-                    if (widget.onSave != null) {
-                      widget.onSave!(revenue, deduction, _currentStatus);
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffD6E9FF),
-                  foregroundColor: Colors.blue,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: FormBuilderTextField(
+                controller: _revenueController,
+                name: 'doanhThu',
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  hintText: 'Nhập doanh thu',
+                  enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xffB9BDC1),
+                      width: 1.0,
+                    ),
                   ),
+                  hintStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xffB9BDC1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: Color(0xffB9BDC1),
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: const Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: Text(
+                      'đ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  suffixIconConstraints:
+                      const BoxConstraints(minWidth: 20, minHeight: 20),
                 ),
-                child: Text('Lưu', style: TextStyles.textStyleNormal14W500),
               ),
             ),
-          ),
+
+            const SizedBox(height: 20),
+
+            // Trích quỹ field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                "Trích quỹ:",
+                style: TextStyles.textStyleNormal14W500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: FormBuilderTextField(
+                controller: _deductionController,
+                name: 'trichQuy',
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  hintText: 'Nhập trích quỹ',
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xffB9BDC1),
+                      width: 1.0,
+                    ),
+                  ),
+                  hintStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xffB9BDC1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: Color(0xffB9BDC1),
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: const Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: Text(
+                      'đ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  suffixIconConstraints:
+                      const BoxConstraints(minWidth: 20, minHeight: 20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
+          if (_currentStatus == 3) ...[
+            // Save button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState?.saveAndValidate() ?? false) {
+                      // Parse values from formatted text
+                      String revenueText = _revenueController.text
+                          .replaceAll(RegExp(r'[^0-9]'), '');
+                      String deductionText = _deductionController.text
+                          .replaceAll(RegExp(r'[^0-9]'), '');
+
+                      double revenue =
+                          revenueText.isEmpty ? 0 : double.parse(revenueText);
+                      double deduction = deductionText.isEmpty
+                          ? 0
+                          : double.parse(deductionText);
+
+                      // Sử dụng _currentStatus khi gọi callback
+                      if (widget.onSave != null) {
+                        widget.onSave!(revenue, deduction, _currentStatus);
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xffD6E9FF),
+                    foregroundColor: Colors.blue,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text('Lưu', style: TextStyles.textStyleNormal14W500),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -452,7 +457,7 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
                                       child: Container(
                                         width: 7,
                                         height: 7,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: Colors.white,
                                           shape: BoxShape.circle,
                                         ),
@@ -473,6 +478,7 @@ class _UpdateRevenueFormState extends State<UpdateRevenueForm> {
 
                   // Nút lưu
                   const SizedBox(height: 16),
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
