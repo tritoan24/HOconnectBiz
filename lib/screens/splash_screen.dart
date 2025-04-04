@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
       final upgradeInfo = await upgradeService.checkUpgrade();
 
       // Check if app is in maintenance mode
-      if (!upgradeInfo.maintain) {
+      if (upgradeInfo.maintain) {
         if (mounted) {
           context.go(AppRoutes.maintenance); // You'll need to add this route
           return;
