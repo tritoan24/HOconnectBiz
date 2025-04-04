@@ -560,139 +560,141 @@ class _DeltailsSalesArticleState extends State<DeltailsSalesArticle> {
                     ),
                   ],
                 ),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding: const EdgeInsets.all(10),
-                width: 290,
-                decoration: BoxDecoration(
-                  color:
-                      isMe ? const Color(0xFFD6E9FF) : const Color(0xFFE9EBED),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
+              if (message.data == null)
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.all(10),
+                  width: 290,
+                  decoration: BoxDecoration(
                     color: isMe
-                        ? const Color(0xFFD6D9DC)
-                        : const Color(0xFF006AF5),
-                    width: 0.5,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      message.content ?? "",
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        height: 1.5,
-                        color: const Color(0xFF141415),
-                      ),
+                        ? const Color(0xFFD6E9FF)
+                        : const Color(0xFFE9EBED),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isMe
+                          ? const Color(0xFFD6D9DC)
+                          : const Color(0xFF006AF5),
+                      width: 0.5,
                     ),
-                    if (message.album.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GalleryPhotoViewWrapper(
-                                  galleryItems: message.album,
-                                  initialIndex: 0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        message.content ?? "",
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                          color: const Color(0xFF141415),
+                        ),
+                      ),
+                      if (message.album.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => GalleryPhotoViewWrapper(
+                                    galleryItems: message.album,
+                                    initialIndex: 0,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          child: Hero(
-                            tag: message.album.first,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: _buildImageWidget(message),
-                                ),
-                                if (message.album.length > 1)
-                                  Container(
-                                    width: double.infinity,
-                                    height: 200,
-                                    color: Colors.black.withOpacity(0.5),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "+${message.album.length - 1}",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                              );
+                            },
+                            child: Hero(
+                              tag: message.album.first,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: _buildImageWidget(message),
+                                  ),
+                                  if (message.album.length > 1)
+                                    Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      color: Colors.black.withOpacity(0.5),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "+${message.album.length - 1}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    if (message.status == MessageStatus.sending && isMe)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 12,
-                              height: 12,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.grey),
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              "Đang gửi...",
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (message.status == MessageStatus.error && isMe)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.error_outline,
-                                size: 12, color: Colors.red),
-                            const SizedBox(width: 4),
-                            Text(
-                              message.errorMessage ?? "Không gửi được",
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.red,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                _retryMessage(message);
-                              },
-                              child: Text(
-                                "Thử lại",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
+                      if (message.status == MessageStatus.sending && isMe)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.grey),
                                 ),
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 4),
+                              Text(
+                                "Đang gửi...",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                  ],
+                      if (message.status == MessageStatus.error && isMe)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline,
+                                  size: 12, color: Colors.red),
+                              const SizedBox(width: 4),
+                              Text(
+                                message.errorMessage ?? "Không gửi được",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  _retryMessage(message);
+                                },
+                                child: Text(
+                                  "Thử lại",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
               if (isLastMessageFromSender)
                 Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
