@@ -147,6 +147,7 @@ class AuthProvider extends BaseProvider {
           final userId = await getuserID();
           if (userId != null) {
             socketService.connect(userId);
+            socketService.connectUserStatus();
           }
         } catch (userError) {
           debugPrint("Lỗi khi lấy thông tin người dùng: $userError");
@@ -320,6 +321,7 @@ class AuthProvider extends BaseProvider {
 
           OneSignal.login(username);
           socketService.connect(idUser);
+          socketService.connectUserStatus();
 
           // Tạo danh sách các Future để theo dõi
           final futures = <Future>[];
@@ -980,6 +982,7 @@ class AuthProvider extends BaseProvider {
           // Connect to socket
           OneSignal.login(identity);
           socketService.connect(idUser);
+          socketService.connectUserStatus();
 
           if (context.mounted) {
             // Ẩn loading overlay

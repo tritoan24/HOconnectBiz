@@ -121,7 +121,7 @@ class _TabShopState extends State<TabShop> {
                 padding: EdgeInsets.only(
                   left: 12,
                   right: 12,
-                  bottom: 99,
+                  bottom: 140,
                 ),
                 child: CustomScrollView(
                   shrinkWrap: true,

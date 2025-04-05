@@ -152,7 +152,7 @@ class SocketService extends ChangeNotifier {
 
     if (_socket!.connected) {
       final statusuerID = '$PREFIX_USER';
-      _socket!.emit(EVENT_CONNECT);
+      _socket!.emit(EVENT_CONNECT, {'deviceId': statusuerID});
       _connectionStates[statusuerID] = true;
       debugPrint('👤kết nối với status user');
       notifyListeners();

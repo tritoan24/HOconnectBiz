@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../core/base/base_provider.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_endpoints.dart';
+import '../core/services/socket_service.dart';
 import '../models/posts.dart';
 import '../widgets/alert_widget_noti.dart';
 import '../widgets/loading_overlay.dart';
@@ -122,6 +123,8 @@ class PostProvider extends BaseProvider {
 
   bool _isLoadingPage = false; // Thêm biến kiểm soát request đang chạy
 
+  final SocketService _socketService = SocketService();
+
   bool _validateImages(List<File>? files, BuildContext context) {
     if (files == null || files.isEmpty) {
       return true; // No files to validate
@@ -155,6 +158,63 @@ class PostProvider extends BaseProvider {
     }
 
     return true; // All files are valid
+  }
+
+  /// Getter for the socket instance (use with caution)
+// Method to listen for user status updates from socket
+  void setupSocketForUserStatus() {
+    final socketService = SocketService();
+
+    socketService.connectUserStatus();
+    _socketService.on('user_status', (data) async {
+      if (data['data'] == null) {
+        debugPrint("⚠️ WARNING: Invalid user_status data received");
+        debugPrint("Data received: $data");
+        return;
+      }
+
+      // Get current user ID
+      final String? userId = await _getCurrentUserId();
+      if (userId == null || userId.isEmpty) {
+        debugPrint("⚠️ WARNING: Could not get current user ID");
+        return;
+      }
+
+      debugPrint("🔍 DEBUG: Current user ID: $userId");
+      Map<String, dynamic> statusData = data['data'];
+
+      // Check if current user's data exists in the response
+      if (statusData.containsKey(userId)) {
+        var userStatus = statusData[userId];
+
+        int notificationCount = userStatus['notificationStatus'] ?? 0;
+        int messageCount = userStatus['messageStatus'] ?? 0;
+
+        debugPrint(
+            "🔍 DEBUG: User status found - notifications: $notificationCount, messages: $messageCount");
+
+        // Update counts if different from current values
+        bool shouldNotify = false;
+
+        if (_newNotificationsCount != notificationCount) {
+          _newNotificationsCount = notificationCount;
+          shouldNotify = true;
+        }
+
+        if (_newMessagesCount != messageCount) {
+          _newMessagesCount = messageCount;
+          shouldNotify = true;
+        }
+
+        if (shouldNotify) {
+          debugPrint(
+              "🔔 DEBUG: Updated notification count: $_newNotificationsCount, message count: $_newMessagesCount");
+          notifyListeners();
+        }
+      } else {
+        debugPrint("⚠️ WARNING: User ID $userId not found in status data");
+      }
+    });
   }
 
   Future<void> createPostAD(Map<String, dynamic> postData, BuildContext context,

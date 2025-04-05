@@ -16,6 +16,7 @@ import '../../../../models/business_model.dart';
 import '../../../../providers/post_provider.dart';
 import '../../../../providers/product_provider.dart';
 import '../../../../widgets/confirmdialog.dart';
+import '../../../../widgets/showmenu.dart';
 import '../../../business_opportunity_management/widget/waiting_list_approval.dart';
 import '../../../details_image/details_image_screen.dart';
 import '../../../home/widget/buy_product.dart';
@@ -390,66 +391,45 @@ class _PostItemState extends State<PostItem> {
             const Spacer(),
             //dấu ...
             widget.isMe
-                ? PopupMenuButton<String>(
-                    color: Colors.white,
-                    shadowColor: Colors.black,
-                    splashRadius: 10,
-                    icon: SvgPicture.asset(
-                      "assets/icons/more.svg",
-                      fit: BoxFit.cover,
-                    ),
-                    onSelected: (value) {
-                      if (value == 'delete') {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return CustomConfirmDialog(
-                              content:
-                                  'Bạn có chắc chắn muốn xóa bài viết không?',
-                              titleButtonLeft: 'Quay lại',
-                              titleButtonRight: 'Xóa',
-                              onConfirm: () {
-                                final postProvider = Provider.of<PostProvider>(
-                                    context,
-                                    listen: false);
-                                postProvider.deletePost(context, widget.postId);
-                              },
-                            );
-                          },
-                        );
-                      } else if (value == "edit") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditPost(
-                              imageList: widget.images,
-                              postType: widget.postType,
-                              description: widget.content,
-                              postId: widget.postId,
-                              title: widget.title,
-                              isBusiness: isBusiness,
-                              business: widget.business,
-                              product: widget.product,
-                            ),
+                ? // Inside your PostItem widget
+                MoreButton(
+                    postId: widget.postId,
+                    onEdit: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPost(
+                            imageList: widget.images,
+                            postType: widget.postType,
+                            description: widget.content,
+                            postId: widget.postId,
+                            title: widget.title,
+                            isBusiness: isBusiness,
+                            business: widget.business,
+                            product: widget.product,
                           ),
-                        );
-                      }
+                        ),
+                      );
                     },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Text(
-                          'Sửa bài đăng',
-                        ),
-                      ),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          'Xóa bài đăng',
-                        ),
-                      ),
-                    ],
+                    onDelete: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CustomConfirmDialog(
+                            content:
+                                'Bạn có chắc chắn muốn xóa bài viết không?',
+                            titleButtonLeft: 'Quay lại',
+                            titleButtonRight: 'Xóa',
+                            onConfirm: () {
+                              final postProvider = Provider.of<PostProvider>(
+                                  context,
+                                  listen: false);
+                              postProvider.deletePost(context, widget.postId);
+                            },
+                          );
+                        },
+                      );
+                    },
                   )
                 : const SizedBox(),
           ],
