@@ -51,6 +51,8 @@ class PostProvider extends BaseProvider {
   int get newNotificationsCount => _newNotificationsCount;
   int get newMessagesCount => _newMessagesCount;
 
+  bool _isSocketSetup = false;
+
   // Cập nhật số lượng tin nhắn mới
   void updateMessageCount({int? count}) {
     if (count != null) {
@@ -163,8 +165,9 @@ class PostProvider extends BaseProvider {
   /// Getter for the socket instance (use with caution)
 // Method to listen for user status updates from socket
   void setupSocketForUserStatus() {
-    final socketService = SocketService();
+    if (_isSocketSetup) return; // Kiểm tra biến cờ
 
+    final socketService = SocketService();
     socketService.connectUserStatus();
     _socketService.on('user_status', (data) async {
       if (data['data'] == null) {
@@ -182,6 +185,7 @@ class PostProvider extends BaseProvider {
 
       debugPrint("🔍 DEBUG: Current user ID: $userId");
       Map<String, dynamic> statusData = data['data'];
+      debugPrint("🔍 DEBUG: User status data: $statusData");
 
       // Check if current user's data exists in the response
       if (statusData.containsKey(userId)) {
@@ -215,6 +219,8 @@ class PostProvider extends BaseProvider {
         debugPrint("⚠️ WARNING: User ID $userId not found in status data");
       }
     });
+
+    _isSocketSetup = true;
   }
 
   Future<void> createPostAD(Map<String, dynamic> postData, BuildContext context,
