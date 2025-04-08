@@ -1,3 +1,6 @@
+[![Watch the video]([https://img.youtube.com/vi/VIDEO_ID/0.jpg](https://i9.ytimg.com/vi/qL_iV6dBJ4w/mq2.jpg?sqp=CLCZ1b8G-oaymwEmCMACELQB8quKqQMa8AEB-AHcAYAC4AOKAgwIABABGH8gJSg1MA8=&rs=AOn4CLCh-WcFE6KlVuN3X22u3_q2Pv4Xkg))]([https://www.youtube.com/watch?v=VIDEO_ID](https://youtu.be/qL_iV6dBJ4w))
+
+
 # CLB Doanh Nhân SG
 
 Ứng dụng di động cho CLB Doanh Nhân SG được phát triển bằng Flutter.
