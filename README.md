@@ -1,4 +1,4 @@
-[![Watch the video](https://drive.google.com/drive/my-drive?dmr=1&ec=wgc-drive-hero-goto)](https://youtu.be/qL_iV6dBJ4w)
+[![Watch the video](https://imgur.com/a/LFlxNkm)](https://youtu.be/qL_iV6dBJ4w)
 
 
 
