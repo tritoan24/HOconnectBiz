@@ -21,12 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   Provider.of<UserProvider>(context, listen: false).fetchUser(context);
     // });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BusinessProvider>(context, listen: false)
-          .getListBusiness(context);
-      // Provider.of<MemberShipProvider>(context, listen: false)
-      //     .getListMemberShip(context);
-    });
   }
 
   @override

@@ -74,14 +74,14 @@ class _ImageBackgroud extends State<AddBackgroud> {
                   borderRadius: BorderRadius.circular(12),
                   child: _imagePath != ""
                       ? AddAvatarImage(
-                          height: 224,
+                          height: 160,
                           imagePath: _imagePath!,
                         )
                       : Image.network(
                           UrlImage.defaultBackgroundImage,
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          height: 224,
+                          height: 160,
                         ),
                 ),
               ),

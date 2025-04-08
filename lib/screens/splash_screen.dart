@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/business_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/upgrade_provider.dart';
@@ -69,11 +70,14 @@ class _SplashScreenState extends State<SplashScreen> {
               Provider.of<ProductProvider>(context, listen: false);
           final postProvider =
               Provider.of<PostProvider>(context, listen: false);
+          final businessProvider =
+              Provider.of<BusinessProvider>(context, listen: false);
 
           await Future.wait([
             productProvider.getListProduct(context),
             postProvider.fetchPostsFeatured(context),
             postProvider.fetchPosts(context),
+            businessProvider.getListBusiness(context),
             _fetchUserPosts(postProvider),
           ], eagerError: true)
               .timeout(

@@ -43,10 +43,6 @@ class BusinessOpportunityState extends State<BusinessOpportunity> {
   void initState() {
     super.initState();
     // Initialize business list
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BusinessProvider>(context, listen: false)
-          .getListBusiness(context);
-    });
 
     // Initialize images from passed data
     if (widget.initialImages != null && widget.initialImages!.isNotEmpty) {
