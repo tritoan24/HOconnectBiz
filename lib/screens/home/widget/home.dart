@@ -198,12 +198,11 @@ class _HomeState extends State<Home> {
               ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
+                child: Image.network(
+                  imageUrl,
                   width: double.infinity,
                   height: 153,
                   fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => AppIcons.getError(),
                 ),
               ),
 

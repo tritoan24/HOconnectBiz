@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/banner_provider.dart';
 import '../providers/business_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/product_provider.dart';
@@ -30,6 +31,11 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Chuyển hướng ngay lập tức
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final bannerProvider =
+          Provider.of<BannerProvider>(context, listen: false);
+      await bannerProvider.getListBanner(context);
+    });
     _navigateToNextScreen();
   }
 
