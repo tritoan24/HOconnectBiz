@@ -119,12 +119,3 @@ lib/
 
 Nếu bạn gặp bất kỳ vấn đề nào, vui lòng tạo issue trong repository hoặc liên hệ với team phát triển.
 
-## Hệ thống báo cáo lỗi
-
-Ứng dụng tích hợp hệ thống theo dõi và báo cáo lỗi tự động, giúp phát hiện sớm các vấn đề và báo cáo qua Telegram để đội phát triển phản ứng nhanh chóng.
-
-### Cài đặt
-
-```bash
-flutter pub add device_info_plus:^9.1.1 package_info_plus:^8.3.0 sentry_flutter:^7.15.0 flutter_logs:^2.1.11
-```
