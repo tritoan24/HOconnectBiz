@@ -1,5 +1,7 @@
+Click on the image below to watch the app demo video: 
+
 <a href="https://youtu.be/qL_iV6dBJ4w">
-  <img src="https://i.imgur.com/u2jbbaY.jpeg" alt="Watch the video" width="300"/>
+  <img src="https://i.imgur.com/u2jbbaY.jpeg" alt="Watch the video" width="200"/>
 </a>
 
 
