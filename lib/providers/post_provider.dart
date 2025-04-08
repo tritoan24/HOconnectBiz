@@ -184,7 +184,7 @@ class PostProvider extends BaseProvider {
       }
 
       debugPrint("🔍 DEBUG: Current user ID: $userId");
-      Map<String, dynamic> statusData = data['data'];
+      Map<String, dynamic> statusData = data['data']['data'];
       debugPrint("🔍 DEBUG: User status data: $statusData");
 
       // Check if current user's data exists in the response
