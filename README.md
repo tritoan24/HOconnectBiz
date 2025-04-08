@@ -1,4 +1,4 @@
-[![Watch the video](https://imgur.com/a/LFlxNkm)](https://youtu.be/qL_iV6dBJ4w)
+[![Watch the video](https://i.imgur.com/u2jbbaY.jpeg)](https://youtu.be/qL_iV6dBJ4w)
 
 
 
