@@ -58,7 +58,7 @@ app.*.map.json
 .env.local
 
 # Exceptions
-!.env.example
+.env.example
 
 # FVM related
 .fvm/
